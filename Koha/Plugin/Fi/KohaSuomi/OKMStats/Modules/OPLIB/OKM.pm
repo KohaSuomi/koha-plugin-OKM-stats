@@ -27,6 +27,7 @@ use URI::Escape;
 use File::Temp;
 use File::Basename qw( dirname );
 use YAML::XS;
+use JSON;
 
 use DateTime;
 
@@ -41,6 +42,7 @@ use Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::OPLIB::OKMLogs;
 
 use Koha::ItemTypes;
 use Koha::AuthorisedValues;
+use Koha::DateUtils qw(dt_from_string);
 
 =head new
 
@@ -69,18 +71,12 @@ sub new {
     $self->{logs} = $log || [];
     $self->loadConfiguration();
 
-    if ($self->isExecutionBlocked()) {
+    if ($self->{conf}->{blockStatisticsGeneration}) {
         die __PACKAGE__.":> Execution prevented by the System preference 'OKM's 'blockStatisticsGeneration'-flag.";
     }
 
-    my $libraryGroups;
-    if ($individualBranches) {
-        $libraryGroups = $self->setLibraryGroups(  $self->createLibraryGroupsFromIndividualBranches($individualBranches)  );
-        $self->{individualBranches} = $individualBranches;
-    }
-    else {
-        $libraryGroups = $self->setLibraryGroups(  $self->getOKMBranchCategoriesAndBranches()  );
-    }
+    my $libraryGroups = $self->setLibraryGroups(  $self->getBranchCategoriesAndBranches($individualBranches)  );
+    $self->{individualBranches} = $individualBranches if $individualBranches;
 
     my ($startDate, $endDate) = StandardizeTimeperiodParameter($timeperiod);
     $self->{startDate} = $startDate;
@@ -96,27 +92,213 @@ sub createStatistics {
     my ($self) = @_;
 
     my $libraryGroups = $self->getLibraryGroups();
+    my $notforloan = $self->{conf}->{notForLoanStatuses};
     my $patronCategories = $self->{conf}->{patronCategories};
+    my $excluded_itemtypes = $self->{conf}->{excludedItemtypes};
+
     foreach my $groupcode (sort keys %$libraryGroups) {
         my $libraryGroup = $libraryGroups->{$groupcode};
+        my @branches = keys %{$libraryGroup->{branches}};
+
         print '    #'.DateTime->now()->iso8601()."# Starting $groupcode #\n" if $self->{verbose};
+        my $stats = $libraryGroup->getStatistics();
 
-        #Calculate collections and acquisitions
-        my $itemBomb = $self->fetchItemsDataMountain($libraryGroup);
-        foreach my $itemnumber (sort {$a <=> $b} keys %$itemBomb) {
-            $self->_processItemsDataRow( $libraryGroup, $itemBomb->{$itemnumber} );
+        my $items = $self->fetchItems($notforloan, $excluded_itemtypes, @branches);
+        foreach my $itemnumber (sort {$a <=> $b} keys %$items) {
+            if( grep $_ eq $items->{$itemnumber}->{homebranch}, @branches ){
+                $self->_processItemsDataRow( $stats->{collection_by_homebranch}, $items->{$itemnumber});
+            }
+            if ( grep $_ eq $items->{$itemnumber}->{holdingbranch}, @branches ){
+                $self->_processItemsDataRow( $stats->{collection_by_holdingbranch}, $items->{$itemnumber});
+            }
         }
-        #calculate issues
-        my $issuesBomb = $self->fetchIssuesDataMountain($libraryGroup, $patronCategories);
-        foreach my $itemnumber (sort {$a <=> $b} keys %$issuesBomb) {
-            $self->_processIssuesDataRow( $libraryGroup, $issuesBomb->{$itemnumber} );
+
+        my $deletedItems = $self->fetchDeletedItems($notforloan, $excluded_itemtypes, @branches);
+        foreach my $itemnumber (sort {$a <=> $b} keys %$deletedItems) {
+            $self->_processItemsDataRow( $stats->{deleted}, $deletedItems->{$itemnumber} );
         }
 
-        $self->statisticsSubscriptions( $libraryGroup );
-        $self->statisticsDiscards( $libraryGroup );
-        $self->statisticsActiveBorrowers( $libraryGroup );
+        my $acquiredItems = $self->fetchAcquisitions($notforloan, @branches);
+        foreach my $itemnumber (sort {$a <=> $b} keys %$acquiredItems) {
+            $self->_processItemsDataRow( $stats->{acquisitions}, $acquiredItems->{$itemnumber});
+        }
 
-        $self->tidyStatistics( $libraryGroup );
+        my $issues = $self->fetchIssues($patronCategories, @branches);
+        foreach my $itemnumber (sort {$a <=> $b} keys %$issues) {
+            $self->_processItemsDataRow( $stats->{issues}, $issues->{$itemnumber} );
+            $self->_processBorrowers( $stats->{active_borrowers}, $issues->{$itemnumber}->{hashed_borrowernumber} );
+        }
+    }
+}
+
+sub fetchItems {
+    my ($self, $notforloan, $excluded_itemtypes, @branches) = @_;
+    my @cc = caller(0);
+    print '    #'.DateTime->now()->iso8601()."# Starting ".$cc[3]." #\n" if $self->{verbose};
+    my $dbh = C4::Context->dbh();
+    my $query = "SELECT i.itemnumber, i.biblionumber, i.location, i.cn_sort, i.homebranch,
+        i.holdingbranch, bde.itemtype, bde.primary_language, bde.fiction, bde.musical, bde.celia
+        FROM items i
+        LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(i.biblioitemnumber = bde.biblioitemnumber)
+        WHERE (i.homebranch IN (" . join(',', map {"'$_'"} @branches).")
+        OR i.holdingbranch IN (" . join(',', map {"'$_'"} @branches)."))
+        AND i.notforloan NOT IN (" . join(',', map {"'$_'"} $notforloan).")
+        AND bde.itemtype NOT IN (" . join(',', map {"'$_'"} $excluded_itemtypes).")
+        GROUP BY itemnumber";
+    if ($self->{limit}) {
+        $query .= ' LIMIT '.$self->{limit};
+    }
+    my $sth = $dbh->prepare($query);
+    $sth->execute();
+    if ($sth->err) {
+        my @cc = caller(0);
+        die $cc[3]."():> ".$sth->errstr;
+    }
+
+    my $items = $sth->fetchall_hashref('itemnumber');
+    return $items;
+}
+
+sub fetchDeletedItems {
+    my ($self, $notforloan, $excluded_itemtypes, @branches) = @_;
+    my @cc = caller(0);
+    print '    #'.DateTime->now()->iso8601()."# Starting ".$cc[3]." #\n" if $self->{verbose};
+    my $dbh = C4::Context->dbh();
+    my $query = "SELECT di.itemnumber, di.biblionumber, di.location, di.cn_sort, di.homebranch,
+        di.holdingbranch, bde.itemtype, bde.primary_language, bde.fiction, bde.musical, bde.celia
+        FROM deleteditems di
+        LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(bde.biblioitemnumber = di.biblioitemnumber)
+        WHERE di.timestamp > ? AND di.timestamp < ?
+        AND bde.itemtype NOT IN (" . join(',', map {"'$_'"} $excluded_itemtypes).")
+        AND di.notforloan not in (" . join(',', map {"'$_'"} $notforloan).")
+        AND di.homebranch in (" . join(',', map {"'$_'"} @branches).")
+        GROUP BY itemnumber";
+    if ($self->{limit}) {
+        $query .= ' LIMIT '.$self->{limit};
+    }
+    my $sth = $dbh->prepare($query);
+    $sth->execute($self->{startDateISO}, $self->{endDateISO});
+    if ($sth->err) {
+        my @cc = caller(0);
+        die $cc[3]."():> ".$sth->errstr;
+    }
+
+    my $deletedItem = $sth->fetchall_hashref('itemnumber');
+    return $deletedItem;
+}
+
+sub fetchAcquisitions {
+    my ($self, $notforloan, @branches) = @_;
+    my @cc = caller(0);
+    print '    #'.DateTime->now()->iso8601()."# Starting ".$cc[3]." #\n" if $self->{verbose};
+    my $dbh = C4::Context->dbh();
+    my $query = "select i.itemnumber, i.biblionumber, i.location, i.cn_sort, i.homebranch,
+        i.holdingbranch, i.price, bde.itemtype, bde.primary_language, bde.fiction, bde.musical, bde.celia
+        FROM items i
+        LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(i.biblioitemnumber = bde.biblioitemnumber)
+        WHERE dateaccessioned >= ? AND dateaccessioned <= ?
+        AND i.notforloan not in (" . join(',', map {"'$_'"} $notforloan).")
+        AND i.homebranch in (" . join(',', map {"'$_'"} @branches).")
+        GROUP BY itemnumber";
+    if ($self->{limit}) {
+        $query .= ' LIMIT '.$self->{limit};
+    }
+    my $sth = $dbh->prepare($query);
+    $sth->execute($self->{startDate}, $self->{endDate});
+    if ($sth->err) {
+        my @cc = caller(0);
+        die $cc[3]."():> ".$sth->errstr;
+    }
+
+    my $acquiredItems = $sth->fetchall_hashref('itemnumber');
+    return $acquiredItems;
+}
+
+#Keep this around until we decide about using pseudonymized_transactions
+sub fetchIssues {
+    my ($self, $patronCategories, @branches) = @_;
+    my @cc = caller(0);
+    print '    #'.DateTime->now()->iso8601()."# Starting ".$cc[3]." #\n" if $self->{verbose};
+    my $dbh = C4::Context->dbh();
+    my $query = "(
+            SELECT s.branch, i.itemnumber, i.biblionumber, i.location, i.cn_sort, i.homebranch,
+            i.holdingbranch, i.price, bde.itemtype, bde.primary_language, bde.fiction, bde.musical, bde.celia
+            FROM statistics s
+            LEFT JOIN items i ON(s.itemnumber = i.itemnumber)
+            LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(i.biblioitemnumber = bde.biblioitemnumber)
+            WHERE s.datetime >= ? AND s.datetime <= ?
+            AND (s.type='issue' or s.type='renew')
+            AND s.branch IN(" . join(",", map {"'$_'"} @branches).")
+            AND s.usercode IN(" . join(",", map {"'$_'"} @{$patronCategories}).")
+            GROUP BY itemnumber
+        )
+        UNION
+        (
+            SELECT s.branch, di.itemnumber, di.biblionumber, di.location, di.cn_sort, di.homebranch,
+            di.holdingbranch, di.price, bde.itemtype, bde.primary_language, bde.fiction, bde.musical, bde.celia
+            FROM statistics s
+            LEFT JOIN deleteditems di ON(s.itemnumber = di.itemnumber)
+            LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(di.biblioitemnumber = bde.biblioitemnumber)
+            WHERE s.datetime >= ? AND s.datetime <= ?
+            AND (s.type='issue' or s.type='renew')
+            AND s.branch IN(" . join(",", map {"'$_'"} @branches).")
+            AND s.usercode IN(" . join(",", map {"'$_'"} @{$patronCategories}).")
+            GROUP BY itemnumber
+        )";
+    if ($self->{limit}) {
+        $query .= ' LIMIT '.$self->{limit};
+    }
+    my $sth = $dbh->prepare($query);
+    $sth->execute($self->{startDate}, $self->{endDate}, $self->{startDate}, $self->{endDate});
+    if ($sth->err) {
+        my @cc = caller(0);
+        die $cc[3]."():> ".$sth->errstr;
+    }
+
+    my $issues = $sth->fetchall_hashref('itemnumber');
+    return $issues;
+}
+
+#USE if we use pseudonymized_transactions (rename this as fetchIssues and delete function above)
+sub fetchIssues_newway {
+    my ($self, $patronCategories, @branches) = @_;
+    my @cc = caller(0);
+    print '    #'.DateTime->now()->iso8601()."# Starting ".$cc[3]." #\n" if $self->{verbose};
+    my $dbh = C4::Context->dbh();
+    my $query = "SELECT id, branchcode, holdingbranch, homebranch, categorycode, location, itemnumber,
+        datetime, itemtype, hashed_borrowernumber, transaction_type
+        FROM pseudonymized_transactions
+        WHERE ( transaction_type = 'issue' OR transaction_type = 'renew' )
+        AND categorycode in (" . join(",", map {"'$_'"} $patronCategories).")
+        AND holdingbranch in (" . join(',', map {"'$_'"} @branches).")
+        AND datetime >= ?
+        AND datetime <= ?";
+    if ($self->{limit}) {
+        $query .= ' LIMIT '.$self->{limit};
+    }
+    my $sth = $dbh->prepare($query);
+    $sth->execute($self->{startDate}, $self->{endDate});
+    if ($sth->err) {
+        my @cc = caller(0);
+        die $cc[3]."():> ".$sth->errstr;
+    }
+
+    my $issues = $sth->fetchall_hashref('id');
+    return $issues;
+}
+
+=head _processBorrowers
+
+    _processBorrowers( $row );
+
+=cut
+
+sub _processBorrowers {
+    my ($self, $active_borrowers, $borrowernumber) = @_;
+    my %seen;
+    if($borrowernumber){
+        next if $seen{ $borrowernumber }++;
+        $active_borrowers++;
     }
 }
 
@@ -124,442 +306,73 @@ sub createStatistics {
 
     _processItemsDataRow( $row );
 
-@DUPLICATES _processIssuesDataRow(), almost completely.
-            But it was decided to duplicate the statistical category if-else-forest instead of adding another
-            layer of complexity to the 'collections, acquisitions, issues'-counter, because this module is complex enough as it is.
-
 =cut
 
 sub _processItemsDataRow {
-    my ($self, $libraryGroup, $row) = @_;
-    my $statCat = $self->getItypeToOKMCategory($row->{itype});
-    return undef if (!defined $statCat || $statCat eq 'Electronic');
+    my ($self, $stats, $row) = @_;
+    my $itemtype = $row->{itemtype};
+    my $statCat = $self->{conf}->{itemTypeToStatisticalCategory}->{$itemtype} if $itemtype;
+    return undef if $statCat eq 'Electronic';
     unless ($statCat) {
         $self->log("Couldn't get the statistical category for this item:<br/> - biblionumber => ".$row->{biblionumber}."<br/> - itemnumber => ".$row->{itemnumber}."<br/> - itype => ".$row->{itype}."<br/>Using category 'Other'.");
         $statCat = 'Other';
     }
 
-    my $stats = $libraryGroup->getStatistics();
-
-    my $deleted = $row->{deleted}; #These inlcude also Issues for Items outside of this libraryGroup.
     my $primaryLanguage = $row->{primary_language};
     my $isChildrensMaterial = $self->isItemChildrens($row);
-    my $isFiction = $row->{fiction};
-    my $isMusicalRecording = $row->{musical};
-    my $isAcquired = (not($deleted)) ? $self->isItemAcquired($row) : undef; #If an Item is deleted, omit the acquisitions calculations because they wouldn't be accurate. Default to not acquired.
-    my $itemtype = $row->{itemtype};
-    my $issues = $row->{issuesQuery}->{issues} || 0;
-    my $serial = ($statCat eq "Serials") ? 1 : 0; #Is the item type considered to be a serial or a magazine?
+    my $isItemFiction = $self->isItemFiction($row->{cn_sort});
+    my $isItemMusical = $self->isItemMusical($row->{cn_sort});
+    my $isCelia = $row->{celia};
+    my $serial = ($statCat eq "Serials") ? 1 : 0;
 
-    #Increase the collection for every Item found
-    $stats->{collection}++ if not($deleted) && not($serial);
-    $stats->{acquisitions}++ if $isAcquired && not($serial);
-    $stats->{expenditureAcquisitions} += $row->{price} if $isAcquired && not($serial) && $row->{price};
+    $stats->{total}++;
+    $stats->{expenditure_acquisitions} += $row->{price} if $row->{price};
 
     if ($statCat eq "Books") {
-
-        $stats->{'collection'.$statCat.'Total'}++ if not($deleted);
-        $stats->{'acquisitions'.$statCat.'Total'}++ if $isAcquired;
-        $stats->{'expenditureAcquisitions'.$statCat} += $row->{price} if $isAcquired && $row->{price};
+        $stats->{books_total}++;
+        $stats->{expenditure_acquisitions_books} += $row->{price} if $row->{price};
 
         if (not(defined($primaryLanguage)) || $primaryLanguage eq 'fin') {
-            $stats->{'collection'.$statCat.'Finnish'}++ if not($deleted);
-            $stats->{'acquisitions'.$statCat.'Finnish'}++ if $isAcquired;
-        }
-        elsif ($primaryLanguage eq 'swe') {
-            $stats->{'collection'.$statCat.'Swedish'}++ if not($deleted);
-            $stats->{'acquisitions'.$statCat.'Swedish'}++ if $isAcquired;
-        }
-        else {
-            $stats->{'collection'.$statCat.'OtherLanguage'}++ if not($deleted);
-            $stats->{'acquisitions'.$statCat.'OtherLanguage'}++ if $isAcquired;
+            $stats->{book_finnish}++;
+        } elsif ($primaryLanguage eq 'swe') {
+            $stats->{books_swedish}++;
+        } elsif ($primaryLanguage eq 'sme') {
+            $stats->{books_sami}++;
+        } else {
+            $stats->{books_other_lang}++;
         }
 
-        if ($isFiction) {
+        if ($isItemFiction) {
             if ($isChildrensMaterial) {
-                $stats->{'collection'.$statCat.'FictionJuvenile'}++ if not($deleted);
-                $stats->{'acquisitions'.$statCat.'FictionJuvenile'}++ if $isAcquired;
+                $stats->{books_fiction_juvenile}++;
+            } else { #Adults fiction
+                $stats->{books_fiction_adult}++;
             }
-            else { #Adults fiction
-                $stats->{'collection'.$statCat.'FictionAdult'}++ if not($deleted);
-                $stats->{'acquisitions'.$statCat.'FictionAdult'}++ if $isAcquired;
-            }
-        }
-        else { #Non-Fiction
+        } else { #Non-Fiction
             if ($isChildrensMaterial) {
-                $stats->{'collection'.$statCat.'NonFictionJuvenile'}++ if not($deleted);
-                $stats->{'acquisitions'.$statCat.'NonFictionJuvenile'}++ if $isAcquired;
-            }
-            else { #Adults Non-fiction
-                $stats->{'collection'.$statCat.'NonFictionAdult'}++ if not($deleted);
-                $stats->{'acquisitions'.$statCat.'NonFictionAdult'}++ if $isAcquired;
+                $stats->{books_fact_juvenile}++;
+            } else { #Adults Non-fiction
+                $stats->{books_fact_adult}++;
             }
         }
-    }
-    elsif ($statCat eq 'Recordings') {
-        if ($isMusicalRecording) {
-            $stats->{'collectionMusicalRecordings'}++ if not($deleted);
-            $stats->{'acquisitionsMusicalRecordings'}++ if $isAcquired;
+    } elsif ($statCat eq 'Recordings') {
+        if ($isCelia) {
+            $stats->{celia}++;
         }
-        else {
-            $stats->{'collectionOtherRecordings'}++ if not($deleted);
-            $stats->{'acquisitionsOtherRecordings'}++ if $isAcquired;
+        elsif ($isItemMusical) {
+            $stats->{musical_regordins}++;
+        } else {
+            $stats->{other_regording}++;
         }
-    }
-    elsif ($serial || $statCat eq 'Other') {
-        $stats->{'collectionOther'}++ if not($deleted) && not($serial);
-        $stats->{'acquisitionsOther'}++ if $isAcquired && not($serial);
-        #Serials and magazines are collected from the subscriptions-table using statisticsSubscriptions()
-        #Don't count them for the collection or acquisitions. Serials must be included in the cumulative Issues.
-    }
-    else {
-        $stats->{'collection'.$statCat}++ if not($deleted);
-        $stats->{'acquisitions'.$statCat}++ if $isAcquired;
-    }
-}
-
-=head _processIssuesDataRow
-
-    _processIssuesDataRow( $row );
-
-@DUPLICATES _processItemsDataRow(), almost completely.
-            But it was decided to duplicate the statistical category if-else-forest instead of adding another
-            layer of complexity to the 'collections, acquisitions, issues'-counter, because this module is complex enough as it is.
-
-=cut
-
-sub _processIssuesDataRow {
-    my ($self, $libraryGroup, $row) = @_;
-    my $statCat = $self->getItypeToOKMCategory($row->{itype});
-    return undef if $statCat eq 'Electronic';
-    unless ($statCat) {
-        #Already logged in _processItemsDataRow()# $self->log("Couldn't get the statistical category for this item:<br/> - biblionumber => ".$row->{biblionumber}."<br/> - itemnumber => ".$row->{itemnumber}."<br/> - itype => ".$row->{itype}."<br/>Using category 'Other'.");
-        $statCat = 'Other';
+    } elsif ($serial || $statCat eq 'Other') {
+        $stats->{other}++;
+    } elsif ($statCat eq 'Videos') {
+        $stats->{videos}++;
+    } elsif ($statCat eq 'Celia') {
+        $stats->{celia}++;
     }
 
-    my $stats = $libraryGroup->getStatistics();
-
-    my $deleted = $row->{deleted}; #These inlcude also Issues for Items outside of this libraryGroup.
-    my $primaryLanguage = $row->{primary_language};
-    my $isChildrensMaterial = $self->isItemChildrens($row);
-    my $isFiction = $row->{fiction};
-    my $isMusicalRecording = $row->{musical};
-    my $itemtype = $row->{itype};
-    my $issues = $row->{issues} || 0;
-    my $serial = ($statCat eq "Serials") ? 1 : 0; #Is the item type considered to be a serial or a magazine?
-
-    #Increase the issues for every Issue found
-    $stats->{issues} += $issues; #Serials are included in the cumulative issues.
-    if ($statCat eq "Books") {
-        $stats->{'issues'.$statCat.'Total'} += $issues;
-
-        if (not(defined($primaryLanguage)) || $primaryLanguage eq 'fin') {
-            $stats->{'issues'.$statCat.'Finnish'} += $issues;
-        }
-        elsif ($primaryLanguage eq 'swe') {
-            $stats->{'issues'.$statCat.'Swedish'} += $issues;
-        }
-        else {
-            $stats->{'issues'.$statCat.'OtherLanguage'} += $issues;
-        }
-
-        if ($isFiction) {
-            if ($isChildrensMaterial) {
-                $stats->{'issues'.$statCat.'FictionJuvenile'} += $issues;
-            }
-            else { #Adults fiction
-                $stats->{'issues'.$statCat.'FictionAdult'} += $issues;
-            }
-        }
-        else { #Non-Fiction
-            if ($isChildrensMaterial) {
-                $stats->{'issues'.$statCat.'NonFictionJuvenile'} += $issues;
-            }
-            else { #Adults Non-fiction
-                $stats->{'issues'.$statCat.'NonFictionAdult'} += $issues;
-            }
-        }
-    }
-    elsif ($statCat eq 'Recordings') {
-        if ($isMusicalRecording) {
-            $stats->{'issuesMusicalRecordings'} += $issues;
-        }
-        else {
-            $stats->{'issuesOtherRecordings'} += $issues;
-        }
-    }
-    elsif ($serial || $statCat eq 'Other') {
-        $stats->{'issuesOther'} += $issues;
-        #Serials and magazines are collected from the subscriptions-table using statisticsSubscriptions()
-        #Don't count them for the collection or acquisitions. Serials must be included in the cumulative Issues.
-    }
-    else {
-        $stats->{'issues'.$statCat} += $issues;
-    }
-}
-
-=head fetchItemsDataMountain
-
-    my $itemBomb = $okm->fetchItemsDataMountain();
-
-Queries the DB for the required data elements and returns a Hash $itemBomb.
-Collects the related acquisitions and collections data for the given timeperiod.
-
-=cut
-
-sub fetchItemsDataMountain {
-    my ($self, $libraryGroup) = @_;
-
-    my @cc = caller(0);
-    print '    #'.DateTime->now()->iso8601()."# Starting ".$cc[3]." #\n" if $self->{verbose};
-    my $in_libraryGroupBranches = $libraryGroup->getBranchcodesINClause();
-    my $limit = $self->getLimit();
-
-    my $dbh = C4::Context->dbh();
-    #Get all the Items' informations for Items residing in the libraryGroup.
-    my $sth = $dbh->prepare("
-        (
-        SELECT  i.itemnumber, i.biblionumber, bi.itemtype as itype, i.location, i.price,
-                ao.ordernumber, ao.datereceived, i.dateaccessioned,
-                bde.primary_language, bde.fiction, bde.musical,
-                0 as deleted
-            FROM items i
-            LEFT JOIN aqorders_items ai ON i.itemnumber = ai.itemnumber
-            LEFT JOIN aqorders ao ON ai.ordernumber = ao.ordernumber LEFT JOIN statistics s ON s.itemnumber = i.itemnumber
-            LEFT JOIN biblioitems bi ON i.biblionumber = bi.biblioitemnumber
-            LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON bi.biblioitemnumber = bde.biblioitemnumber
-            WHERE i.homebranch $in_libraryGroupBranches
-            GROUP BY i.itemnumber $limit
-        )
-        UNION
-        (
-        SELECT  di.itemnumber, di.biblionumber, bi.itemtype as itype, di.location, di.price,
-                ao.ordernumber, ao.datereceived, di.dateaccessioned,
-                bde.primary_language, bde.fiction, bde.musical,
-                1 as deleted
-            FROM deleteditems di
-            LEFT JOIN aqorders_items ai ON di.itemnumber = ai.itemnumber
-            LEFT JOIN aqorders ao ON ai.ordernumber = ao.ordernumber LEFT JOIN statistics s ON s.itemnumber = di.itemnumber
-            LEFT JOIN biblioitems bi ON di.biblionumber = bi.biblioitemnumber
-            LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON bi.biblioitemnumber = bde.biblioitemnumber
-            WHERE di.homebranch $in_libraryGroupBranches
-            GROUP BY di.itemnumber $limit
-        )
-    ");
-    $sth->execute(  ); #This will take some time.....
-    if ($sth->err) {
-        my @cc = caller(0);
-        die $cc[3]."():> ".$sth->errstr;
-    }
-    my $itemBomb = $sth->fetchall_hashref('itemnumber');
-
-    print '    #'.DateTime->now()->iso8601()."# Leaving ".$cc[3]." #\n" if $self->{verbose};
-    return $itemBomb;
-}
-
-=head fetchItemsDataMountain
-
-    my $itemBomb = $okm->fetchItemsDataMountain();
-
-Queries the DB for the required data elements and returns a Hash $itemBomb.
-Collects the related issuing data for the given timeperiod.
-
-=cut
-
-sub fetchIssuesDataMountain {
-    my ($self, $libraryGroup, $patronCategories) = @_;
-
-    my @cc = caller(0);
-    print '    #'.DateTime->now()->iso8601()."# Starting ".$cc[3]." #\n" if $self->{verbose};
-    my $in_libraryGroupBranches = $libraryGroup->getBranchcodesINClause();
-    my $limit = $self->getLimit();
-
-    my $dbh = C4::Context->dbh();
-    #Get all the Issues informations. We can have issues for other branches Items' which are not included in the $sthItems and $sthDeleteditems -queries.
-    #This means that Patrons can check-out Items whose homebranch is not in this libraryGroup, but whom are checked out/renewed from this libraryGroup.
-    my $sth = $dbh->prepare("
-        (
-        SELECT s.itemnumber, i.biblionumber, bi.itemtype as itype, i.location, 0 as deleted, COUNT(s.itemnumber) as issues,
-               bde.primary_language, bde.fiction, bde.musical
-            FROM statistics s
-            LEFT JOIN items i ON s.itemnumber = i.itemnumber
-            LEFT JOIN biblioitems bi ON i.biblionumber = bi.biblioitemnumber
-            LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON bi.biblioitemnumber = bde.biblioitemnumber
-            WHERE s.branch $in_libraryGroupBranches
-            AND s.type IN ('issue','renew')
-            AND s.datetime BETWEEN ? AND ?
-            AND s.usercode IN(" . join(",", map {"?"} @{$patronCategories}).")
-            AND i.itemnumber IS NOT NULL
-            GROUP BY s.itemnumber $limit
-        )
-        UNION
-        (
-        SELECT s.itemnumber, di.biblionumber, bi.itemtype as itype, di.location, 1 as deleted, COUNT(s.itemnumber) as issues,
-               bde.primary_language, bde.fiction, bde.musical
-            FROM statistics s
-            LEFT JOIN deleteditems di ON s.itemnumber = di.itemnumber
-            LEFT JOIN biblioitems bi ON di.biblionumber = bi.biblioitemnumber
-            LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON bi.biblioitemnumber = bde.biblioitemnumber
-            WHERE s.branch $in_libraryGroupBranches
-            AND s.type IN ('issue','renew')
-            AND s.datetime BETWEEN ? AND ?
-            AND s.usercode IN(" . join(",", map {"?"} @{$patronCategories}).")
-            AND di.itemnumber IS NOT NULL
-            GROUP BY s.itemnumber $limit
-        )");
-    $sth->execute(  $self->{startDateISO}, $self->{endDateISO}, @{$patronCategories}, $self->{startDateISO}, $self->{endDateISO}, @{$patronCategories}  ); #This will take some time.....
-    if ($sth->err) {
-        die $cc[3]."():> ".$sth->errstr;
-    }
-    my $issuesBomb = $sth->fetchall_hashref('itemnumber');
-
-    print '    #'.DateTime->now()->iso8601()."# Leaving ".$cc[3]." #\n" if $self->{verbose};
-    return $issuesBomb;
-}
-
-=head getBranchCounts
-
-    getBranchCounts( $branchcode, $mainLibrariesCount );
-
-Fills OKM columns "Pääkirjastoja, Sivukirjastoja, Laitoskirjastoja, Kirjastoautoja"
-1. SELECTs all branches we have.
-2. Finds bookmobiles by the regexp /AU$/ in the branchcode
-3. Finds bookboats by the regexp /VE$/ in the branchcode
-4. Institutional libraries by /JOE_(LA)KO/, where LA stand for LaitosKirjasto.
-5. Main libraries cannot be differentiated from branch libraries so this is fed as a parameter to the script.
-6. Branch libraries are what is left after picking all previously mentioned branch types.
-=cut
-
-sub statisticsSubscriptions {
-    my ($self, $libraryGroup) = (@_);
-    my @cc = caller(0);
-    print '    #'.DateTime->now()->iso8601()."# Starting ".$cc[3]." #\n" if $self->{verbose};
-
-    my $dbh = C4::Context->dbh();
-    my $in_libraryGroupBranches = $libraryGroup->getBranchcodesINClause();
-    my $limit = $self->getLimit();
-    my $sth = $dbh->prepare(
-               "SELECT COUNT(subscriptionid) AS count,
-                       SUM(IF(  metadata REGEXP '  <controlfield tag=\"008\">.....................n..................</controlfield>'  ,1,0)) AS newspapers,
-                       SUM(IF(  metadata REGEXP '  <controlfield tag=\"008\">.....................p..................</controlfield>'  ,1,0)) AS magazines
-                FROM subscription s LEFT JOIN biblioitems bi ON bi.biblionumber = s.biblionumber
-                LEFT JOIN biblio_metadata bi_me ON bi_me.biblionumber = bi.biblionumber
-                WHERE branchcode $in_libraryGroupBranches AND
-                       NOT (? < startdate AND enddate < ?) $limit");
-    #The SQL WHERE-clause up there needs a bit of explaining:
-    # Here we find if a subscription intersects with the given timeperiod of our report.
-    # Using this algorithm we can define whether two lines are on top of each other in a 1-dimensional space.
-    # Think of two lines:
-    #   sssssssssssssssssssssss   (subscription duration (s))
-    #           tttttttttttttttttttttttttttt   (timeperiod of the report (t))
-    # They cannot intersect if t.end < s.start AND s.end < t.start
-    $sth->execute( $self->{endDateISO}, $self->{startDateISO} );
-    if ($sth->err) {
-        die $cc[3]."():> ".$sth->errstr;
-    }
-    my $retval = $sth->fetchrow_hashref();
-
-    my $stats = $libraryGroup->getStatistics();
-    $stats->{newspapers} = $retval->{newspapers} ? $retval->{newspapers} : 0;
-    $stats->{magazines} = $retval->{magazines} ? $retval->{magazines} : 0;
-    $stats->{count} = $retval->{count} ? $retval->{count} : 0;
-
-    if ($stats->{newspapers} + $stats->{magazines} != $stats->{count}) {
-        carp "Calculating subscriptions, total count ".$stats->{count}." is not the same as newspapers ".$stats->{newspapers}." and magazines ".$stats->{magazines}." combined!";
-    }
-    print '    #'.DateTime->now()->iso8601()."# Leaving ".$cc[3]." #\n" if $self->{verbose};
-}
-sub statisticsDiscards {
-    my ($self, $libraryGroup) = (@_);
-    my @cc = caller(0);
-    print '    #'.DateTime->now()->iso8601()."# Starting ".$cc[3]." #\n" if $self->{verbose};
-
-    #Do not statistize these itemtypes as item discard:
-    my $excludedItemTypes = $self->getItemtypesByStatisticalCategories('Serials', 'Electronic');
-    my $dbh = C4::Context->dbh();
-    my $in_libraryGroupBranches = $libraryGroup->getBranchcodesINClause();
-    my $limit = $self->getLimit();
-    my $sql =  "SELECT count(*) FROM koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde LEFT JOIN deleteditems ON bde.biblioitemnumber = deleteditems.biblioitemnumber ".
-               "WHERE homebranch $in_libraryGroupBranches ".
-               "  AND timestamp >= ? AND timestamp <= ? ".
-               "  AND itemtype NOT IN (".join(',', map {"'$_'"} @$excludedItemTypes).") ".
-#                 AND itype != 'SL' AND itype != 'AL'
-               "  $limit; ";
-
-    my $sth = $dbh->prepare($sql);
-
-    $sth->execute( $self->{startDateISO}, $self->{endDateISO} );
-    if ($sth->err) {
-        die $cc[3]."():> ".$sth->errstr;
-    }
-    my $discards = $sth->fetchrow;
-
-    my $stats = $libraryGroup->getStatistics();
-    $stats->{discards} = $discards;
-    print '    #'.DateTime->now()->iso8601()."# Leaving ".$cc[3]." #\n" if $self->{verbose};
-}
-sub statisticsActiveBorrowers {
-    my ($self, $libraryGroup) = (@_);
-    #_statisticsOurBorrowersWhoHaveCirculatedInAnyBranch($self, $libraryGroup);
-    _statisticsBorrowersWhoCirculatedInOurBranches($self, $libraryGroup);
-}
-sub _statisticsOurActiveBorrowersWhoHaveCirculatedInAnyBranch {
-    my ($self, $libraryGroup) = (@_);
-    my @cc = caller(0);
-    print '    #'.DateTime->now()->iso8601()."# Starting ".$cc[3]." #\n" if $self->{verbose};
-
-    my $dbh = C4::Context->dbh();
-    my $in_libraryGroupBranches = $libraryGroup->getBranchcodesINClause();
-    my $limit = $self->getLimit();
-    my $sth = $dbh->prepare(
-                "SELECT COUNT(stat.borrowernumber) FROM borrowers b
-                 LEFT JOIN (
-                    SELECT borrowernumber
-                    FROM statistics s WHERE s.type IN ('issue','renew') AND datetime >= ? AND datetime <= ?
-                    GROUP BY s.borrowernumber
-                 )
-                 AS stat ON stat.borrowernumber = b.borrowernumber
-                 WHERE b.branchcode $in_libraryGroupBranches $limit");
-    $sth->execute( $self->{startDateISO}, $self->{endDateISO} );
-    if ($sth->err) {
-        die $cc[3]."():> ".$sth->errstr;
-    }
-    my $activeBorrowers = $sth->fetchrow;
-
-    my $stats = $libraryGroup->getStatistics();
-    $stats->{activeBorrowers} = $activeBorrowers;
-    print '    #'.DateTime->now()->iso8601()."# Leaving ".$cc[3]." #\n" if $self->{verbose};
-}
-sub _statisticsBorrowersWhoCirculatedInOurBranches {
-    my ($self, $libraryGroup) = (@_);
-    my @cc = caller(0);
-    print '    #'.DateTime->now()->iso8601()."# Starting ".$cc[3]." #\n" if $self->{verbose};
-
-    my $dbh = C4::Context->dbh();
-    my $in_libraryGroupBranches = $libraryGroup->getBranchcodesINClause();
-    my $limit = $self->getLimit();
-    my $sth = $dbh->prepare("
-        SELECT COUNT(DISTINCT(borrowernumber))
-        FROM statistics s
-        WHERE s.type IN ('issue','renew') AND
-              s.datetime BETWEEN ? AND ? AND
-              s.branch $in_libraryGroupBranches $limit
-    ");
-    $sth->execute( $self->{startDateISO}, $self->{endDateISO} );
-    if ($sth->err) {
-        die $cc[3]."():> ".$sth->errstr;
-    }
-    my $activeBorrowers = $sth->fetchrow;
-
-    my $stats = $libraryGroup->getStatistics();
-    $stats->{activeBorrowers} = $activeBorrowers;
-    print '    #'.DateTime->now()->iso8601()."# Leaving ".$cc[3]." #\n" if $self->{verbose};
-}
-sub tidyStatistics {
-    my ($self, $libraryGroup) = (@_);
-    my $stats = $libraryGroup->getStatistics();
-    $stats->{expenditureAcquisitionsBooks} = sprintf("%.2f", $stats->{expenditureAcquisitionsBooks});
-    $stats->{expenditureAcquisitions}      = sprintf("%.2f", $stats->{expenditureAcquisitions});
+    $stats->{itemtypes}->{$itemtype}++;
 }
 
 sub getLibraryGroups {
@@ -581,44 +394,93 @@ sub setLibraryGroups {
     $self->{lib_groups} = $libraryGroups;
 
     foreach my $groupname (sort keys %$libraryGroups) {
-        $libraryGroups->{$groupname} = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::OPLIB::OKMLibraryGroup->new(  $groupname, $libraryGroups->{$groupname}->{branches}  );
+        $libraryGroups->{$groupname} = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::OPLIB::OKMLibraryGroup->new(  $groupname, $libraryGroups->{$groupname}->{branches});
     }
     return $self->{lib_groups};
 }
 
-=head createLibraryGroupsFromIndividualBranches
+=head getBranchCategoriesAndBranches
 
-    $okm->createLibraryGroupsFromIndividualBranches($individualBranches);
+    Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::OPLIB::OKM::getBranchCategoriesAndBranches();
+    $okm->getBranchCategoriesAndBranches();
 
-@PARAM1 String, a .csv-row with each element as a branchcode
-                'JOE_JOE,JOE_RAN,[...]'
-                or
-                '_A' which means ALL BRANCHES. Then the function fetches all the branchcodes from DB.
-@RETURNS a HASH of library monstrosity
+Calls getOKMBranchCategories() to find the branchCategories and then finds which branchcodes are mapped to those categories.
+
+@RETURNS a hash of branchcategories.categorycode -> branches.branchcode = 1
 =cut
 
-sub createLibraryGroupsFromIndividualBranches {
+sub getBranchCategoriesAndBranches {
     my ($self, $individualBranches) = @_;
-    my @iBranchcodes;
 
-    if ($individualBranches eq '_A') {
-        my @branchcodes = Koha::Libraries->search();
-        foreach my $branchcode (@branchcodes){
-            push @iBranchcodes, $branchcode->branchcode;
+    my $libraryGroups;
+
+    if($individualBranches){
+        my @iBranchcodes;
+
+        if ($individualBranches eq '_A') {
+            my @branchcodes = Koha::Libraries->search();
+            foreach my $branchcode (@branchcodes){
+                push @iBranchcodes, $branchcode->branchcode;
+            }
+        }
+        else {
+            @iBranchcodes = split(',',$individualBranches);
+            for(my $i=0 ; $i<@iBranchcodes ; $i++) {
+                my $bc = $iBranchcodes[$i];
+                $bc =~ s/\s//g; #Trim all whitespace
+                $iBranchcodes[$i] = $bc;
+            }
+        }
+
+        $libraryGroups = {};
+        foreach my $branchcode (@iBranchcodes) {
+            $libraryGroups->{$branchcode}->{branches} = {$branchcode => 1};
+        }
+    } else {
+
+        $libraryGroups = $self->getOKMBranchCategories();
+
+        foreach my $categoryCode (keys %{$libraryGroups}) {
+            my @branchcodes =  Koha::Library::Groups->find({title => $categoryCode})->libraries if $categoryCode;
+            if (not(@branchcodes) || scalar(@branchcodes) <= 0) {
+                $self->log("Statistical library group $categoryCode has no libraries, removing it from OKM statistics");
+                delete $libraryGroups->{$categoryCode};
+                next();
+            }
+
+            #HASHify the branchcodes for easy access
+            $libraryGroups->{$categoryCode} = {}; #CategoryCode used to be 1, which makes for a poor HASH reference.
+            $libraryGroups->{$categoryCode}->{branches} = {};
+            my $branches = $libraryGroups->{$categoryCode}->{branches};
+            foreach my $branchcode (@branchcodes){
+                grep { $branches->{$_} = 1 } $branchcode->branchcode;
+            }
         }
     }
-    else {
-        @iBranchcodes = split(',',$individualBranches);
-        for(my $i=0 ; $i<@iBranchcodes ; $i++) {
-            my $bc = $iBranchcodes[$i];
-            $bc =~ s/\s//g; #Trim all whitespace
-            $iBranchcodes[$i] = $bc;
-        }
-    }
+    return $libraryGroups;
+}
 
+
+=head getOKMBranchCategories
+
+    Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::OPLIB::OKM::getOKMBranchCategories();
+    $okm->getOKMBranchCategories();
+
+Searches Koha for branchcategories ending to letters "_OKM".
+These branchcategories map to a OKM annual statistics row.
+
+@RETURNS a hash of branchcategories.categorycode = 1
+=cut
+
+sub getOKMBranchCategories {
+    my $self = shift;
     my $libraryGroups = {};
-    foreach my $branchcode (@iBranchcodes) {
-        $libraryGroups->{$branchcode}->{branches} = {$branchcode => 1};
+
+    my @library_categories = Koha::Library::Groups->search({title => {-like => "%_OKM"}});
+
+    foreach my $library_category (@library_categories){
+        my $code = $library_category->title;
+        $libraryGroups->{$code} = $library_category;
     }
     return $libraryGroups;
 }
@@ -734,65 +596,6 @@ sub asOds {
     return join('', @content);
 }
 
-=head getOKMBranchCategories
-
-    Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::OPLIB::OKM::getOKMBranchCategories();
-    $okm->getOKMBranchCategories();
-
-Searches Koha for branchcategories ending to letters "_OKM".
-These branchcategories map to a OKM annual statistics row.
-
-@RETURNS a hash of branchcategories.categorycode = 1
-=cut
-
-sub getOKMBranchCategories {
-    my $self = shift;
-    my $libraryGroups = {};
-
-    my @library_categories = Koha::Library::Groups->search({title => {-like => "%_OKM"}});
-
-    foreach my $library_category (@library_categories){
-        my $code = $library_category->title;
-        $libraryGroups->{$code} = $library_category;      
-    }
-    return $libraryGroups;
-}
-
-=head getOKMBranchCategoriesAndBranches
-
-    Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::OPLIB::OKM::getOKMBranchCategoriesAndBranches();
-    $okm->getOKMBranchCategoriesAndBranches();
-
-Calls getOKMBranchCategories() to find the branchCategories and then finds which branchcodes are mapped to those categories.
-
-@RETURNS a hash of branchcategories.categorycode -> branches.branchcode = 1
-=cut
-
-sub getOKMBranchCategoriesAndBranches {
-    my $self = shift;
-   
-    my $libraryGroups = $self->getOKMBranchCategories();
-    
-    foreach my $categoryCode (keys %{$libraryGroups}) {
-        my @branchcodes =  Koha::Library::Groups->find({title => $categoryCode})->libraries if $categoryCode;
-        if (not(@branchcodes) || scalar(@branchcodes) <= 0) {
-            $self->log("Statistical library group $categoryCode has no libraries, removing it from OKM statistics");
-            delete $libraryGroups->{$categoryCode};
-            next();
-        }
-
-        #HASHify the branchcodes for easy access
-        $libraryGroups->{$categoryCode} = {}; #CategoryCode used to be 1, which makes for a poor HASH reference.
-        $libraryGroups->{$categoryCode}->{branches} = {};
-        my $branches = $libraryGroups->{$categoryCode}->{branches};
-        foreach my $branchcode (@branchcodes){
-            grep { $branches->{$_} = 1 } $branchcode->branchcode;
-        }
-    }
-
-    return $libraryGroups;
-}
-
 =head FindMarcField
 
 Static method
@@ -829,57 +632,20 @@ sub isItemChildrens {
     return 0;
 }
 
-sub isItemAcquired {
-    my ($self, $row) = @_;
-
-    my $startEpoch = $self->{startDate}->epoch();
-    my $endEpoch = $self->{endDate}->epoch();
-    my $receivedEpoch    = 0;
-    my $accessionedEpoch = 0;
-    if ($row->{datereceived} && $row->{datereceived} =~ /(\d\d\d\d)-(\d\d)-(\d\d)/) { #Parse ISO date
-        eval { $receivedEpoch = DateTime->new(year => $1, month => $2, day => $3, time_zone => C4::Context->tz())->epoch(); };
-        if ($@) { #Sometimes the DB has datetimes 0000-00-00 which is not nice for DateTime.
-            $receivedEpoch = 0;
-        }
-
+sub isItemFiction {
+    my ($self, $cn_sort) = @_;
+    if ($cn_sort && $cn_sort =~/^8[0-5].*/) { #ykl numbers 80.* to 85.* are fiction.
+        return 1;
     }
-    if ($row->{dateaccessioned} && $row->{dateaccessioned} =~ /(\d\d\d\d)-(\d\d)-(\d\d)/) { #Parse ISO date
-        eval { $accessionedEpoch = DateTime->new(year => $1, month => $2, day => $3, time_zone => C4::Context->tz())->epoch(); };
-        if ($@) { #Sometimes the DB has datetimes 0000-00-00 which is not nice for DateTime.
-            $accessionedEpoch = 0;
-        }
-    }
-
-    #This item has been received from the vendor.
-    if ($receivedEpoch) {
-        return 1 if $startEpoch <= $receivedEpoch && $endEpoch >= $receivedEpoch;
-        return 0; #But this item is not received during the requested timeperiod :(
-    }
-    #This item has been added to Koha via acquisitions, but the order hasn't been received during the requested timeperiod
-    elsif ($row->{ordernumber}) {
-        return 0;
-    }
-    #This item has been added to Koha outside of the acquisitions module
-    elsif ($startEpoch <= $accessionedEpoch && $endEpoch >= $accessionedEpoch) {
-        return 1; #And this item is added during the requested timeperiod
-    }
-    else {
-        return 0;
-    }
+    return 0;
 }
 
-=head getLimit
-
-    my $limit = $self->getLimit();
-
-Gets the SQL LIMIT clause used in testing this feature faster (but not more accurately). It can be passed to the OKM->new() constructor.
-=cut
-
-sub getLimit {
-    my $self = shift;
-    my $limit = '';
-    $limit = 'LIMIT '.$self->{limit} if $self->{limit};
-    return $limit;
+sub isItemMusical {
+    my ($self, $cn_sort) = @_;
+    if ($cn_sort && $cn_sort =~/^78.*/) { #ykl numbers 80.* to 85.* are fiction.
+        return 1;
+    }
+    return 0;
 }
 
 =head save
@@ -893,8 +659,7 @@ Serializes this object and saves it to the koha.koha_plugin_fi_kohasuomi_okmstat
 =cut
 
 sub save {
-    my $self = shift;
-
+    my ($self)= @_;
     my @cc = caller(0);
     print '    #'.DateTime->now()->iso8601()."# Starting ".$cc[3]." #\n" if $self->{verbose};
 
@@ -903,28 +668,35 @@ sub save {
     $self->{endDate} = undef; #Like DateTime-objects which serialize quite badly.
     $self->{startDate} = undef;
 
-    $Data::Dumper::Indent = 0;
-    $Data::Dumper::Purity = 1;
-    my $serialized_self = Data::Dumper::Dumper( $self );
+    my $individualbranches = $self->{individualBranches} ? $self->{individualBranches} : "OKM";
+
+    my $lib_groups = $self->{lib_groups};
+    my @statistics = ();
+    while (my ($key, $value) = each %{$lib_groups}){
+        push @statistics, { %{$value->{statistics}} };
+    }
+    my $json = encode_json(\@statistics);
+
 
     #See if this yearly OKM is already serialized
     my $dbh = C4::Context->dbh();
     my $sth = $dbh->prepare('SELECT id FROM koha_plugin_fi_kohasuomi_okmstats_okm_statistics WHERE startdate = ? AND enddate = ? AND individualbranches = ?');
-    $sth->execute( $self->{startDateISO}, $self->{endDateISO}, $self->{individualBranches} );
+    $sth->execute( $self->{startDateISO}, $self->{endDateISO}, $individualbranches );
     if ($sth->err) {
         die $cc[3]."():> ".$sth->errstr;
     }
     if (my $id = $sth->fetchrow()) { #Exists in DB
         $sth = $dbh->prepare('UPDATE koha_plugin_fi_kohasuomi_okmstats_okm_statistics SET okm_serialized = ? WHERE id = ?');
-        $sth->execute( $serialized_self, $id );
+        $sth->execute( $json, $id );
     }
     else {
         $sth = $dbh->prepare('INSERT INTO koha_plugin_fi_kohasuomi_okmstats_okm_statistics (startdate, enddate, individualbranches, okm_serialized) VALUES (?,?,?,?)');
-        $sth->execute( $self->{startDateISO}, $self->{endDateISO}, $self->{individualBranches}, $serialized_self );
+        $sth->execute( $self->{startDateISO}, $self->{endDateISO}, $individualbranches, $json );
     }
     if ($sth->err) {
         die $cc[3]."():> ".$sth->errstr;
     }
+
     return undef;
 }
 
@@ -1043,6 +815,13 @@ sub loadConfiguration {
     $self->_makeStatisticalCategoryToItemTypesMap();
 }
 
+=head getItemtypesByStatisticalCategories
+
+    my $categories = $self->getItemtypesByStatisticalCategories('Serials', 'Electronic');
+
+Fetch all itemtypes belonging to the statical category. Returns an array.
+=cut
+
 sub getItemtypesByStatisticalCategories {
     my ($self, @statCats) = @_;
     my @itypes;
@@ -1089,17 +868,13 @@ sub _validateConfigurationAndPreconditions {
                      "  - AV \n";
     }
     
-    my @authorised_values_by_category = Koha::AuthorisedValues->new->search( { category => 'MTYPE' } );
+    my @authorised_values_by_category = Koha::AuthorisedValues->search( { category => 'MTYPE' } );
 
     my @loop_data = ();
     # builds value list
     for my $av ( @authorised_values_by_category ) {
         my %row_data;  # get a fresh hash for the row data
-        #$row_data{category}              = $av->category;
         $row_data{authorised_value}      = $av->authorised_value;
-        #$row_data{branches}              = $av->branch_limitations;
-        #$row_data{id}                    = $av->id;
-        #$row_data{lib}                   = $av->lib;
         push(@loop_data, \%row_data);
     }
 
@@ -1110,9 +885,6 @@ sub _validateConfigurationAndPreconditions {
     for (my $i=0; $i < $itemcount; $i++) {
       push ( @itypes, $loop_data [$i]{authorised_value} );
    }
-
-    #Old itemtypes were collected like this
-    #my @itypes = Koha::ItemTypes->search();
 
     ##Check that we haven't accidentally mapped any itemtypes that don't actually exist in our database
     my %mappedItypes = map {$_ => 1} @statCatKeys; #Copy the itemtypes-as-keys
@@ -1126,16 +898,14 @@ sub _validateConfigurationAndPreconditions {
                         "Electronic" => 1);
     
     foreach my $itype (@itypes) {
-        
-            my $it = $itype;
-            my $mapping = $self->getItypeToOKMCategory($it);
+            my $mapping = $self->{conf}->{itemTypeToStatisticalCategory}->{$itype};
                     
             unless ($mapping) { #Is itemtype mapped?
                 my @cc = caller(0);
                 push (@preconditionerr, $cc[3]."():> System preference 'OKM' has an unmapped itemtype '" . $itype . "'. Put it under 'itemTypeToStatisticalCategory'."."\n");
             }
             else {
-                delete $mappedItypes{$it};
+                delete $mappedItypes{$itype};
             }
             if(exists($statCategories{$mapping})) {
                 $statCategories{$mapping} = 1; #Mark this mapping as used.
@@ -1153,7 +923,7 @@ sub _validateConfigurationAndPreconditions {
         #my @cc = caller(0);
         my @itypes = keys(%mappedItypes);
         my @cc = caller(0);
-        push (@preconditionerr, $cc[3]."():> System preference 'OKM' has mapped itemtypes '@itypes' that don't exist in your database itemtypes-listing?");
+        push (@preconditionerr, $cc[3]."():> System preference 'OKM' has mapped itemtypes '@itypes' that don't exist in your authorized value MTYPE.");
     }
 
     #Check that all statistical categories are mapped
@@ -1164,14 +934,6 @@ sub _validateConfigurationAndPreconditions {
         }
     }
 
-    ##Check that koha.koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements -table is being updated regularly.
-    #my $staletest = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElements::verifyFeatureIsInUse;
-     #push (@unmappederr, "Staletest: ". $staletest);
-    #if (!$staletest){
-    #    my @cc = caller(0);
-    #     push (@preconditionerr, $cc[3]."():> koha.koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements-table is stale. You must configure cronjob 'update_koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements.pl' to run daily.");
-    #}
-    
     #Show all errors
     if (@preconditionerr) {
         die "@preconditionerr";
@@ -1186,26 +948,6 @@ sub _makeStatisticalCategoryToItemTypesMap {
         push(@{$statisticalCategoryToItemTypes{$statCat}}, $itype);
     }
     $self->{conf}->{statisticalCategoryToItemTypes} = \%statisticalCategoryToItemTypes;
-}
-
-=head getItypeToOKMCategory
-
-    my $category = $okm->getItypeToOKMCategory('BK'); #Returns 'Books'
-
-Takes an Itemtype and converts it based on the mapping rules to an OKM statistical
-category type, like 'Books'.
-
-@PARAM1 String, itemtype
-@RETURNS String, OKM category type or undef
-=cut
-
-sub getItypeToOKMCategory {
-    my ($self, $itemtype) = @_;
-    return $self->{conf}->{itemTypeToStatisticalCategory}->{$itemtype};
-}
-
-sub isExecutionBlocked {
-    return shift->{conf}->{blockStatisticsGeneration};
 }
 
 =head StandardizeTimeperiodParameter
@@ -1292,10 +1034,12 @@ sub log {
     push @{$self->{logs}}, $message;
     print $message."\n" if $self->{verbose};
 }
+
 sub flushLogs {
     my ($self) = @_;
     my $logs = $self->{logs};
     delete $self->{logs};
     return $logs;
 }
-1; #Happy happy joy joy!
+
+1;

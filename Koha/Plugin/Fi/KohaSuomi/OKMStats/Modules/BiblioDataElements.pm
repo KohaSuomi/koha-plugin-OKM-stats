@@ -116,66 +116,36 @@ Takes biblioitems and MARCXML and picks the needed data_elements to the koha.bib
 =cut
 
 sub UpdateBiblioDataElement {
-    my ($biblioitem, $verbose, $oldDbi) = @_;
+    my ($biblioitem, $verbose) = @_;
     $verbose = 0 unless $verbose; #Prevent undef errors
 
-    #Get the bibliodataelement from input which can be a Koha::Object or a HASH from DBI
-    #or create a new one if the biblioitem is new.
-    my $bde; #BiblioDataElement-object
-    my $marcxml;
-    my $deleted;
-    my $itemtype;
-    my $biblioitemnumber;
-    if (blessed $biblioitem && $biblioitem->isa('Koha::Object')) {
-        if ($oldDbi) {
-            $bde = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElement::DBI_getBiblioDataElement($biblioitem->biblioitemnumber());
-        }
-        else {
-            my @bde = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElements->search({biblioitemnumber => $biblioitem->biblioitemnumber()});
-            $bde = $bde[0];
-        }
+    my $deleted = $biblioitem->{deleted};
+    my $itemtype = $biblioitem->{itemtype};
+    my $biblioitemnumber = $biblioitem->{biblioitemnumber};
 
-        $marcxml = C4::Biblio::GetXmlBiblio( $biblioitem->biblioitemnumber );
-        $deleted = $biblioitem->deleted();
-        $itemtype = $biblioitem->itemtype();
-        $biblioitemnumber = $biblioitem->biblioitemnumber();
-    }
-    else {
-        if ($oldDbi) {
-            $bde = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElement::DBI_getBiblioDataElement($biblioitem->{biblioitemnumber});
-        }
-        else {
-            my @bde = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElements->search({biblioitemnumber => $biblioitem->{biblioitemnumber}});
-            $bde = $bde[0];
-        }
-
-        $marcxml = C4::Biblio::GetXmlBiblio( $biblioitem->{biblioitemnumber} );
-        $deleted = $biblioitem->{deleted};
-        $itemtype = $biblioitem->{itemtype};
-        $biblioitemnumber = $biblioitem->{biblioitemnumber};
-    }
-    $bde = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElement->new({biblioitemnumber => $biblioitemnumber}) if (not($bde) && not($oldDbi));
+    my $bde = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElement::DBI_getBiblioDataElement($biblioitem->{biblioitemnumber});
+    $bde = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElement->new({biblioitemnumber => $biblioitemnumber}) if (not($bde));
 
     #Make a MARC::Record out of the XML.
+    my $marcxml = $deleted ? _getDeletedXmlBiblio( $biblioitem->{biblionumber} ) : C4::Biblio::GetXmlBiblio( $biblioitem->{biblionumber} );
     my $record = eval { MARC::Record::new_from_xml( $marcxml, "utf8", C4::Context->preference('marcflavour') ) };
     if ($@) {
         die $@;
     }
-
     #Start creating data_elements.
-    $bde->isFiction($record);
+    $bde->isBiblioitemFiction($record, $biblioitem->{cn_sort});
     $bde->isMusicalRecording($record);
-    $bde->setDeleted($deleted);
+    $bde->isCelia($record);
+    $bde->setDeleted($deleted, $biblioitem->{timestamp});
     $bde->setItemtype($itemtype);
     $bde->isSerial($itemtype);
     $bde->setLanguages($record);
     $bde->setEncodingLevel($record);
-    if ($oldDbi) {
-        Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElement::DBI_insertBiblioDataElement($bde, $biblioitemnumber) unless $bde->{biblioitemnumber};
-        Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElement::DBI_updateBiblioDataElement($bde) if $bde->{biblioitemnumber};
-    }
-    else {
-        $bde->store();
+
+    if($bde->{biblioitemnumber}){
+        Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElement::DBI_updateBiblioDataElement($bde)
+    } else {
+        Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElement::DBI_insertBiblioDataElement($bde, $biblioitemnumber);
     }
 }
 
@@ -225,11 +195,11 @@ sub _getBiblioitemsNeedingUpdate {
 
     my $dbh = C4::Context->dbh();
     my $sth = $dbh->prepare("
-            (SELECT bi.biblioitemnumber, bi.itemtype, bmt.metadata, 0 AS deleted FROM biblioitems bi LEFT JOIN biblio_metadata bmt ON bi.biblionumber=bmt.biblionumber
+            (SELECT bi.biblioitemnumber, bi.biblionumber, bi.itemtype, 0 AS deleted FROM biblioitems bi
              WHERE bi.timestamp >= ? $limit
             ) UNION (
-             SELECT bi.biblioitemnumber, bi.itemtype, bmt.metadata, 1 AS deleted FROM biblioitems bi LEFT JOIN biblio_metadata bmt ON bi.biblionumber=bmt.biblionumber
-             WHERE bi.timestamp >= ? $limit
+             SELECT dbi.biblioitemnumber, dbi.biblionumber, dbi.itemtype, 1 AS deleted FROM deletedbiblioitems dbi
+             WHERE dbi.timestamp >= ? $limit
             )
     ");
     $sth->execute( $lastModTime, $lastModTime );
@@ -282,6 +252,28 @@ Marks all BiblioDataElements to be updated during the next indexing.
 sub markForReindex {
     my $dbh = C4::Context->dbh();
     $dbh->do("UPDATE koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements SET last_mod_time = '1900-01-01 01:01:01'");
+}
+
+=head _getDeletedXmlBiblio
+
+An ugly copypaste of GetXmlBiblio since GetDeletedXmlBiblio doesn't exists on community version.
+
+=cut
+
+sub _getDeletedXmlBiblio {
+    my ($biblionumber) = @_;
+    my $dbh = C4::Context->dbh;
+    return unless $biblionumber;
+    my ($marcxml) = $dbh->selectrow_array(
+        q|
+        SELECT metadata
+        FROM deletedbiblio_metadata
+        WHERE biblionumber=?
+            AND format='marcxml'
+            AND `schema`=?
+    |, undef, $biblionumber, C4::Context->preference('marcflavour')
+    );
+    return $marcxml;
 }
 
 1;

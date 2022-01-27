@@ -19,55 +19,59 @@
         <input type="hidden" name="class" value="[% CLASS %]"/>
         <input type="hidden" name="method" value="[% METHOD %]"/>
         <div class="row">
-            <div class="col-sm-10">
+            <div class="col-sm-5">
                 <p>OKM statistics configuration and statistical type mappings</p>
-                <p>Available statistical types:</p>
+                <b>Available statistical types:</b>
                 <ul>
-                    <li>'Books'</li>
-                    <li>'SheetMusicAndScores'</li>
-                    <li>'Recordings' (further divided to MusicalRecordings and OtherRecordings based on the MARC)</li>
-                    <li>'Videos'</li>
-                    <li>'Other'</li>
-                    <li>'Serials'</li>
-                    <li>'Celia'</li>
-                    <li>'Electronic'</li>
-                    <li>'Online'</li>
+                    <li>Books</li>
+                    <li>SheetMusicAndScores</li>
+                    <li>Recordings (further divided to MusicalRecordings and OtherRecordings based on the MARC)</li>
+                    <li>Videos</li>
+                    <li>Other</li>
+                    <li>Serials</li>
+                    <li>Celia</li>
+                    <li>Electronic</li>
+                    <li>Online</li>
+                </ul>
+                <p>Itemtypes listed in 'excludedItemtypes' will not be included to following statistics:</p>
+                <ul>
+                    <li>Collections</li>
                 </ul>
                 <p>Material is considered Juvenile material if it is in one of the shelving locations defined by the 'juvenileShelvingLocations'-parameter.</p>
                 <p>Execution of the OKM report generator can be blocked by the 'blockStatisticsGeneration'-flag, by setting it to 1. This is mainly useful to prevent people from running the statistics module before first configuring it.</p>
+                <div>
+                    <b>Example YAML config:</b>
+                    <pre>---</pre>
+                    <pre>blockStatisticsGeneration: 0</pre>
+                    <pre>itemTypeToStatisticalCategory:</pre>
+                    <pre>KIRJA: Books</pre>
+                    <pre>ESINE: Others</pre>
+                    <pre>ALEHTI: Serials</pre>
+                    <pre>CD: Recordings</pre>
+                    <pre>excludedItemtypes:</pre>
+                    <pre>-ALEHTI</pre>
+                    <pre>patronCategories:</pre>
+                    <pre>-ADULTS</pre>
+                    <pre>-STAFF</pre>
+                    <pre>notForLoanStatuses:</pre>
+                    <pre>--1</pre>
+                    <pre>-5</pre>
+                    <pre>adultShelvingLocations:</pre>
+                    <pre>-AIK</pre>
+                    <pre>-VA</pre>
+                    <pre>juvenileShelvingLocations:</pre>
+                    <pre>-NK</pre>
+                </div>
             </div>
-        </div>
-        <div class="row">
-            <textarea rows="10" cols="50" name="okm_syspref">[% okm_syspref %]</textarea>
-        </div>
-        <div class="row">
-            <div class="col-sm-10">
-                <input type="hidden" name="save" value="1" />
-                <input type="submit" value="Save configuration" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-10">
-            <pre>Example YAML config:</pre>
-                <pre>---</pre>
-                <pre>blockStatisticsGeneration: 1</pre>
-                <pre>itemTypeToStatisticalCategory:</pre>
-                <pre>BK: Books</pre>
-                <pre>CF: Others</pre>
-                <pre>CR: Serials</pre>
-                <pre>MU: Recordings</pre>
-                <pre>patronCategories:</pre> 
-                <pre>- ADULTS</pre>
-                <pre>- STAFF</pre>
-                <pre>notForLoanStatuses:</pre> 
-                <pre>- -1</pre>
-                <pre>- 5</pre>
-                <pre>adultShelvingLocations:</pre>
-                <pre>- ADULT</pre>
-                <pre>- AIK</pre>
-                <pre>juvenileShelvingLocations:</pre> 
-                <pre>- CHILD</pre>
-                <pre>- AV</pre>
+            <div class="col-sm-5 form-group">
+                <div class="row">
+                    <label for="okm_syspref">OKM systempreference</label>
+                    <textarea class="form-control" id="okm_syspref" rows="35" name="okm_syspref">[% okm_syspref %]</textarea>
+                </div>
+                <div class="row">
+                    <input type="hidden" name="save" value="1" />
+                    <input type="submit" value="Save configuration" />
+                </div>
             </div>
         </div>
     </form>

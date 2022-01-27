@@ -106,10 +106,12 @@ sub install() {
         `biblioitemnumber` int(11) NOT NULL,
         `last_mod_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         `deleted` tinyint(1) DEFAULT NULL,
-        `primary_language` varchar(3) NOT NULL DEFAULT '',
-        `languages` varchar(40) NOT NULL DEFAULT '',
+        `deleted_on` timestamp DEFAULT NULL,
+        `primary_language` varchar(3) DEFAULT NULL,
+        `languages` varchar(40) DEFAULT NULL,
         `fiction` tinyint(1) DEFAULT NULL,
         `musical` tinyint(1) DEFAULT NULL,
+        `celia` tinyint(1) DEFAULT NULL,
         `itemtype` varchar(10) DEFAULT NULL,
         `serial` tinyint(1) DEFAULT NULL,
         `encoding_level` varchar(1) DEFAULT NULL,
@@ -117,7 +119,7 @@ sub install() {
         UNIQUE KEY `bibitnoidx` (`biblioitemnumber`),
         KEY `last_mod_time` (`last_mod_time`),
         KEY `encoding_level` (`encoding_level`)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci
     ");
 
     $table = $self->get_qualified_table_name('okm_statistics');
@@ -131,7 +133,7 @@ sub install() {
         `okm_serialized` longtext,
         `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         PRIMARY KEY (`id`)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci
     ");
 
     $table = $self->get_qualified_table_name('okm_statistics_logs');
@@ -141,7 +143,7 @@ sub install() {
         `id` int(11) NOT NULL AUTO_INCREMENT,
         `entry` text NOT NULL,
         PRIMARY KEY (`id`)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci
     ");
 
     return 1;

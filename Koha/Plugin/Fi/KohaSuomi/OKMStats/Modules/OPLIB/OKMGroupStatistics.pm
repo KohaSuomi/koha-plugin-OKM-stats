@@ -20,7 +20,10 @@ package Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::OPLIB::OKMGroupStatistic
 use Modern::Perl;
 use Carp;
 
+use Koha::AuthorisedValues;
 use Koha::Libraries;
+
+use JSON;
 
 sub new {
     my ($class) = @_;
@@ -28,114 +31,44 @@ sub new {
     my $self = {};
     bless($self, $class);
 
-    $self->{branchCategory} = 0;
-    $self->{collection} = 0;
-    $self->{collectionBooksTotal} = 0;
-    $self->{collectionBooksFinnish} = 0;
-    $self->{collectionBooksSwedish} = 0;
-    $self->{collectionBooksOtherLanguage} = 0;
-    $self->{collectionBooksFictionAdult} = 0;
-    $self->{collectionBooksFictionJuvenile} = 0;
-    $self->{collectionBooksNonFictionAdult} = 0;
-    $self->{collectionBooksNonFictionJuvenile} = 0;
-    $self->{collectionSheetMusicAndScores} = 0;
-    $self->{collectionMusicalRecordings} = 0;
-    $self->{collectionOtherRecordings} = 0;
-    $self->{collectionVideos} = 0;
-    $self->{collectionCelia} = 0;
-    $self->{collectionOther} = 0;
-    $self->{acquisitions} = 0;
-    $self->{acquisitionsBooksTotal} = 0;
-    $self->{acquisitionsBooksFinnish} = 0;
-    $self->{acquisitionsBooksSwedish} = 0;
-    $self->{acquisitionsBooksOtherLanguage} = 0;
-    $self->{acquisitionsBooksFictionAdult} = 0;
-    $self->{acquisitionsBooksFictionJuvenile} = 0;
-    $self->{acquisitionsBooksNonFictionAdult} = 0;
-    $self->{acquisitionsBooksNonFictionJuvenile} = 0;
-    $self->{acquisitionsSheetMusicAndScores} = 0;
-    $self->{acquisitionsMusicalRecordings} = 0;
-    $self->{acquisitionsOtherRecordings} = 0;
-    $self->{acquisitionsVideos} = 0;
-    $self->{acquisitionsCelia} = 0;
-    $self->{acquisitionsOther} = 0;
-    $self->{issues} = 0;
-    $self->{issuesBooksTotal} = 0;
-    $self->{issuesBooksFinnish} = 0;
-    $self->{issuesBooksSwedish} = 0;
-    $self->{issuesBooksOtherLanguage} = 0;
-    $self->{issuesBooksFictionAdult} = 0;
-    $self->{issuesBooksFictionJuvenile} = 0;
-    $self->{issuesBooksNonFictionAdult} = 0;
-    $self->{issuesBooksNonFictionJuvenile} = 0;
-    $self->{issuesSheetMusicAndScores} = 0;
-    $self->{issuesMusicalRecordings} = 0;
-    $self->{issuesOtherRecordings} = 0;
-    $self->{issuesVideos} = 0;
-    $self->{issuesCelia} = 0;
-    $self->{issuesOther} = 0;
-    $self->{newspapers} = 0;
-    $self->{magazines} = 0;
-    $self->{discards} = 0;
-    $self->{activeBorrowers} = 0;
-    $self->{expenditureAcquisitions} = 0;
-    $self->{expenditureAcquisitionsBooks} = 0;
+    my @itemtypes = Koha::AuthorisedValues->search( { category => 'MTYPE' } );
+    my %itemtypes = ();
+    for my $av ( @itemtypes ) {
+        $itemtypes{$av->authorised_value} = 0;
+    }
 
-    my @printOrder = (
-        'branchCategory',
-        'collection',
-        'collectionBooksTotal',
-        'collectionBooksFinnish',
-        'collectionBooksSwedish',
-        'collectionBooksOtherLanguage',
-        'collectionBooksFictionAdult',
-        'collectionBooksFictionJuvenile',
-        'collectionBooksNonFictionAdult',
-        'collectionBooksNonFictionJuvenile',
-        'collectionSheetMusicAndScores',
-        'collectionMusicalRecordings',
-        'collectionOtherRecordings',
-        'collectionVideos',
-        'collectionCelia',
-        'collectionOther',
-        'acquisitions',
-        'acquisitionsBooksTotal',
-        'acquisitionsBooksFinnish',
-        'acquisitionsBooksSwedish',
-        'acquisitionsBooksOtherLanguage',
-        'acquisitionsBooksFictionAdult',
-        'acquisitionsBooksFictionJuvenile',
-        'acquisitionsBooksNonFictionAdult',
-        'acquisitionsBooksNonFictionJuvenile',
-        'acquisitionsSheetMusicAndScores',
-        'acquisitionsMusicalRecordings',
-        'acquisitionsOtherRecordings',
-        'acquisitionsVideos',
-        'acquisitionsCelia',
-        'acquisitionsOther',
-        'issues',
-        'issuesBooksTotal',
-        'issuesBooksFinnish',
-        'issuesBooksSwedish',
-        'issuesBooksOtherLanguage',
-        'issuesBooksFictionAdult',
-        'issuesBooksFictionJuvenile',
-        'issuesBooksNonFictionAdult',
-        'issuesBooksNonFictionJuvenile',
-        'issuesSheetMusicAndScores',
-        'issuesMusicalRecordings',
-        'issuesOtherRecordings',
-        'issuesVideos',
-        'issuesCelia',
-        'issuesOther',
-        'newspapers',
-        'magazines',
-        'discards',
-        'activeBorrowers',
-        'expenditureAcquisitions',
-        'expenditureAcquisitionsBooks',
+    my %data_hash = (
+        total => 0,
+        books_total => 0,
+        books_finnish => 0,
+        books_swedish => 0,
+        books_sami => 0,
+        books_other_lang => 0,
+        books_fiction_adult => 0,
+        books_fiction_juvenile => 0,
+        books_fact_adult => 0,
+        books_fact_juvenile => 0,
+        sheet_music_score => 0,
+        musical_regordins => 0,
+        other_regording => 0,
+        videos => 0,
+        celia => 0,
+        other => 0
     );
-    $self->{printOrder} = \@printOrder;
+
+    $self->{library} = 0;
+    $self->{collection_by_homebranch} = { %data_hash };
+    $self->{collection_by_homebranch}->{itemtypes} = { %itemtypes };
+    $self->{collection_by_holdingbranch} = { %data_hash };
+    $self->{collection_by_holdingbranch}->{itemtypes} = { %itemtypes };
+    $self->{issues} = { %data_hash };
+    $self->{issues}->{itemtypes} = { %itemtypes };
+    $self->{deleted} = { %data_hash };
+    $self->{deleted}->{itemtypes} = { %itemtypes };
+    $self->{acquisitions} = { %data_hash };
+    $self->{acquisitions}->{itemtypes} = { %itemtypes };
+    $self->{active_borrowers} = 0;
+
     return $self;
 }
 
@@ -220,4 +153,4 @@ sub getPrintOrderElements {
     return \@sb;
 }
 
-1; #Jep hep gep
+1;

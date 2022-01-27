@@ -82,8 +82,17 @@ sub _getChunk {
         return undef;
     }
     my $dbh = C4::Context->dbh();
-    my $sth = $dbh->prepare("SELECT bi.*, b.frameworkcode FROM biblioitems bi LEFT JOIN biblio b ON b.biblionumber = bi.biblionumber WHERE bi.biblioitemnumber >= ? AND bi.biblioitemnumber < ?");
-    $sth->execute( $self->_getPosition() );
+    my $query = "(
+        SELECT bi.*, b.frameworkcode, 0 as deleted FROM biblioitems bi
+        LEFT JOIN biblio b ON b.biblionumber = bi.biblionumber
+        WHERE bi.biblioitemnumber >= ? AND bi.biblioitemnumber < ?
+    ) UNION (
+        SELECT dbi.*, db.frameworkcode, 1 as deleted FROM deletedbiblioitems dbi
+        LEFT JOIN deletedbiblio db ON db.biblionumber = dbi.biblionumber
+        WHERE dbi.biblioitemnumber >= ? AND dbi.biblioitemnumber < ?
+    )";
+    my $sth = $dbh->prepare($query);
+    $sth->execute( $self->_getPosition(), $self->_getPosition() );
     if ($sth->err) {
         die $cc[3]."():> ".$sth->errstr;
     }

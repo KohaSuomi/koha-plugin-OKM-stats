@@ -129,9 +129,11 @@
 [% END #BLOCK OKMGroupStatisticsHeaderAsHtml %]
 
 [% BLOCK OKMGroupStatisticsContentAsHtml #REQUIRES statistics %]
-    [% FOREACH statKey IN statistics.printOrder %]
-        <td>
-            [% statistics.$statKey %]
-        </td>
+    [% FOR statKey IN statistics.printOrder %]
+        [%- FOR field IN statistics.$statKey.keys %]
+            <td>
+                [% statKey %] [% field %] : [% statistics.$statKey.$field -%]
+            </td>
+        [% END %]
     [% END #FOREACH statistics.printOrder %]
 [% END #BLOCK OKMGroupStatisticsAsHtml %]
