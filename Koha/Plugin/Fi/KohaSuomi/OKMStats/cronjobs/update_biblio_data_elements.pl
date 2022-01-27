@@ -13,16 +13,13 @@ my $help;
 my $limit = '';
 my $verbose = 0;
 my $forceRebuild;
-my $oldDbi = 0; #We actually default to oldDbi, the selection is reversed after parameter handling
 
 GetOptions(
     'h|help'             => \$help,
     'l|limit:i'          => \$limit,
     'v|verbose:i'        => \$verbose,
     'f|forceRebuild'     => \$forceRebuild,
-    'k|koha'             => \$oldDbi,
 );
-$oldDbi = ($oldDbi) ? 0 : 1; #reverse selection cuz I'm lazy
 
 my $usage = << 'ENDUSAGE';
 
@@ -52,10 +49,6 @@ This script has the following parameters :
 
     -f --forceRebuild Rebuild data_elements for all biblioitems.
 
-    -k --koha         Use Koha::Object as the database access library instead of
-                      the much faster DBI.
-                      This is to compare performances to debug performance issues.
-
 ENDUSAGE
 
 if ($help) {
@@ -67,4 +60,4 @@ if ($limit) {
     $limit =~ s/;//g; #Evade SQL injection :)
 }
 
-Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElements::UpdateBiblioDataElements($forceRebuild, $limit, $verbose, $oldDbi);
+Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElements::UpdateBiblioDataElements($forceRebuild, $limit, $verbose);

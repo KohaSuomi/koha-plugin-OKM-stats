@@ -32,8 +32,8 @@ sub new {
 
     $self->addStatistics( Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::OPLIB::OKMGroupStatistics->new() );
     my $stats = $self->getStatistics();
-    $stats->{branchCategory} = $categoryGroupCode;
-    $self->{branchCategory} = $categoryGroupCode;
+    $stats->{library} = $categoryGroupCode;
+    $self->{library} = $categoryGroupCode;
 
     foreach my $branchcode (sort keys %$branches) {
         $self->addBranch($branchcode);
