@@ -14,7 +14,7 @@ use Koha::Plugins;
 use Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::OPLIB::OKM;
 
 ## Here we set our plugin version
-our $VERSION = "2.0.2";
+our $VERSION = "2.0.3";
 
 ## Here is our metadata, some keys are required, some are optional
 our $metadata = {

@@ -31,7 +31,7 @@ sub _type {
     return 'BiblioDataElement';
 }
 
-sub isBiblioitemFiction {s
+sub isBiblioitemFiction {
     my ($self, $record) = @_;
     my $col = 'fiction';
 
