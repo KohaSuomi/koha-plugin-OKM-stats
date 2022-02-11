@@ -3,7 +3,7 @@
 PM_FILE="Koha/Plugin/Fi/KohaSuomi/OKMStats.pm"
 VERSION=`grep -oE "\-?[0-9]+\.[0-9]+\.[0-9]" $PM_FILE | head -1`
 MINVERSION=`grep -oE "\-?[0-9]+\.[0-9][0-9]" $PM_FILE | head -1`
-RELEASE_FILE="koha-plugin-broadcast-biblios-v${VERSION}.kpz"
+RELEASE_FILE="Koha-plugin-OKM-stats-v${VERSION}.kpz"
 VERSIONTAG=`git tag -l "v${VERSION}-koha-$MINVERSION"`
 
 if [ $VERSIONTAG ]; then
