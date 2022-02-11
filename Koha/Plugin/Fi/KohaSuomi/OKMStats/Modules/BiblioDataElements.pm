@@ -190,19 +190,23 @@ sub _getBiblioitemsNeedingUpdate {
 
     print '#'.DateTime->now(time_zone => C4::Context->tz())->iso8601().'# Fetching biblioitems  #'."\n" if $verbose > 0;
 
-    my $lastModTime = GetLatestDataElementUpdateTime($verbose) || die $cc[3]."():> You must do a complete rebuilding since none of the biblios have been indexed yet.";
+    my $lastModTime = GetLatestDataElementUpdateTime($verbose) || Koha::Exception::FeatureUnavailable->throw($cc[3]."():> You must do a complete rebuilding since none of the biblios have been indexed yet.");
     $lastModTime = $lastModTime->iso8601();
 
     my $dbh = C4::Context->dbh();
     my $sth = $dbh->prepare("
             (SELECT bi.biblioitemnumber, bi.biblionumber, bi.itemtype, 0 AS deleted FROM biblioitems bi
-             WHERE bi.timestamp >= ? $limit
+             LEFT JOIN biblio_metadata bmd ON(bi.biblionumber = bmd.biblionumber)
+             WHERE bi.timestamp >= '". $lastModTime ."'
+             OR bmd.timestamp >= '". $lastModTime ."' $limit
             ) UNION (
              SELECT dbi.biblioitemnumber, dbi.biblionumber, dbi.itemtype, 1 AS deleted FROM deletedbiblioitems dbi
-             WHERE dbi.timestamp >= ? $limit
+             LEFT JOIN deletedbiblio_metadata dbmd ON(dbi.biblionumber = dbmd.biblionumber)
+             WHERE dbi.timestamp >= '". $lastModTime ."'
+             OR dbmd.timestamp >= '". $lastModTime ."' $limit
             )
     ");
-    $sth->execute( $lastModTime, $lastModTime );
+    $sth->execute();
     if ($sth->err) {
         die $cc[3]."():> ".$sth->errstr;
     }
