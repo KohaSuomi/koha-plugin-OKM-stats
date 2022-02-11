@@ -31,7 +31,7 @@ sub _type {
     return 'BiblioDataElement';
 }
 
-sub isBiblioitemFiction {
+sub isBiblioitemFiction {s
     my ($self, $record) = @_;
     my $col = 'fiction';
 
@@ -86,10 +86,8 @@ sub setItemtype {
     $bde->setLanguage($record);
 
 Sets the languages- and primary_language-columns.
-Primary language defaults to FIN if 008 or 041$a is not defined, or if there are multiple
-041$a including one or more 'FIN'.
-If no 'FIN' is found, we next default to 'SWE', if that is not present
-we take the first instance of 041$a
+Defaults to "OTH" if fields 008 or 041 do not contain acceptable
+string (3 character long, contains only alphabets).
 
 @PARAM1, MARC::Record
 
@@ -98,7 +96,16 @@ we take the first instance of 041$a
 sub setLanguages {
     my ($self, $record) = @_;
     my $f008 = $record->field('008');
-    my $primaryLanguage = $f008 ? substr($f008->data(), 35, 3) : undef || $record->subfield('041', 'a') || 'FIN';
+    my $primaryLanguage = 'OTH';
+
+    if( substr($f008->data(), 35, 3) && ( substr($f008->data(), 35, 3) =~ /(.*[a-zA-Z]){3}/ )) {
+        $primaryLanguage = substr($f008->data(), 35, 3);
+    } elsif ( $record->subfield('041', 'a') && ( $record->subfield('041', 'a') =~ /(.*[a-zA-Z]){3}/ ) ) {
+        $primaryLanguage = $record->subfield('041', 'a');
+    } elsif ( $record->subfield('041', 'd') && ( $record->subfield('041', 'd') =~ /(.*[a-zA-Z]){3}/ ) ) {
+        $primaryLanguage = $record->subfield('041', 'd');
+    }
+
     my $languages = '';
     my @sb; #StrinBuilder to efficiently collect language Strings and concatenate them
     my $f041 = $record->field('041');
