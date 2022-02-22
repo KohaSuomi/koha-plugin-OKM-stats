@@ -106,7 +106,7 @@ sub install() {
         `biblioitemnumber` int(11) NOT NULL,
         `last_mod_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         `deleted` tinyint(1) DEFAULT NULL,
-        `deleted_on` timestamp DEFAULT NULL,
+        `deleted_on` timestamp NULL DEFAULT NULL,
         `primary_language` varchar(3) DEFAULT NULL,
         `languages` varchar(40) DEFAULT NULL,
         `fiction` tinyint(1) DEFAULT NULL,
@@ -169,13 +169,13 @@ sub uninstall() {
     my $dbh = C4::Context->dbh;
 
     my $biblio_data_elements = $self->get_qualified_table_name('biblio_data_elements');
-    $dbh->do("DROP TABLE $biblio_data_elements");
+    $dbh->do("DROP TABLE IF EXISTS $biblio_data_elements");
 
     my $okm_statistics = $self->get_qualified_table_name('okm_statistics');
-    $dbh->do("DROP TABLE $okm_statistics");
+    $dbh->do("DROP TABLE IF EXISTS $okm_statistics");
 
     my $okm_statistics_logs = $self->get_qualified_table_name('okm_statistics_logs');
-    $dbh->do("DROP TABLE $okm_statistics_logs");
+    $dbh->do("DROP TABLE IF EXISTS $okm_statistics_logs");
 
     return 1;
 }
