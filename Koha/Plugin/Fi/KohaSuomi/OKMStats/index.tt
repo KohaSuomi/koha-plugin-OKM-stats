@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+
+  <link rel="icon" type="image/x-icon" href="./favicon.ico">
+
+  <title>Koha-Suomi - Raportointityökalu</title>
+
+
+  <!-- Load required Bootstrap and BootstrapVue CSS -->
+  <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap/dist/css/bootstrap.min.css" />
+  <link type="text/css" rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-vue/2.9.0/bootstrap-vue.css" />
+
+  <!-- Load polyfills to support older browsers -->
+  <script src="//polyfill.io/v3/polyfill.min.js?features=es2015%2CIntersectionObserver"
+    crossorigin="anonymous"></script>
+
+  <!-- Load Vue followed by BootstrapVue -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.16/vue.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-vue/2.9.0/bootstrap-vue.js"></script>
+
+  <!-- Load the following for BootstrapVueIcons support -->
+  <script src="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue-icons.min.js"></script>
+
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"> </script>
+
+</head>
+
+<div id="app" class="container-fluid">
+
+  <div>
+    <b-card no-body>
+      <b-tabs pills card>
+        <b-tab title="Hankinnat" @click="showHankinnat">
+          <b-card-text>Tab contents 2</b-card-text>
+          <b-button @click="toggleBusy">Toggle Busy State</b-button>
+
+          <b-button type="button" class="btn btn-success" @click="exportToCsv">CSV</b-button>
+
+          <b-dropdown id="dropdown-divider" text="Kuukausi" class="m-2">
+            <b-dropdown-item-button>Tammikuu</b-dropdown-item-button>
+            <b-dropdown-item-button>Helmikuu</b-dropdown-item-button>
+            <b-dropdown-divider></b-dropdown-divider>
+            <b-dropdown-item-button>Koko vuosi</b-dropdown-item-button>
+          </b-dropdown>
+
+          <b-dropdown id="dropdown-divider" text="Vuosi" class="m-2">
+            <b-dropdown-item-button>2021</b-dropdown-item-button>
+            <b-dropdown-item-button>2020</b-dropdown-item-button>
+            <b-dropdown-item-button>2019</b-dropdown-item-button>
+          </b-dropdown>
+
+          <div>
+            Branchcode:
+            <b-form-select v-model="selectedBranch" :options="branchcodelist" size="sm" class="mt-3"></b-form-select>
+            <div class="mt-3">
+              Selected: <strong>{{ selectedBranch }}</strong>
+            </div>
+          </div>
+
+          <div>
+            <b-row class="mb-12">
+              <!-- pvm-valinta-->
+              <b-col lg="4" class="my-1">
+                <b-input-group class="mb-3">
+                  <b-form-input id="example-input" v-model="lowDate" type="text" placeholder="YYYY-MM-DD"
+                    autocomplete="off"></b-form-input>
+                  <b-input-group-append>
+                    <b-form-datepicker v-model="lowDate" button-only right locale="fi-FI" aria-controls="example-input"
+                      @context="onContext"></b-form-datepicker>
+                  </b-input-group-append>
+                </b-input-group>
+              </b-col>
+              <b-col lg="4" class="my-1">
+                <b-input-group class="mb-3">
+                  <b-form-input id="example-input" v-model="maxDate" type="text" placeholder="YYYY-MM-DD"
+                    autocomplete="off"></b-form-input>
+                  <b-input-group-append>
+                    <b-form-datepicker v-b-popover.hover="
+                      'Valitse loppupvm:ksi viimeiseksi raportoitavaa päivää seuraava päivä'
+                    " title="Ohje:" id="example-datepicker" v-model="maxDate" v-model="maxDate" button-only right
+                      locale="fi-FI" aria-controls="example-input" @context="onContext"></b-form-datepicker>
+                  </b-input-group-append>
+                </b-input-group>
+
+              </b-col>
+            </b-row>
+          </div>
+          
+        </b-tab>
+        <b-tab title="Kokoelmat(collection)">
+          <b-card-text>Tab contents 3</b-card-text>
+        </b-tab>
+        <b-tab title="Asiakkaat(users)" @click="showAsiakkaat">
+          <b-card-text>Asiakkaat</b-card-text>
+          <div>
+            Branchcode:
+            <b-form-select v-model="selectedBranch" :options="branchcodelist" size="sm" class="mt-3"></b-form-select>
+            <div class="mt-3">Selected: <strong>{{ selectedBranch }}</strong></div>
+          </div>
+          
+        </b-tab>
+        <b-tab title="Lainat/palautukset/varaukset" @click="showLainatPalautuksetVaraukset">
+          <b-card-text>Lainat/palautukset/varaukset</b-card-text>
+
+          <template>
+            <div>
+              Branchcode:
+              <b-form-select v-model="selectedBranch" :options="branchcodelist" size="sm" class="mt-3"></b-form-select>
+              <div class="mt-3">Selected: <strong>{{ selectedBranch }}</strong></div>
+            </div>
+          </template>
+
+          <b-row class="mb-6">
+            <b-col lg="2" class="my-1">
+              <b-form-datepicker id="example-datepicker" v-model="lowDate"></b-form-datepicker>
+            </b-col>
+            <b-col lg="2" class="my-1">
+              <b-form-datepicker v-b-popover.hover="
+                    'Valitse loppupvm:ksi viimeiseksi raportoitavaa päivää seuraava päivä'
+                  " title="Ohje:" id="example-datepicker" v-model="maxDate"></b-form-datepicker>
+            </b-col>
+          </b-row>
+        </b-tab>
+
+        <b-tab title="Poistot">
+          <b-card-text>Tab contents 3</b-card-text>
+        </b-tab>
+        <b-tab title="Kaukopalvelu">
+          <b-card-text>Tab contents 3</b-card-text>
+        </b-tab>
+        <b-tab title="API Cities">
+          <b-card-text>Postitoimipaikat</b-card-text>
+          <div class="row">
+            <div class="col-md-12 bg-light float-left">
+              <b-row>
+                <b-col lg="4" class="pb-2">
+                  <b-button type="button" class="btn btn-success" @click="exportToCsv">Vie CSV</b-button>
+                  <b-button type="button" class="btn btn-success" @click="showCities">Hae API Cities</b-button>
+                </b-col>
+              </b-row>
+            </div>
+          </div>
+
+        </b-tab>
+        <b-tab title="showOkmAllModded" @click="showOkmAllModded">
+          <b-card-text>OKM tilastot</b-card-text>
+
+          <div class="row">
+            <div class="col-md-1 bg-light float-left">
+              <div class="row">
+                <b-button type="button" class="btn btn-success" @click="exportToCsv">Vie CSV</b-button>
+              </div>
+            </div>
+          </div>
+        </b-tab>
+
+      </b-tabs>
+    </b-card>
+  </div>
+
+
+
+  <b-row>
+    <b-col lg="8" class="my-1">
+      <b-form-group label="Suodata" label-for="filter-input" label-cols-sm="3" label-align-sm="right" label-size="sm"
+        class="mb-0">
+        <b-input-group size="sm">
+          <b-form-input id="filter-input" v-model="filter" type="search" placeholder="Etsi..."></b-form-input>
+          <b-row align-v="end">
+            <div>
+              Sorting By: <b>{{ sortBy }}</b>, Sort Direction:
+              <b>{{ sortDesc ? "Descending" : "Ascending" }}</b>
+            </div>
+          </b-row>
+
+          <b-input-group class="mt-3">
+            <b-button :disabled="!filter" @click="filter = null" lg="4">Tyhjennä suodatin</b-button>
+            <b-button @click="sortBy = null" lg="4">Tyhjennä järjestys</b-button>
+          </b-input-group>
+        </b-input-group>
+      </b-form-group>
+    </b-col>
+  </b-row>
+
+  <div>
+    <!-- sido tablen näyttämä data muuttujaan v-model: filtered, kutsu metodissa this.filtered -->
+    <b-table v-model="filtered" striped hover responsive="sm" selectable bordered outlined small sort-icon-left
+      :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :fields="fields" :items="myJson.data" :busy="isBusy"
+      :filter="filter">
+      <div slot="table-busy" class="text-center text-danger my-2">
+        <b-spinner class="align-middle"></b-spinner>
+        <strong>Loading...</strong>
+      </div>
+  </div>
+</div>
+
+
+<!--for items: cities.data -->
+
+
+<!-- Start running your app -->
+
+
+
+<script>
+
+  const fields = [
+    { label: "Kaupunki", key: "city_name", sortable: true },
+    { label: "Postinumero", key: "city_zipcode", sortable: true },
+    { label: "Id", key: "cityid", sortable: true },
+    { label: "Kunta", key: "city_state" },
+    { label: "Maa", key: "city_country" }
+  ]
+
+  let citiesitems = [
+    {
+      "city_country": "",
+      "city_name": "Uusi-Valamo",
+      "city_state": "",
+      "city_zipcode": "79850",
+      "cityid": 180
+    },
+    {
+      "city_country": "",
+      "city_name": "Kerma",
+      "city_state": "",
+      "city_zipcode": "79910",
+      "cityid": 181
+    }
+  ]
+
+  window.app = new Vue({
+    el: '#app',
+    data: {
+      branchcodes: null,
+      branchcodelist: [],
+
+      sortBy: "library",
+      sortDesc: false,
+      selected: null,
+      selectedBranch: null,
+      filtered: null,
+      selectedMonth: null,
+      options: [
+        { value: null, text: "Please select an option" },
+        { value: "a", text: "This is First option" },
+        { value: "b", text: "Selected Option" },
+        { value: { C: "3PO" }, text: "This is an option with object value" },
+        { value: "d", text: "This one is disabled", disabled: true },
+      ],
+      lowDate: "",
+      maxDate: "",
+      filter: "",
+      isBusy: false,
+      fields: null,
+      myJson: citiesitems, //oletusdata
+      lainpalselected: null,
+      options: [
+        { value: null, text: 'Please select an option' },
+        { value: 'Lainaus', text: 'Lainaus' },
+        { value: 'Palautus', text: 'Palautus' },
+        { value: { C: '3PO' }, text: 'This is an option with object value' },
+        { value: 'd', text: 'This one is disabled', disabled: true }
+      ]
+
+    },
+
+
+    computed: {
+
+      sortOptions() {
+        // Create an options list from our fields
+        return this.fields
+          .filter((f) => f.sortable)
+          .map((f) => {
+            return { text: f.label, value: f.key };
+          });
+      },
+    },
+
+    mounted: async function () {
+      // `this` points to the vm instance
+
+
+      try {
+        const branches = await axios.get(
+          `http://127.0.1.1:8080/api/v1/libraries/`
+        );
+
+        let branchcodes = [];
+        let bLen = branches.data.length;
+
+        for (let i = 0; i < bLen; i++) {
+          //console.log(branches.data[i].branchcode);
+          branchcodes.push(branches.data[i].branchcode);
+        }
+        console.log('branches is: ')
+        console.log(branchcodes);
+        this.branchcodelist = branchcodes;
+
+      } catch (e) {
+        console.log(e);
+      }
+    },
+
+    // define methods under the `methods` object
+    methods: {
+      toggleBusy() {
+        this.isBusy = !this.isBusy;
+      },
+
+      async getBranches() {
+
+        try {
+          const response = await axios.get(
+            `http://127.0.1.1:8080/api/v1/libraries/`
+          );
+          console.log("branches: ");
+          console.log(response.data);
+          this.branches = response.data;
+
+        } catch (e) {
+          console.log(e);
+        }
+
+      },
+
+      onContext(ctx) {
+        // Päivämäärälle: The date formatted in the locale, or the `label-no-date-selected` string
+        this.formatted = ctx.selectedFormatted
+        // The following will be an empty string until a valid date is entered
+        this.selected = ctx.selectedYMD
+      },
+
+      showHankinnat() {
+
+        this.fields = [
+          { label: "City", key: "city_name", sortable: true },
+          { label: "Zipcode", key: "city_zipcode" },
+        ];
+        //this.itemtypefields = itemtypefields;
+        this.myJson.data = cities;
+
+      },
+      
+      showLainatPalautuksetVaraukset(){
+        this.myJson.data = null;
+        this.fields = null;
+      },
+      
+      showAsiakkaat(){
+        this.myJson.data = null;
+        this.fields = null;
+  
+      },
+
+
+
+      showIssues() {
+        this.myJson.data = null;
+        this.fields = null;
+        this.itemtypefields = null;
+        this.isBusy = !this.isBusy;
+
+        this.fields = "";
+
+        this.myJson.data = "";
+        this.filter = "";
+        this.isBusy = false;
+      },
+
+      showIssues2() {
+        this.myJson.data = null;
+        this.fields = null;
+        this.itemtypefields = null;
+        this.isBusy = !this.isBusy;
+
+        this.fields = null;
+
+        this.myJson.data = null;
+        this.filter = "";
+        this.isBusy = false;
+      },
+
+      showOkm() {
+        this.myJson.data = null;
+        this.fields = null;
+        this.isBusy = !this.isBusy;
+        //this.fields = [
+        //  { label: "City", key: "city_name", sortable: true },
+        //  { label: "Zipcode", key: "city_zipcode" },
+        //];
+        this.fields = okmissuefields;
+        this.myJson.data = okmissues.issues;
+
+        this.isBusy = !this.isBusy;
+      },
+      showOkmAll() {
+        this.isBusy = !this.isBusy;
+        this.myJson.data = null;
+        this.fields = null;
+        //this.fields = [
+        //  { label: "ID", key: "city_name", sortable: true },
+        //  { label: "Zipcode", key: "city_zipcode" },
+        //];
+
+        //this.fields = [
+        //  { label: "City", key: "city_name", sortable: true },
+        //  { label: "Zipcode", key: "city_zipcode" },
+        //];
+        // Converting JSON object to JS object
+        //var obj = JSON.parse(JSON.stringify(okmall));
+
+        //console.log(okmall);
+
+        const keys = [];
+
+        for (let [key, value] of Object.entries(okmall)) {
+          console.log(key, value);
+          keys.push({ library: key });
+        }
+
+        console.log(keys);
+
+        for (const [key, value] of Object.entries(keys)) {
+          console.log(key, value);
+        }
+
+        //const builtarray = [];
+        //var labels = '{"data":[{"library":"SII_PK"},{"library":"SII_AU"},{"library":"SII_VU"}]}';
+
+        //var okmmoddata = JSON.parse(labels);
+
+        //okmmoddata.data.library["SII_PK"].issues = okmall.SII_PK.issues;
+
+        this.fields = okmfields;
+
+        this.myJson.data = okmstatsmoddedjson;
+        this.isBusy = !this.isBusy;
+      },
+
+      showOkmAllModded() {
+
+        //console.log(okmstatsmoddedjson);
+        this.isBusy = true;
+        this.myJson.data = null;
+        this.fields = null;
+        this.fields = okmfields;
+
+        this.myJson.data = okmstatsmoddedjson;
+
+        this.isBusy = false;
+      },
+
+      async showCities() {
+        this.myJson.data = null;
+        this.fields = null;
+        this.isBusy = true;
+        try {
+          const response = await axios.get(
+            `http://127.0.1.1:8080/api/v1/cities/`
+          );
+
+          this.fields = cityfields;
+          this.myJson.data = response.data;
+          this.isBusy = !this.isBusy;
+          this.sortBy = 'city_name';
+          
+        } catch (e) {
+          console.log(e);
+          this.isBusy = false;
+        }
+      },
+
+      exportToCsv() {
+        let moddedData = this.filtered;
+
+        var items = moddedData;
+        const replacer = (key, value) => (value === null ? "" : value); // specify how you want to handle null values here
+        const header = Object.keys(items[0]);
+        let csv = items.map((row) =>
+          header
+            .map((fieldName) => JSON.stringify(row[fieldName], replacer))
+            .join(",")
+        );
+        csv.unshift(header.join(","));
+        csv = csv.join("\r\n");
+
+        //Download the file as CSV
+        var downloadLink = document.createElement("a");
+        var blob = new Blob(["\ufeff", csv]);
+        var url = URL.createObjectURL(blob);
+        downloadLink.href = url;
+        downloadLink.download = "DataDump.csv"; //Name the file here
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+      },
+    }
+  })
+</script>
+</body>
+
+<script src="[% PLUGIN_PATH %]/json/okmstatsmoddedjson.js"></script>
+<script src="[% PLUGIN_PATH %]/fieldtemplates/okmfields.js"></script>
+<script src="[% PLUGIN_PATH %]/fieldtemplates/cityfields.js"></script>
+<script src="[% PLUGIN_PATH %]/json/cities.js"></script>
+
+<script>
+  fetch("[% PLUGIN_PATH %]/json/okmstatsmoddedjson.json")
+    .then(response => response.json());
+ // .then(jsonObject => console.log(jsonObject));
+
+</script>
+
+
+</html>

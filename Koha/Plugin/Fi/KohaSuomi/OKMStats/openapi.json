@@ -1,0 +1,46 @@
+{
+	"/reports/okmstats": {
+		"get": {
+			"x-mojo-to": "Koha::Plugin::Fi::KohaSuomi::OKMStats::OkmApi#process",
+			"operationId": "OkmStats",
+			"tags": [
+				"OkmStats"
+			],
+			"parameters": [
+				{
+					"name": "query",
+					"in": "query",
+					"description": "test",
+					"type": "string"
+				}
+			],
+			"consumes": [
+				"text/plain"
+			],
+			"produces": [
+				"application/json"
+			],
+			"responses": {
+				"200": {
+					"description": "SIP2 message ok",
+					"schema": {
+						"type": "string",
+  						"additionalProperties": true
+					}
+				},
+				"404": {
+					"description": "An error occured",
+					"schema": {
+						"type": "object",
+						"properties": {
+							"error": {
+								"description": "An explanation for the error",
+								"type": "string"
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

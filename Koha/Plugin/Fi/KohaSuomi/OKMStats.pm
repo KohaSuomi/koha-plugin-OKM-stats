@@ -14,7 +14,7 @@ use Koha::Plugins;
 use Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::OPLIB::OKM;
 
 ## Here we set our plugin version
-our $VERSION = "2.0.3";
+our $VERSION = "2.0.6";
 
 ## Here is our metadata, some keys are required, some are optional
 our $metadata = {
@@ -241,6 +241,17 @@ sub okm_statistics_home {
     $template->param(okm_statisticsId => $okm_statisticsId);
 
     $self->output_html( $template->output() );
+}
+
+sub tool {
+    my ( $self, $args ) = @_;
+    my $cgi = $self->{'cgi'};
+    my $template = $self->get_template({ file => 'index.tt' });
+    
+    
+    
+    print $cgi->header(-charset    => 'utf-8');
+    print $template->output();
 }
 
 sub _export {

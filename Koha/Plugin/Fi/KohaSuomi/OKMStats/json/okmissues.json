@@ -1,0 +1,42 @@
+{
+    "issues": [
+        {
+            "library": "SII_PK",
+            "musical_regordins": 0,
+            "books_fiction_juvenile": 0,
+            "other": 0,
+            "books_finnish": 0,
+            "books_other_lang": 0,
+            "celia": 0,
+            "books_fact_adult": 0,
+            "total": 0,
+            "books_fiction_adult": 0,
+            "books_sami": 0,
+            "books_fact_juvenile": 0,
+            "books_swedish": 0,
+            "books_total": 0,
+            "videos": 0,
+            "sheet_music_score": 0,
+            "other_regording": 0
+        },
+        {
+            "library": "SII_AU",
+            "books_fiction_adult": 0,
+            "books_fact_juvenile": 0,
+            "books_sami": 0,
+            "books_swedish": 0,
+            "books_total": 0,
+            "videos": 0,
+            "other_regording": 0,
+            "sheet_music_score": 0,
+            "musical_regordins": 0,
+            "books_fiction_juvenile": 0,
+            "other": 0,
+            "books_finnish": 0,
+            "books_other_lang": 0,
+            "celia": 0,
+            "books_fact_adult": 0,
+            "total": 0
+        }
+    ]
+}
