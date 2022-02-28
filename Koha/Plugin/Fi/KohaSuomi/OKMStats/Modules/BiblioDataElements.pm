@@ -139,7 +139,6 @@ sub UpdateBiblioDataElement {
     $bde->setDeleted($deleted, $biblioitem->{timestamp});
     $bde->setItemtype($itemtype);
     $bde->isComponentPart($biblioitem->{biblionumber});
-    $bde->isSerial($itemtype);
     $bde->setLanguages($record);
     $bde->setEncodingLevel($record);
 

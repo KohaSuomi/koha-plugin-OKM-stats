@@ -74,18 +74,6 @@ sub isComponentPart {
 
 }
 
-sub isSerial {
-    my ($self, $itemtype) = @_;
-    my $col = 'serial';
-
-    my $okm = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::OPLIB::OKM->new(undef, '2015', undef, undef, undef);
-    my $itemtypes = $okm->{conf}->{itemTypeToStatisticalCategory};
-    my @itemtypes = grep { %$itemtypes{$_} eq 'Serials' } keys %$itemtypes;
-    my $val = grep /^$itemtype$/, @itemtypes;
-
-    ($self->{dbi}) ? $self->{$col} = $val : $self->set({$col => $val});
-}
-
 sub setItemtype {
     my ($self, $itemtype) = @_;
     my $col = 'itemtype';
@@ -195,11 +183,10 @@ sub DBI_updateBiblioDataElement {
             musical = ?,
             celia = ?,
             itemtype = ?,
-            host_record = ?,
-            serial = ?
+            host_record = ?
         WHERE biblioitemnumber = ?;
     ");
-    $sth->execute( $bde->{deleted}, $bde->{deleted_on}, $bde->{primary_language}, $bde->{languages}, $bde->{fiction}, $bde->{musical}, $bde->{celia}, $bde->{itemtype}, $bde->{host_record}, $bde->{serial}, $bde->{biblioitemnumber} );
+    $sth->execute( $bde->{deleted}, $bde->{deleted_on}, $bde->{primary_language}, $bde->{languages}, $bde->{fiction}, $bde->{musical}, $bde->{celia}, $bde->{itemtype}, $bde->{host_record}, $bde->{biblioitemnumber} );
     if ($sth->err) {
         my @cc = caller(0);
         die $cc[3]."():> ".$sth->errstr;
@@ -211,11 +198,11 @@ sub DBI_insertBiblioDataElement {
     my $dbh = C4::Context->dbh();
     my $sth = $dbh->prepare("
         INSERT INTO koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements
-            (biblioitemnumber, deleted, deleted_on, primary_language, languages, fiction, musical, celia, itemtype, host_record, serial)
+            (biblioitemnumber, deleted, deleted_on, primary_language, languages, fiction, musical, celia, itemtype, host_record)
             VALUES
-            (?               , ?      , ?         , ?               , ?        , ?      , ?      , ?    , ?       , ?          , ?);
+            (?               , ?      , ?         , ?               , ?        , ?      , ?      , ?    , ?       , ?);
     ");
-    $sth->execute( $biblioitemnumber, $bde->{deleted}, $bde->{deleted_on}, $bde->{primary_language}, $bde->{languages}, $bde->{fiction}, $bde->{musical}, $bde->{celia}, $bde->{itemtype}, $bde->{serial} );
+    $sth->execute( $biblioitemnumber, $bde->{deleted}, $bde->{deleted_on}, $bde->{primary_language}, $bde->{languages}, $bde->{fiction}, $bde->{musical}, $bde->{celia}, $bde->{itemtype} );
     if ($sth->err) {
         my @cc = caller(0);
         die $cc[3]."():> ".$sth->errstr;

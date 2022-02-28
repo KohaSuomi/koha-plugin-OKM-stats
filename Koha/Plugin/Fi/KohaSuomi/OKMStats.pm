@@ -114,7 +114,6 @@ sub install() {
         `celia` tinyint(1) DEFAULT NULL,
         `itemtype` varchar(10) DEFAULT NULL,
         `host_record` int(11) DEFAULT NULL,
-        `serial` tinyint(1) DEFAULT NULL,
         PRIMARY KEY (`id`),
         UNIQUE KEY `bibitnoidx` (`biblioitemnumber`),
         KEY `last_mod_time` (`last_mod_time`)
