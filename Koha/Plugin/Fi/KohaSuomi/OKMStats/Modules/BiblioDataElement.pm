@@ -71,7 +71,6 @@ sub isComponentPart {
     my $val = $host_record ? $host_record->unblessed->{biblionumber} : undef;
 
     ($self->{dbi}) ? $self->{$col} = $val : $self->set({$col => $val});
-
 }
 
 sub setItemtype {
@@ -138,6 +137,15 @@ sub setDeleted {
     }
 }
 
+sub setCnClass {
+    my ($self, $record) = @_;
+    my $col = 'cn_class';
+
+    my $val = $record->subfield('084', 'a');
+
+    ($self->{dbi}) ? $self->{$col} = $val : $self->set({$col => $val});
+}
+
 =head PERFORMANCE IMPROVEMENT TESTS USING DBI
 
     THIS MODULE IS SUPER SLOW, LOOKING TO SPEED IT USING plain DBI
@@ -180,13 +188,14 @@ sub DBI_updateBiblioDataElement {
             primary_language = ?,
             languages = ?,
             fiction = ?,
+            cn_class = ?,
             musical = ?,
             celia = ?,
             itemtype = ?,
             host_record = ?
         WHERE biblioitemnumber = ?;
     ");
-    $sth->execute( $bde->{deleted}, $bde->{deleted_on}, $bde->{primary_language}, $bde->{languages}, $bde->{fiction}, $bde->{musical}, $bde->{celia}, $bde->{itemtype}, $bde->{host_record}, $bde->{biblioitemnumber} );
+    $sth->execute( $bde->{deleted}, $bde->{deleted_on}, $bde->{primary_language}, $bde->{languages}, $bde->{fiction}, $bde->{cn_class}, $bde->{musical}, $bde->{celia}, $bde->{itemtype}, $bde->{host_record}, $bde->{biblioitemnumber} );
     if ($sth->err) {
         my @cc = caller(0);
         die $cc[3]."():> ".$sth->errstr;
@@ -198,11 +207,11 @@ sub DBI_insertBiblioDataElement {
     my $dbh = C4::Context->dbh();
     my $sth = $dbh->prepare("
         INSERT INTO koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements
-            (biblioitemnumber, deleted, deleted_on, primary_language, languages, fiction, musical, celia, itemtype, host_record)
+            (biblioitemnumber, deleted, deleted_on, primary_language, languages, fiction, cn_class, musical, celia, itemtype, host_record)
             VALUES
-            (?               , ?      , ?         , ?               , ?        , ?      , ?      , ?    , ?       , ?);
+            (?               , ?      , ?         , ?               , ?        , ?      , ?       , ?      , ?    , ?       , ?);
     ");
-    $sth->execute( $biblioitemnumber, $bde->{deleted}, $bde->{deleted_on}, $bde->{primary_language}, $bde->{languages}, $bde->{fiction}, $bde->{musical}, $bde->{celia}, $bde->{itemtype} );
+    $sth->execute( $biblioitemnumber, $bde->{deleted}, $bde->{deleted_on}, $bde->{primary_language}, $bde->{languages}, $bde->{fiction}, $bde->{cn_class}, $bde->{musical}, $bde->{celia}, $bde->{itemtype}, $bde->{host_record} );
     if ($sth->err) {
         my @cc = caller(0);
         die $cc[3]."():> ".$sth->errstr;

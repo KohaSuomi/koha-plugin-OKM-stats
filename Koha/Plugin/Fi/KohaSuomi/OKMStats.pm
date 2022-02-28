@@ -110,6 +110,7 @@ sub install() {
         `primary_language` varchar(3) DEFAULT NULL,
         `languages` varchar(40) DEFAULT NULL,
         `fiction` tinyint(1) DEFAULT NULL,
+        `cn_class` varchar(10) DEFAULT NULL,
         `musical` tinyint(1) DEFAULT NULL,
         `celia` tinyint(1) DEFAULT NULL,
         `itemtype` varchar(10) DEFAULT NULL,
