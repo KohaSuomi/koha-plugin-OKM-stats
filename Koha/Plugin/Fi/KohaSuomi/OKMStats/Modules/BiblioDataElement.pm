@@ -62,6 +62,18 @@ sub isCelia {
     ($self->{dbi}) ? $self->{$col} = $val : $self->set({$col => $val});
 }
 
+sub isComponentPart {
+    my ($self, $biblionumber) = @_;
+    my $col = 'host_record';
+    
+    my $biblio = Koha::Biblios->find($biblionumber);
+    my $host_record = $biblio ? $biblio->get_marc_host() : undef;
+    my $val = $host_record ? $host_record->unblessed->{biblionumber} : undef;
+
+    ($self->{dbi}) ? $self->{$col} = $val : $self->set({$col => $val});
+
+}
+
 sub isSerial {
     my ($self, $itemtype) = @_;
     my $col = 'serial';
@@ -195,11 +207,12 @@ sub DBI_updateBiblioDataElement {
             musical = ?,
             celia = ?,
             itemtype = ?,
+            host_record = ?,
             serial = ?,
             encoding_level = ?
         WHERE biblioitemnumber = ?;
     ");
-    $sth->execute( $bde->{deleted}, $bde->{deleted_on}, $bde->{primary_language}, $bde->{languages}, $bde->{fiction}, $bde->{musical}, $bde->{celia}, $bde->{itemtype}, $bde->{serial}, $bde->{encoding_level}, $bde->{biblioitemnumber} );
+    $sth->execute( $bde->{deleted}, $bde->{deleted_on}, $bde->{primary_language}, $bde->{languages}, $bde->{fiction}, $bde->{musical}, $bde->{celia}, $bde->{itemtype}, $bde->{host_record}, $bde->{serial}, $bde->{encoding_level}, $bde->{biblioitemnumber} );
     if ($sth->err) {
         my @cc = caller(0);
         die $cc[3]."():> ".$sth->errstr;
@@ -211,9 +224,9 @@ sub DBI_insertBiblioDataElement {
     my $dbh = C4::Context->dbh();
     my $sth = $dbh->prepare("
         INSERT INTO koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements
-            (biblioitemnumber, deleted, deleted_on, primary_language, languages, fiction, musical, celia, itemtype, serial, encoding_level)
+            (biblioitemnumber, deleted, deleted_on, primary_language, languages, fiction, musical, celia, itemtype, host_record, serial, encoding_level)
             VALUES
-            (?               , ?      , ?         , ?               , ?        , ?      , ?      , ?    , ?       , ?      , ?);
+            (?               , ?      , ?         , ?               , ?        , ?      , ?      , ?    , ?       , ?          , ?     , ?);
     ");
     $sth->execute( $biblioitemnumber, $bde->{deleted}, $bde->{deleted_on}, $bde->{primary_language}, $bde->{languages}, $bde->{fiction}, $bde->{musical}, $bde->{celia}, $bde->{itemtype}, $bde->{serial}, $bde->{encoding_level} );
     if ($sth->err) {
