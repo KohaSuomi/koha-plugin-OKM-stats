@@ -21,7 +21,7 @@ our $metadata = {
     name            => 'OKM Stats Plugin',
     author          => 'Emmi Takkinen',
     date_authored   => '2021-09-01',
-    date_updated    => "2022-02-25",
+    date_updated    => "2022-02-28",
     minimum_version => '21.05.02.003',
     maximum_version => undef,
     version         => $VERSION,
@@ -115,11 +115,9 @@ sub install() {
         `itemtype` varchar(10) DEFAULT NULL,
         `host_record` int(11) DEFAULT NULL,
         `serial` tinyint(1) DEFAULT NULL,
-        `encoding_level` varchar(1) DEFAULT NULL,
         PRIMARY KEY (`id`),
         UNIQUE KEY `bibitnoidx` (`biblioitemnumber`),
-        KEY `last_mod_time` (`last_mod_time`),
-        KEY `encoding_level` (`encoding_level`)
+        KEY `last_mod_time` (`last_mod_time`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci
     ");
 
