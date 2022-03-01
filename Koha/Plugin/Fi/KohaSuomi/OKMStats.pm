@@ -63,6 +63,7 @@ sub configure {
         ## Grab the values we already have for our settings, if any exist
         $template->param(
             okm_syspref => $self->retrieve_data('okm_syspref'),
+            delete_tables => $self->retrieve_data('delete_tables'),
         );
 
         $self->output_html( $template->output() );
@@ -71,6 +72,7 @@ sub configure {
         $self->store_data(
             {
                 okm_syspref => $cgi->param('okm_syspref'),
+                delete_tables => $cgi->param('delete_tables') || undef,
                 last_configured_by => C4::Context->userenv->{'number'},
             }
         );
@@ -152,17 +154,19 @@ sub upgrade {
 sub uninstall() {
     my ( $self, $args ) = @_;
 
-    my $dbh = C4::Context->dbh;
+    if($self->retrieve_data('delete_tables')){
+        my $dbh = C4::Context->dbh;
 
-    my $biblio_data_elements = $self->get_qualified_table_name('biblio_data_elements');
-    $dbh->do("DROP TABLE IF EXISTS $biblio_data_elements");
+        my $biblio_data_elements = $self->get_qualified_table_name('biblio_data_elements');
+        $dbh->do("DROP TABLE IF EXISTS $biblio_data_elements");
 
-    my $okm_statistics = $self->get_qualified_table_name('okm_statistics');
-    $dbh->do("DROP TABLE IF EXISTS $okm_statistics");
+        my $okm_statistics = $self->get_qualified_table_name('okm_statistics');
+        $dbh->do("DROP TABLE IF EXISTS $okm_statistics");
 
-    my $okm_statistics_logs = $self->get_qualified_table_name('okm_statistics_logs');
-    $dbh->do("DROP TABLE IF EXISTS $okm_statistics_logs");
-
+        my $okm_statistics_logs = $self->get_qualified_table_name('okm_statistics_logs');
+        $dbh->do("DROP TABLE IF EXISTS $okm_statistics_logs");
+    }
+    
     return 1;
 }
 
