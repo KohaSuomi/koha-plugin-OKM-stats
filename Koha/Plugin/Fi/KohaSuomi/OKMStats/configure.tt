@@ -67,6 +67,19 @@
                     <textarea class="form-control" id="okm_syspref" rows="35" name="okm_syspref">[% okm_syspref %]</textarea>
                 </div>
                 <div class="row">
+                    <label for="delete_tables">Delete tables related to this plugin when plugin is uninstalled?</label>
+                    <p>Following tables will be deleted:</p>
+                    <ul>
+                        <li>biblio_data_elements</li>
+                        <li>okm_statistics</li>
+                        <li>okm_statistics_logs</li>
+                    </ul>
+                    <label class="form-check-label" for="delete_tables">
+                        Delete tables
+                    </label>
+                    <input type="checkbox" value="1" id="delete_tables" name="delete_tables" [% IF delete_tables %]checked="checked"[% END %]/>
+                </div>
+                <div class="row">
                     <input type="hidden" name="save" value="1" />
                     <input type="submit" value="Save configuration" />
                 </div>
