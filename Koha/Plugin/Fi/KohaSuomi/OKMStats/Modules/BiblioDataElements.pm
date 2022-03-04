@@ -77,7 +77,7 @@ sub UpdateBiblioDataElements {
                 print "Nothing to UPDATE\n";
             }
         } catch {
-            if (blessed($_) && $_->isa('Koha::Exception::FeatureUnavailable')) {
+            if (blessed($_) && $_->isa('Koha::Exceptions::Exception')) {
                 forceRebuild($limit, $verbose, $oldDbi);
             }
             elsif (blessed($_)) {
@@ -138,9 +138,9 @@ sub UpdateBiblioDataElement {
     $bde->isCelia($record);
     $bde->setDeleted($deleted, $biblioitem->{timestamp});
     $bde->setItemtype($itemtype);
-    $bde->isSerial($itemtype);
+    $bde->isComponentPart($biblioitem->{biblionumber});
     $bde->setLanguages($record);
-    $bde->setEncodingLevel($record);
+    $bde->setCnClass($record);
 
     if($bde->{biblioitemnumber}){
         Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElement::DBI_updateBiblioDataElement($bde)
@@ -190,7 +190,7 @@ sub _getBiblioitemsNeedingUpdate {
 
     print '#'.DateTime->now(time_zone => C4::Context->tz())->iso8601().'# Fetching biblioitems  #'."\n" if $verbose > 0;
 
-    my $lastModTime = GetLatestDataElementUpdateTime($verbose) || Koha::Exception::FeatureUnavailable->throw($cc[3]."():> You must do a complete rebuilding since none of the biblios have been indexed yet.");
+    my $lastModTime = GetLatestDataElementUpdateTime($verbose) || Koha::Exceptions::Exception->throw($cc[3]."():> You must do a complete rebuilding since none of the biblios have been indexed yet.");
     $lastModTime = $lastModTime->iso8601();
 
     my $dbh = C4::Context->dbh();

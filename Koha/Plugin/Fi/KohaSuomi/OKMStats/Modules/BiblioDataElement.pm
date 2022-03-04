@@ -62,14 +62,13 @@ sub isCelia {
     ($self->{dbi}) ? $self->{$col} = $val : $self->set({$col => $val});
 }
 
-sub isSerial {
-    my ($self, $itemtype) = @_;
-    my $col = 'serial';
-
-    my $okm = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::OPLIB::OKM->new(undef, '2015', undef, undef, undef);
-    my $itemtypes = $okm->{conf}->{itemTypeToStatisticalCategory};
-    my @itemtypes = grep { %$itemtypes{$_} eq 'Serials' } keys %$itemtypes;
-    my $val = grep /^$itemtype$/, @itemtypes;
+sub isComponentPart {
+    my ($self, $biblionumber) = @_;
+    my $col = 'host_record';
+    
+    my $biblio = Koha::Biblios->find($biblionumber);
+    my $host_record = $biblio ? $biblio->get_marc_host() : undef;
+    my $val = $host_record ? $host_record->unblessed->{biblionumber} : undef;
 
     ($self->{dbi}) ? $self->{$col} = $val : $self->set({$col => $val});
 }
@@ -138,17 +137,14 @@ sub setDeleted {
     }
 }
 
-sub setEncodingLevel {
+sub setCnClass {
     my ($self, $record) = @_;
-    my $col = 'encoding_level';
-    my $val = '';
+    my $col = 'cn_class';
 
-    my $l = $record->leader();
-    $val = substr($l,17,1); #17 - Encoding level
+    my $val = $record->subfield('084', 'a');
 
     ($self->{dbi}) ? $self->{$col} = $val : $self->set({$col => $val});
 }
-
 
 =head PERFORMANCE IMPROVEMENT TESTS USING DBI
 
@@ -192,14 +188,14 @@ sub DBI_updateBiblioDataElement {
             primary_language = ?,
             languages = ?,
             fiction = ?,
+            cn_class = ?,
             musical = ?,
             celia = ?,
             itemtype = ?,
-            serial = ?,
-            encoding_level = ?
+            host_record = ?
         WHERE biblioitemnumber = ?;
     ");
-    $sth->execute( $bde->{deleted}, $bde->{deleted_on}, $bde->{primary_language}, $bde->{languages}, $bde->{fiction}, $bde->{musical}, $bde->{celia}, $bde->{itemtype}, $bde->{serial}, $bde->{encoding_level}, $bde->{biblioitemnumber} );
+    $sth->execute( $bde->{deleted}, $bde->{deleted_on}, $bde->{primary_language}, $bde->{languages}, $bde->{fiction}, $bde->{cn_class}, $bde->{musical}, $bde->{celia}, $bde->{itemtype}, $bde->{host_record}, $bde->{biblioitemnumber} );
     if ($sth->err) {
         my @cc = caller(0);
         die $cc[3]."():> ".$sth->errstr;
@@ -211,11 +207,11 @@ sub DBI_insertBiblioDataElement {
     my $dbh = C4::Context->dbh();
     my $sth = $dbh->prepare("
         INSERT INTO koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements
-            (biblioitemnumber, deleted, deleted_on, primary_language, languages, fiction, musical, celia, itemtype, serial, encoding_level)
+            (biblioitemnumber, deleted, deleted_on, primary_language, languages, fiction, cn_class, musical, celia, itemtype, host_record)
             VALUES
-            (?               , ?      , ?         , ?               , ?        , ?      , ?      , ?    , ?       , ?      , ?);
+            (?               , ?      , ?         , ?               , ?        , ?      , ?       , ?      , ?    , ?       , ?);
     ");
-    $sth->execute( $biblioitemnumber, $bde->{deleted}, $bde->{deleted_on}, $bde->{primary_language}, $bde->{languages}, $bde->{fiction}, $bde->{musical}, $bde->{celia}, $bde->{itemtype}, $bde->{serial}, $bde->{encoding_level} );
+    $sth->execute( $biblioitemnumber, $bde->{deleted}, $bde->{deleted_on}, $bde->{primary_language}, $bde->{languages}, $bde->{fiction}, $bde->{cn_class}, $bde->{musical}, $bde->{celia}, $bde->{itemtype}, $bde->{host_record} );
     if ($sth->err) {
         my @cc = caller(0);
         die $cc[3]."():> ".$sth->errstr;

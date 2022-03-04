@@ -323,7 +323,6 @@ sub _processItemsDataRow {
     my $isItemFiction = $self->isItemFiction($row->{cn_sort});
     my $isItemMusical = $self->isItemMusical($row->{cn_sort});
     my $isCelia = $row->{celia};
-    my $serial = ($statCat eq "Serials") ? 1 : 0;
 
     $stats->{total}++;
     $stats->{expenditure_acquisitions} += $row->{price} if $row->{price};
@@ -364,7 +363,7 @@ sub _processItemsDataRow {
         } else {
             $stats->{other_regording}++;
         }
-    } elsif ($serial || $statCat eq 'Other') {
+    } elsif ( $statCat eq 'Other') {
         $stats->{other}++;
     } elsif ($statCat eq 'Videos') {
         $stats->{videos}++;
@@ -817,7 +816,7 @@ sub loadConfiguration {
 
 =head getItemtypesByStatisticalCategories
 
-    my $categories = $self->getItemtypesByStatisticalCategories('Serials', 'Electronic');
+    my $categories = $self->getItemtypesByStatisticalCategories('Electronic');
 
 Fetch all itemtypes belonging to the statical category. Returns an array.
 =cut
@@ -894,8 +893,7 @@ sub _validateConfigurationAndPreconditions {
     ##when set to 0, statistical category must be used
     my %statCategories = ( "Books" => 1, "SheetMusicAndScores" => 1,
                         "Recordings" => 1, "Videos" => 1, "Other" => 1, 
-                        "Serials" => 1, "Celia" => 1, "Online" => 1,
-                        "Electronic" => 1);
+                        "Celia" => 1, "Online" => 1, "Electronic" => 1);
     
     foreach my $itype (@itypes) {
             my $mapping = $self->{conf}->{itemTypeToStatisticalCategory}->{$itype};
