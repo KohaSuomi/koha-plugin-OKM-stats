@@ -1,4 +1,4 @@
-package Koha::Plugin::Fi::KohaSuomi::OKMStats::OkmApi;
+package Koha::Plugin::Fi::KohaSuomi::OKMStats::ReportsController;
 
 # This file is part of Koha.
 #
@@ -16,71 +16,48 @@ package Koha::Plugin::Fi::KohaSuomi::OKMStats::OkmApi;
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 use Modern::Perl;
+
 use Mojo::Base 'Mojolicious::Controller';
-use FindBin qw($Bin);
-use lib "$Bin";
-use Koha::Exceptions;
-use XML::LibXML;
-use IO::Socket::INET;
-use IO::Socket qw(AF_INET AF_UNIX SOCK_STREAM SHUT_WR);
-use Socket qw(:crlf);
+
 use Try::Tiny;
-use Mojo::Log;
-use File::Basename;
-use C4::Context;
-use Encode;
-use utf8;
-use strict;
-use warnings qw( all );
-use Log::Log4perl;
+
 use Koha::Cities;
 
-my $CONFPATH = dirname($ENV{'KOHA_CONF'});
-my $KOHAPATH = C4::Context->config('intranetdir');
+# my $CONFPATH = dirname($ENV{'KOHA_CONF'});
+# my $KOHAPATH = C4::Context->config('intranetdir');
 
-# Initialize Logger
-my $log_conf = $CONFPATH . "/log4perl.conf";
-Log::Log4perl::init($log_conf);
-my $log = Log::Log4perl->get_logger('reports');
+# # Initialize Logger
+# my $log_conf = $CONFPATH . "/log4perl.conf";
+# Log::Log4perl::init($log_conf);
+# my $log = Log::Log4perl->get_logger('reports');
 
 #This gets called from REST api
-sub process {
 
-    my $c = shift->openapi->valid_input or return;
-
-    my $body       = $c->req->body;
-    my $request    = $c->param('query') || $body || '';
-
-    $log->info("Request received.");
-    
-    my $response = "Kissa";
-
-    return try {
-        $c->render(status => 200, openapi => $response);
-        $log->info("XML response passed to endpoint.");
-    } catch {
-        Koha::Exceptions::rethrow_exception($_);
-    }
-}
-
-sub list {
+sub getokmdetails {
     my $c = shift->openapi->valid_input or return;
 
     return try {
-        my $cities_set = Koha::Cities->new;
-        my $cities = $c->objects->search( $cities_set );
-        return $c->render( status => 200, openapi => $cities );
+        
+        
+        my $city = Koha::Cities->find( $c->validation->param('city_id') );
+        unless ($city) {
+            return $c->render( status  => 404,
+                            openapi => { error => "City not found" } );
+        }
+
+        return $c->render( status => 200, openapi => $city->to_api );
     }
     catch {
         $c->unhandled_exception($_);
-    };
-
+    }
 }
 
-sub getokm {
+sub getokmreportdata {
     my $c = shift->openapi->valid_input or return;
 
     return try {
+        
+        
         my $city = Koha::Cities->find( $c->validation->param('city_id') );
         unless ($city) {
             return $c->render( status  => 404,
