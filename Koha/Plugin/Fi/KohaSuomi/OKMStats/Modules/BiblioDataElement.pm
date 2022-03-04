@@ -97,7 +97,7 @@ sub setLanguages {
     my $f008 = $record->field('008');
     my $primaryLanguage = 'OTH';
 
-    if( substr($f008->data(), 35, 3) && ( substr($f008->data(), 35, 3) =~ /(.*[a-zA-Z]){3}/ )) {
+    if( $f008 && substr($f008->data(), 35, 3) && ( substr($f008->data(), 35, 3) =~ /(.*[a-zA-Z]){3}/ )) {
         $primaryLanguage = substr($f008->data(), 35, 3);
     } elsif ( $record->subfield('041', 'a') && ( $record->subfield('041', 'a') =~ /(.*[a-zA-Z]){3}/ ) ) {
         $primaryLanguage = $record->subfield('041', 'a');
