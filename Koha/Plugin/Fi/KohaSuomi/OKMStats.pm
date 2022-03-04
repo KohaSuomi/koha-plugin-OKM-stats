@@ -19,7 +19,7 @@ our $VERSION = "2.0.6";
 ## Here is our metadata, some keys are required, some are optional
 our $metadata = {
     name            => 'OKM Stats Plugin',
-    author          => 'Emmi Takkinen',
+    author          => 'Emmi Takkinen, Lari Strand',
     date_authored   => '2021-09-01',
     date_updated    => "2022-02-28",
     minimum_version => '21.05.02.003',
@@ -175,10 +175,16 @@ sub tool {
     my $cgi = $self->{'cgi'};
     my $template = $self->get_template({ file => 'index.tt' });
     
+    my $dbh = C4::Context->dbh;
     
+    my $words = $dbh->selectcol_arrayref( "SELECT branchcode FROM branches" );
     
+     $template->param(
+        branches => ($words)
+    );
+
     print $cgi->header(-charset    => 'utf-8');
-    print $template->output();
+    $self->output_html( $template->output() );
 }
 
 sub _export {

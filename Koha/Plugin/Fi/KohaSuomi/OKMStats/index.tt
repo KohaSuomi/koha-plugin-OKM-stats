@@ -1,14 +1,19 @@
+[% USE To %]
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
+<style>
+.sr-only {display: none;}
+</style>
   <!-- Required meta tags -->
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
   <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 
-  <link rel="icon" type="image/x-icon" href="./favicon.ico">
-
+  <link rel="icon" type="image/x-icon" href="[% PLUGIN_PATH %]/favicon.ico">
+  
   <title>Koha-Suomi - Raportointityökalu</title>
 
 
@@ -29,7 +34,7 @@
   <script src="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue-icons.min.js"></script>
 
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"> </script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
 
 </head>
 
@@ -130,10 +135,10 @@
           </b-row>
         </b-tab>
 
-        <b-tab title="Poistot">
+        <b-tab title="Poistot" disabled>
           <b-card-text>Tab contents 3</b-card-text>
         </b-tab>
-        <b-tab title="Kaukopalvelu">
+        <b-tab title="Kaukopalvelu" disabled>
           <b-card-text>Tab contents 3</b-card-text>
         </b-tab>
         <b-tab title="API Cities">
@@ -286,51 +291,20 @@
       },
     },
 
-    mounted: async function () {
+    mounted: function () {
       // `this` points to the vm instance
+        let branchcodes = ([% To.json(branches) %]);
+        //let branchcodes = [];
 
-
-      try {
-        const branches = await axios.get(
-          `http://127.0.1.1:8080/api/v1/libraries/`
-        );
-
-        let branchcodes = [];
-        let bLen = branches.data.length;
-
-        for (let i = 0; i < bLen; i++) {
-          //console.log(branches.data[i].branchcode);
-          branchcodes.push(branches.data[i].branchcode);
-        }
-        console.log('branches is: ')
+        console.log("branches is: ");
         console.log(branchcodes);
         this.branchcodelist = branchcodes;
-
-      } catch (e) {
-        console.log(e);
-      }
     },
 
     // define methods under the `methods` object
     methods: {
       toggleBusy() {
         this.isBusy = !this.isBusy;
-      },
-
-      async getBranches() {
-
-        try {
-          const response = await axios.get(
-            `http://127.0.1.1:8080/api/v1/libraries/`
-          );
-          console.log("branches: ");
-          console.log(response.data);
-          this.branches = response.data;
-
-        } catch (e) {
-          console.log(e);
-        }
-
       },
 
       onContext(ctx) {
@@ -520,6 +494,5 @@
  // .then(jsonObject => console.log(jsonObject));
 
 </script>
-
 
 </html>
