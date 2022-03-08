@@ -4,16 +4,18 @@
 <html lang="en">
 
 <head>
-<style>
-.sr-only {display: none;}
-</style>
+  <style>
+    .sr-only {
+      display: none;
+    }
+  </style>
   <!-- Required meta tags -->
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
   <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 
   <link rel="icon" type="image/x-icon" href="[% PLUGIN_PATH %]/favicon.ico">
-  
+
   <title>Koha-Suomi - Raportointityökalu</title>
 
 
@@ -34,7 +36,8 @@
   <script src="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue-icons.min.js"></script>
 
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+    integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
 
 </head>
 
@@ -98,7 +101,7 @@
               </b-col>
             </b-row>
           </div>
-          
+
         </b-tab>
         <b-tab title="Kokoelmat(collection)">
           <b-card-text>Tab contents 3</b-card-text>
@@ -110,7 +113,7 @@
             <b-form-select v-model="selectedBranch" :options="branchcodelist" size="sm" class="mt-3"></b-form-select>
             <div class="mt-3">Selected: <strong>{{ selectedBranch }}</strong></div>
           </div>
-          
+
         </b-tab>
         <b-tab title="Lainat/palautukset/varaukset" @click="showLainatPalautuksetVaraukset">
           <b-card-text>Lainat/palautukset/varaukset</b-card-text>
@@ -157,6 +160,14 @@
         </b-tab>
         <b-tab title="showOkmAllModded" @click="showOkmAllModded">
           <b-card-text>OKM tilastot</b-card-text>
+          <div>
+            <b-form-select v-model="selected" :options="okmreportids"></b-form-select>
+            <div class="mt-3">Selected: <strong>{{ selected }}</strong></div>
+          </div>
+          <div>
+            <b-form-select v-model="selected" :options="options"></b-form-select>
+            <div class="mt-3">Selected: <strong>{{ selected }}</strong></div>
+          </div>
 
           <div class="row">
             <div class="col-md-1 bg-light float-left">
@@ -242,6 +253,7 @@
     }
   ]
 
+
   window.app = new Vue({
     el: '#app',
     data: {
@@ -268,6 +280,7 @@
       fields: null,
       myJson: citiesitems, //oletusdata
       lainpalselected: null,
+      okmreportids: [],
       options: [
         { value: null, text: 'Please select an option' },
         { value: 'Lainaus', text: 'Lainaus' },
@@ -293,12 +306,12 @@
 
     mounted: function () {
       // `this` points to the vm instance
-        let branchcodes = ([% To.json(branches) %]);
-        //let branchcodes = [];
+      let branchcodes = ([% To.json(branches) %]);
+      //let branchcodes = [];
 
-        console.log("branches is: ");
-        console.log(branchcodes);
-        this.branchcodelist = branchcodes;
+      console.log("branches is: ");
+      console.log(branchcodes);
+      this.branchcodelist = branchcodes;
     },
 
     // define methods under the `methods` object
@@ -324,16 +337,16 @@
         this.myJson.data = cities;
 
       },
-      
-      showLainatPalautuksetVaraukset(){
+
+      showLainatPalautuksetVaraukset() {
         this.myJson.data = null;
         this.fields = null;
       },
-      
-      showAsiakkaat(){
+
+      showAsiakkaat() {
         this.myJson.data = null;
         this.fields = null;
-  
+
       },
 
 
@@ -368,6 +381,9 @@
         this.myJson.data = null;
         this.fields = null;
         this.isBusy = !this.isBusy;
+        
+        
+        this.okmreportids = 
         //this.fields = [
         //  { label: "City", key: "city_name", sortable: true },
         //  { label: "Zipcode", key: "city_zipcode" },
@@ -381,10 +397,6 @@
         this.isBusy = !this.isBusy;
         this.myJson.data = null;
         this.fields = null;
-        //this.fields = [
-        //  { label: "ID", key: "city_name", sortable: true },
-        //  { label: "Zipcode", key: "city_zipcode" },
-        //];
 
         //this.fields = [
         //  { label: "City", key: "city_name", sortable: true },
@@ -421,12 +433,26 @@
         this.isBusy = !this.isBusy;
       },
 
-      showOkmAllModded() {
+      async showOkmAllModded() {
 
         //console.log(okmstatsmoddedjson);
         this.isBusy = true;
         this.myJson.data = null;
         this.fields = null;
+        
+        try {
+          const response = await axios.get(
+            `/api/v1/contrib/kohasuomi/okmstats/reports/`
+          );
+
+          this.okmreportids = response.data;
+          console.log(response.data);
+          
+        } catch (e) {
+          console.log(e);
+          this.isBusy = false;
+        }
+        
         this.fields = okmfields;
 
         this.myJson.data = okmstatsmoddedjson;
@@ -440,14 +466,14 @@
         this.isBusy = true;
         try {
           const response = await axios.get(
-            `http://127.0.1.1:8080/api/v1/cities/`
+            `/api/v1/cities/`
           );
 
           this.fields = cityfields;
           this.myJson.data = response.data;
           this.isBusy = !this.isBusy;
           this.sortBy = 'city_name';
-          
+
         } catch (e) {
           console.log(e);
           this.isBusy = false;

@@ -39,6 +39,7 @@ sub getokmdetails {
         my $dbh = C4::Context->dbh();
         my $sth;
         my $okmdata;
+        my $ref;
 
         $sth = $dbh->prepare(
             q{
@@ -48,17 +49,23 @@ sub getokmdetails {
 
         $sth->execute();
         
-        my @array     = $sth->fetchrow();
-        my $array_ref = \@array;
-        my $date      = ${$array_ref}[0];
-        $sth->finish;
-        #my $city = Koha::Cities->find( $c->validation->param('city_id') );
-        unless ($array_ref) {
+        # my @array     = $sth->fetchall();
+        # my $array_ref = \@array;
+        # my $date      = ${$array_ref}[0];
+        # $sth->finish;
+        
+        #my $sql = "SELECT id, individualbranches, startdate, enddate, timestamp from koha_plugin_fi_kohasuomi_okmstats_okm_statistics";
+
+        $ref = $sth->fetchall_arrayref([]);
+
+        #my $array_ref = \@array;
+        
+        unless ($ref) {
             return $c->render( status  => 404,
                             openapi => { error => "Data not found" } );
         }
 
-        return $c->render( status => 200, openapi => $array_ref );
+        return $c->render( status => 200, openapi => $ref );
     }
     catch {
         $c->unhandled_exception($_);
