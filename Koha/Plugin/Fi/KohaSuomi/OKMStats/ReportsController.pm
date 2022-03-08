@@ -16,12 +16,9 @@ package Koha::Plugin::Fi::KohaSuomi::OKMStats::ReportsController;
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 use Modern::Perl;
-
 use Mojo::Base 'Mojolicious::Controller';
-
+use C4::Context;
 use Try::Tiny;
-
-use Koha::Cities;
 
 # my $CONFPATH = dirname($ENV{'KOHA_CONF'});
 # my $KOHAPATH = C4::Context->config('intranetdir');
@@ -34,18 +31,34 @@ use Koha::Cities;
 #This gets called from REST api
 
 sub getokmdetails {
+    
     my $c = shift->openapi->valid_input or return;
 
     return try {
         
+        my $dbh = C4::Context->dbh();
+        my $sth;
+        my $okmdata;
+
+        $sth = $dbh->prepare(
+            q{
+                SELECT id, individualbranches, startdate, enddate, timestamp from koha_plugin_fi_kohasuomi_okmstats_okm_statistics
+            }
+         );
+
+        $sth->execute();
         
-        my $city = Koha::Cities->find( $c->validation->param('city_id') );
-        unless ($city) {
+        my @array     = $sth->fetchrow();
+        my $array_ref = \@array;
+        my $date      = ${$array_ref}[0];
+        $sth->finish;
+        #my $city = Koha::Cities->find( $c->validation->param('city_id') );
+        unless ($array_ref) {
             return $c->render( status  => 404,
-                            openapi => { error => "City not found" } );
+                            openapi => { error => "Data not found" } );
         }
 
-        return $c->render( status => 200, openapi => $city->to_api );
+        return $c->render( status => 200, openapi => $array_ref );
     }
     catch {
         $c->unhandled_exception($_);
@@ -53,6 +66,7 @@ sub getokmdetails {
 }
 
 sub getokmreportdata {
+    
     my $c = shift->openapi->valid_input or return;
 
     return try {

@@ -22,7 +22,7 @@
 				"200": {
 					"description": "A list of OKM report id:s, intervals and timestamps",
 					"schema": {
-						"type": "object"
+						"type": "array"
 					}
 				},
 				"403": {
@@ -68,9 +68,9 @@
 	"/okmstats/reportsstats": {
 		"get": {
 			"x-mojo-to": "Fi::KohaSuomi::OKMStats::ReportsController#getokmreportdata",
-			"operationId": "listOKM",
+			"operationId": "getOKM",
 			"tags": [
-				"OKM"
+				"OKMdata"
 			],
 			"produces": [
 				"application/json"

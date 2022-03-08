@@ -218,4 +218,21 @@ sub _export {
     exit;
 }
 
+sub api_routes {
+    my ( $self, $args ) = @_;
+
+    my $spec_dir = $self->mbf_dir();
+    return JSON::Validator->new->schema($spec_dir . "/openapi.json")->schema->{data};
+    #my $spec_str = $self->mbf_read('openapi.json');
+    #my $spec     = decode_json($spec_str);
+
+    #return $spec;
+}
+
+sub api_namespace {
+    my ( $self ) = @_;
+    
+    return 'kohasuomi';
+}
+
 1;
