@@ -77,7 +77,7 @@
 			],
 			"parameters": [
 				{
-					"name": "city_id",
+					"name": "okm_id",
 					"in": "query",
 					"required": false,
 					"description": "Matching criteria",
@@ -86,9 +86,9 @@
 			],
 			"responses": {
 				"200": {
-					"description": "A list of fancy words",
+					"description": "okm report to render",
 					"schema": {
-						"type": "object"
+						"type": "array"
 					}
 				},
 				"403": {

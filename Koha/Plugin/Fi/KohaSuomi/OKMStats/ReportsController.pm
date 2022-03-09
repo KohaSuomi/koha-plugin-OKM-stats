@@ -74,18 +74,40 @@ sub getokmdetails {
 
 sub getokmreportdata {
     
-    my $c = shift->openapi->valid_input or return;
+   my $c = shift->openapi->valid_input or return;
 
     return try {
         
+        my $dbh = C4::Context->dbh();
+        my $sth;
+        my $okmdata;
+        my $ref;
+
+        $sth = $dbh->prepare(
+            q{
+                SELECT okm_serialized from koha_plugin_fi_kohasuomi_okmstats_okm_statistics
+            }
+         );
+
+        $sth->execute();
         
-        my $city = Koha::Cities->find( $c->validation->param('city_id') );
-        unless ($city) {
+        # my @array     = $sth->fetchall();
+        # my $array_ref = \@array;
+        # my $date      = ${$array_ref}[0];
+        # $sth->finish;
+        
+        #my $sql = "SELECT id, individualbranches, startdate, enddate, timestamp from koha_plugin_fi_kohasuomi_okmstats_okm_statistics";
+
+        $ref = $sth->fetchall_arrayref([]);
+
+        #my $array_ref = \@array;
+        
+        unless ($ref) {
             return $c->render( status  => 404,
-                            openapi => { error => "City not found" } );
+                            openapi => { error => "Data not found" } );
         }
 
-        return $c->render( status => 200, openapi => $city->to_api );
+        return $c->render( status => 200, openapi => $ref );
     }
     catch {
         $c->unhandled_exception($_);
