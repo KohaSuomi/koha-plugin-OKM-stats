@@ -100,7 +100,7 @@ sub getokmreportdata {
         
         #my $sql = "SELECT id, individualbranches, startdate, enddate, timestamp from koha_plugin_fi_kohasuomi_okmstats_okm_statistics";
 
-        $ref = $sth->fetchall_arrayref([]);
+        $ref = $sth->fetchall_arrayref();
 
         #my $array_ref = \@array;
         

@@ -167,7 +167,7 @@
                 <p class="card-text">Valitse näytettävä raportti klikkaamalla riviä</p>
                 <!--- #The row-clicked event will pass 3 parameters to your function. The first being the item specific to the row that was clicked. The second will be the index of the row, and the third is a native click event.
                 This means you can use the arguments keyword to get the index and pass it to your function. -->
-                <b-table striped hover :items="okmlisting" @row-clicked="fetchOkm(arguments[0])">
+                <b-table striped hover :fields="okmreportlistfields" :items="okmlisting" @row-clicked="fetchOkm(arguments[0])">
                 </b-table>
               </b-card>
             </b-collapse>
@@ -282,6 +282,7 @@
       myJson: citiesitems, //oletusdata
       lainpalselected: null,
       okmlisting: null,
+      okmreportlistfields: null,
       options: [
         { value: null, text: 'Please select an option' },
         { value: 'Lainaus', text: 'Lainaus' },
@@ -447,6 +448,7 @@
           );
 
           this.okmlisting = response.data;
+          this.okmreportlistfields = okmreportlistfields;
           console.log(response.data);
 
         } catch (e) {
@@ -537,7 +539,9 @@
 <script src="[% PLUGIN_PATH %]/json/okmstatsmoddedjson.js"></script>
 <script src="[% PLUGIN_PATH %]/fieldtemplates/okmfields.js"></script>
 <script src="[% PLUGIN_PATH %]/fieldtemplates/cityfields.js"></script>
+<script src="[% PLUGIN_PATH %]/fieldtemplates/okmreportlistfields.js"></script>
 <script src="[% PLUGIN_PATH %]/json/cities.js"></script>
+
 
 <script>
   fetch("[% PLUGIN_PATH %]/json/okmstatsmoddedjson.json")
