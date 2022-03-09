@@ -82,14 +82,16 @@ sub getokmreportdata {
         my $sth;
         my $okmdata;
         my $ref;
+        
+        my $reportidtoget = $c->validation->param('okm_id');
 
         $sth = $dbh->prepare(
             q{
-                SELECT okm_serialized from koha_plugin_fi_kohasuomi_okmstats_okm_statistics
+                SELECT okm_serialized from koha_plugin_fi_kohasuomi_okmstats_okm_statistics where id = ?
             }
          );
 
-        $sth->execute();
+        $sth->execute($reportidtoget);
         
         # my @array     = $sth->fetchall();
         # my $array_ref = \@array;
