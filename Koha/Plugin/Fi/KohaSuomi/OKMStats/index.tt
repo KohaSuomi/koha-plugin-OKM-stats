@@ -496,9 +496,20 @@
           );
 
           this.fields = okmfields;
-          this.myJson.data = response.data;
+          //this.myJson.data = response.data;
           console.log("Fetched okm report data:");
           console.log(response.data);
+          let stringified = JSON.stringify(response.data);
+          stringified = stringified.replace(/\\/g,'');
+          stringified = stringified.substring(3);
+          stringified = stringified.slice(0, -3);
+          console.log("okm stringified:");
+          console.log(stringified);
+          
+          let jsonified = JSON.parse(stringified); 
+          
+          this.myJson.data = jsonified;
+          
           this.isBusy = false;
 
         } catch (e) {
