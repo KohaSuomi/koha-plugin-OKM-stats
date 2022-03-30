@@ -177,18 +177,15 @@
               
               <b-col lg="6" class="my-1">
                 <b-form-group
-                  v-model="sortDirection"
                   label="Filter On"
                   description="Leave all unchecked to filter on all data"
                   label-cols-sm="3"
                   label-align-sm="right"
                   label-size="sm"
                   class="mb-0"
-                  v-slot="{ ariaDescribedby }"
                 >
                   <b-form-checkbox-group
                     v-model="filterOn"
-                    :aria-describedby="ariaDescribedby"
                     class="mt-1"
                   >
                     <b-form-checkbox value="1">Signum</b-form-checkbox>
@@ -200,28 +197,39 @@
         
             </b-row>
           </div>
+          
+          <b-row>
+            <b-col lg="8" class="my-1">
+              <b-form-group label="Suodata" label-for="filter-input" label-cols-sm="3" label-align-sm="right" label-size="sm"
+                class="mb-0">
+                <b-input-group size="sm">
+                  <b-row align-v="end">
+                    <div>
+                      Sorting By: <b>{{ sortBy }}</b>, Sort Direction:
+                      <b>{{ sortDesc ? "Descending" : "Ascending" }}</b>
+                    </div>
+                  </b-row>
+        
+                  <b-input-group class="mt-3">
+                    <b-button :disabled="!filter" @click="filter = null" lg="4">Tyhjennä suodatin</b-button>
+                    <b-button @click="sortBy = null" lg="4">Tyhjennä järjestys</b-button>
+                  </b-input-group>
+                </b-input-group>
+              </b-form-group>
+            </b-col>
+          </b-row>
+          
+          
+          
         </b-tab>
         <b-tab title="Kaukopalvelu" disabled>
           <b-card-text>Tab contents 3</b-card-text>
         </b-tab>
-        <b-tab title="API Cities">
-          <b-card-text>Postitoimipaikat</b-card-text>
-          <div class="row">
-            <div class="col-md-12 bg-light float-left">
-              <b-row>
-                <b-col lg="4" class="pb-2">
-                  <b-button type="button" class="btn btn-success" @click="exportToCsv">Vie CSV</b-button>
-                  <b-button type="button" class="btn btn-success" @click="showCities">Hae API Cities</b-button>
-                </b-col>
-              </b-row>
-            </div>
-          </div>
-
-        </b-tab>
+        
         <b-tab title="showOkmAllModded" @click="showOkmAllModded">
           <b-card-text>OKM-tilastot</b-card-text>
           <div>
-            <b-button v-b-toggle.collapse-1 variant="primary"> Näytä raporttilista || Piilota raporttilista </b-button>
+            <b-button v-b-toggle.collapse-1 variant="primary"> Näytä raporttilistaus || Piilota raporttilistaus </b-button>
             <b-collapse id="collapse-1" class="mt-2">
               <b-card>
                 <p class="card-text">Valitse näytettävä raportti klikkaamalla riviä</p>
@@ -237,6 +245,52 @@
             <b-button type="button" class="btn btn-success" @click="exportToCsv">Vie CSV</b-button> 
           </b-col>
           </div>
+          
+          <b-col lg="6" class="my-1">
+            <b-form-group
+              label="Filter"
+              label-for="filter-input"
+              label-cols-sm="3"
+              label-align-sm="right"
+              label-size="sm"
+              class="mb-0"
+            >
+              <b-input-group size="sm">
+                <b-form-input
+                  id="filter-input"
+                  v-model="filter"
+                  type="search"
+                  placeholder="Type to Search"
+                ></b-form-input>
+    
+                <b-input-group-append>
+                  <b-button :disabled="!filter" @click="filter = ''">Clear</b-button>
+                </b-input-group-append>
+              </b-input-group>
+            </b-form-group>
+          </b-col>
+          
+          <b-row>
+            <b-col lg="8" class="my-1">
+              <b-form-group label="Suodata" label-for="filter-input" label-cols-sm="3" label-align-sm="right" label-size="sm"
+                class="mb-0">
+                <b-input-group size="sm">
+                  <b-row align-v="end">
+                    <div>
+                      Sorting By: <b>{{ sortBy }}</b>, Sort Direction:
+                      <b>{{ sortDesc ? "Descending" : "Ascending" }}</b>
+                    </div>
+                  </b-row>
+        
+                  <b-input-group class="mt-3">
+                    <b-button :disabled="!filter" @click="filter = null" lg="4">Tyhjennä suodatin</b-button>
+                    <b-button @click="sortBy = null" lg="4">Tyhjennä järjestys</b-button>
+                  </b-input-group>
+                </b-input-group>
+              </b-form-group>
+            </b-col>
+          </b-row>
+          
         </b-tab>
 
       </b-tabs>
@@ -245,33 +299,13 @@
 
 
 
-  <b-row>
-    <b-col lg="8" class="my-1">
-      <b-form-group label="Suodata" label-for="filter-input" label-cols-sm="3" label-align-sm="right" label-size="sm"
-        class="mb-0">
-        <b-input-group size="sm">
-          <b-form-input id="filter-input" v-model="filter" type="search" placeholder="Etsi..."></b-form-input>
-          <b-row align-v="end">
-            <div>
-              Sorting By: <b>{{ sortBy }}</b>, Sort Direction:
-              <b>{{ sortDesc ? "Descending" : "Ascending" }}</b>
-            </div>
-          </b-row>
-
-          <b-input-group class="mt-3">
-            <b-button :disabled="!filter" @click="filter = null" lg="4">Tyhjennä suodatin</b-button>
-            <b-button @click="sortBy = null" lg="4">Tyhjennä järjestys</b-button>
-          </b-input-group>
-        </b-input-group>
-      </b-form-group>
-    </b-col>
-  </b-row>
+  
 
   <div>
     <!-- sido tablen näyttämä data muuttujaan v-model: filtered, kutsu metodissa this.filtered -->
     <b-table v-model="filtered" striped hover responsive="sm" selectable bordered outlined small sort-icon-left
       :sort-by.sync="sortBy" :filter-included-fields="filterOn" :sort-desc.sync="sortDesc" :items="myJson.data" :fields="fields"  :busy="isBusy"
-      :filter="filter" @filtered="onFiltered">
+      :filter="filter">
       <div slot="table-busy" class="text-center text-danger my-2">
         <b-spinner class="align-middle"></b-spinner>
         <strong>Loading...</strong>
@@ -280,40 +314,11 @@
 </div>
 
 
-<!--for items: cities.data -->
-
-
 <!-- Start running your app -->
 
 
 
 <script>
-
-  const fields = [
-    { label: "Kaupunki", key: "city_name", sortable: true },
-    { label: "Postinumero", key: "city_zipcode", sortable: true },
-    { label: "Id", key: "cityid", sortable: true },
-    { label: "Kunta", key: "city_state" },
-    { label: "Maa", key: "city_country" }
-  ]
-
-  let citiesitems = [
-    {
-      "city_country": "",
-      "city_name": "Uusi-Valamo",
-      "city_state": "",
-      "city_zipcode": "79850",
-      "cityid": 180
-    },
-    {
-      "city_country": "",
-      "city_name": "Kerma",
-      "city_state": "",
-      "city_zipcode": "79910",
-      "cityid": 181
-    }
-  ]
-
 
   window.app = new Vue({
     el: '#app',
@@ -327,20 +332,13 @@
       selectedBranch: null,
       filtered: null,
       selectedMonth: null,
-      options: [
-        { value: null, text: "Please select an option" },
-        { value: "a", text: "This is First option" },
-        { value: "b", text: "Selected Option" },
-        { value: { C: "3PO" }, text: "This is an option with object value" },
-        { value: "d", text: "This one is disabled", disabled: true },
-      ],
       lowDate: "",
       maxDate: "",
       filter: "",
       filterOn: [],
       isBusy: false,
       fields: null,
-      myJson: citiesitems, //oletusdata
+      myJson: [], //oletusdata
       lainpalselected: null,
       okmlisting: null,
       okmreportlistfields: null,
@@ -392,12 +390,8 @@
 
       showHankinnat() {
 
-        this.fields = [
-          { label: "City", key: "city_name", sortable: true },
-          { label: "Zipcode", key: "city_zipcode" },
-        ];
-        //this.itemtypefields = itemtypefields;
-        this.myJson.data = cities;
+        this.fields = null;
+        this.myJson.data = null;
 
       },
 
@@ -440,22 +434,6 @@
         this.isBusy = false;
       },
 
-      showOkm() {
-        this.myJson.data = null;
-        this.fields = null;
-        this.isBusy = !this.isBusy;
-
-
-        this.okmreportids =
-          //this.fields = [
-          //  { label: "City", key: "city_name", sortable: true },
-          //  { label: "Zipcode", key: "city_zipcode" },
-          //];
-          this.fields = okmissuefields;
-        this.myJson.data = okmissues.issues;
-
-        this.isBusy = !this.isBusy;
-      },
       showOkmAll() {
         this.isBusy = !this.isBusy;
         this.myJson.data = null;
@@ -524,26 +502,6 @@
         this.isBusy = false;
       },
 
-      async showCities() {
-        this.myJson.data = null;
-        this.fields = null;
-        this.isBusy = true;
-        try {
-          const response = await axios.get(
-            `/api/v1/cities/`
-          );
-
-          this.fields = cityfields;
-          this.myJson.data = response.data;
-          this.isBusy = !this.isBusy;
-          this.sortBy = 'city_name';
-
-        } catch (e) {
-          console.log(e);
-          this.isBusy = false;
-        }
-      },
-      
       async showRemoveTool() {
         this.myJson.data = null;
         this.fields = null;
@@ -630,10 +588,8 @@
 
 <script src="[% PLUGIN_PATH %]/json/okmstatsmoddedjson.js"></script>
 <script src="[% PLUGIN_PATH %]/fieldtemplates/okmfields.js"></script>
-<script src="[% PLUGIN_PATH %]/fieldtemplates/cityfields.js"></script>
 <script src="[% PLUGIN_PATH %]/fieldtemplates/okmreportlistfields.js"></script>
 <script src="[% PLUGIN_PATH %]/fieldtemplates/removetoolfields.js"></script>
-<script src="[% PLUGIN_PATH %]/json/cities.js"></script>
 
 
 <script>
