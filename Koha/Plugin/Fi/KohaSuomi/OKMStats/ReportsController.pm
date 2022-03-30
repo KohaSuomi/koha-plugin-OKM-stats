@@ -30,6 +30,73 @@ use Try::Tiny;
 
 #This gets called from REST api
 
+sub getremovetooldata {
+    
+    my $c = shift->openapi->valid_input or return;
+
+    return try {
+        
+        my $dbh = C4::Context->dbh();
+        my $sth;
+        my $okmdata;
+        my $ref;
+
+        $sth = $dbh->prepare(
+            q{
+                SELECT CONCAT( '<a href=\"/cgi-bin/koha/catalogue/detail.pl?biblionumber=', biblio.biblionumber,'\">', 
+       items.barcode, '</a>' ) AS 'Viivakoodi',
+       items.cn_sort AS 'Signum',
+       items.itemcallnumber AS 'Luokka',
+       biblio.author AS 'Tekijä',
+       biblio.title AS 'Nimeke',
+       biblio.copyrightdate AS 'Julkaisuvuosi/julkaistu alkaen',
+       items.dateaccessioned AS 'Vastaanotettu',
+       items.itype AS 'Nidetyyppi', 
+        bda.itemtype AS 'Aineistotyyppi',
+       items.issues AS 'Lainat',
+       items.renewals AS 'Uusinnat',
+       (IFNULL(items.issues, 0)+IFNULL(items.renewals, 0)) AS 'Lainat ja uusinnat yhteensä', 
+       items.datelastborrowed AS 'Viimeksi lainattu',
+       items.datelastseen AS 'Viimeksi havaittu',
+       items.onloan AS 'Eräpäivä',
+       bda.primary_language AS 'Kieli'      
+
+FROM items
+LEFT JOIN biblioitems ON (items.biblioitemnumber=biblioitems.biblioitemnumber) 
+LEFT JOIN biblio ON (biblioitems.biblionumber=biblio.biblionumber)
+LEFT JOIN biblio_data_elements bda ON (biblioitems.biblioitemnumber=bda.biblioitemnumber)
+
+WHERE items.holdingbranch = 'JOE_PYH'
+LIMIT 100
+
+            }
+         );
+
+        $sth->execute();
+        
+        # my @array     = $sth->fetchall();
+        # my $array_ref = \@array;
+        # my $date      = ${$array_ref}[0];
+        # $sth->finish;
+        
+        #my $sql = "SELECT id, individualbranches, startdate, enddate, timestamp from koha_plugin_fi_kohasuomi_okmstats_okm_statistics";
+
+        $ref = $sth->fetchall_arrayref([]);
+
+        #my $array_ref = \@array;
+        
+        unless ($ref) {
+            return $c->render( status  => 404,
+                            openapi => { error => "Data not found" } );
+        }
+
+        return $c->render( status => 200, openapi => $ref );
+    }
+    catch {
+        $c->unhandled_exception($_);
+    }
+}
+
 sub getokmdetails {
     
     my $c = shift->openapi->valid_input or return;

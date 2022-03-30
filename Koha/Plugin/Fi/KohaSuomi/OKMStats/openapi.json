@@ -1,4 +1,70 @@
 {
+	"/okmstats/removetool": {
+		"get": {
+			"x-mojo-to": "Fi::KohaSuomi::OKMStats::ReportsController#getremovetooldata",
+			"operationId": "removetool",
+			"tags": [
+				"OKM"
+			],
+			"produces": [
+				"application/json"
+			],
+			"parameters": [
+				{
+					"name": "city_id",
+					"in": "query",
+					"required": false,
+					"description": "Matching criteria",
+					"type": "integer"					
+				}
+			],
+			"responses": {
+				"200": {
+					"description": "A list of OKM report id:s, intervals and timestamps",
+					"schema": {
+						"type": "array"
+					}
+				},
+				"403": {
+					"description": "Access forbidden",
+					"schema": {
+						"type": "object",
+						"properties": {
+							"error": {
+								"description": "Error message",
+								"type": "string"
+							}
+						}
+					}
+				},
+				"500": {
+					"description": "Internal error",
+					"schema": {
+						"type": "object",
+						"properties": {
+							"error": {
+								"description": "Error message",
+								"type": "string"
+							}
+						}
+					}
+				},
+				"503": {
+					"description": "Under maintenance",
+					"schema": {
+						"type": "object",
+						"properties": {
+							"error": {
+								"description": "Error message",
+								"type": "string"
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	
 	"/okmstats/reports": {
 		"get": {
 			"x-mojo-to": "Fi::KohaSuomi::OKMStats::ReportsController#getokmdetails",

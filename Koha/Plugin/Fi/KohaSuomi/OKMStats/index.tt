@@ -8,6 +8,7 @@
     .sr-only {
       display: none;
     }
+    
   </style>
   <!-- Required meta tags -->
   <meta charset="utf-8" />
@@ -141,6 +142,65 @@
         <b-tab title="Poistot" disabled>
           <b-card-text>Tab contents 3</b-card-text>
         </b-tab>
+        <b-tab title="Poistotyökalu" >
+          <b-card-text>Tab contents 3</b-card-text>
+          <div class="col-md-12 bg-light float-left">
+            <b-row>
+              <b-col lg="4" class="pb-2">
+                <b-button type="button" class="btn btn-success" @click="exportToCsv">Vie CSV</b-button>
+                <b-button type="button" class="btn btn-success" @click="showRemoveTool">Hae nidetiedot</b-button>
+              </b-col>
+              
+              <b-col lg="6" class="my-1">
+                <b-form-group
+                  label="Filter"
+                  label-for="filter-input"
+                  label-cols-sm="3"
+                  label-align-sm="right"
+                  label-size="sm"
+                  class="mb-0"
+                >
+                  <b-input-group size="sm">
+                    <b-form-input
+                      id="filter-input"
+                      v-model="filter"
+                      type="search"
+                      placeholder="Type to Search"
+                    ></b-form-input>
+        
+                    <b-input-group-append>
+                      <b-button :disabled="!filter" @click="filter = ''">Clear</b-button>
+                    </b-input-group-append>
+                  </b-input-group>
+                </b-form-group>
+              </b-col>
+              
+              <b-col lg="6" class="my-1">
+                <b-form-group
+                  v-model="sortDirection"
+                  label="Filter On"
+                  description="Leave all unchecked to filter on all data"
+                  label-cols-sm="3"
+                  label-align-sm="right"
+                  label-size="sm"
+                  class="mb-0"
+                  v-slot="{ ariaDescribedby }"
+                >
+                  <b-form-checkbox-group
+                    v-model="filterOn"
+                    :aria-describedby="ariaDescribedby"
+                    class="mt-1"
+                  >
+                    <b-form-checkbox value="1">Signum</b-form-checkbox>
+                    <b-form-checkbox value="2">Luokka</b-form-checkbox>
+                    <b-form-checkbox value="7">Nidetyyppi</b-form-checkbox>
+                  </b-form-checkbox-group>
+                </b-form-group>
+              </b-col>
+        
+            </b-row>
+          </div>
+        </b-tab>
         <b-tab title="Kaukopalvelu" disabled>
           <b-card-text>Tab contents 3</b-card-text>
         </b-tab>
@@ -159,7 +219,7 @@
 
         </b-tab>
         <b-tab title="showOkmAllModded" @click="showOkmAllModded">
-          <b-card-text>OKM tilastot</b-card-text>
+          <b-card-text>OKM-tilastot</b-card-text>
           <div>
             <b-button v-b-toggle.collapse-1 variant="primary"> Näytä raporttilista || Piilota raporttilista </b-button>
             <b-collapse id="collapse-1" class="mt-2">
@@ -210,8 +270,8 @@
   <div>
     <!-- sido tablen näyttämä data muuttujaan v-model: filtered, kutsu metodissa this.filtered -->
     <b-table v-model="filtered" striped hover responsive="sm" selectable bordered outlined small sort-icon-left
-      :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :fields="fields" :items="myJson.data" :busy="isBusy"
-      :filter="filter">
+      :sort-by.sync="sortBy" :filter-included-fields="filterOn" :sort-desc.sync="sortDesc" :items="myJson.data" :fields="fields"  :busy="isBusy"
+      :filter="filter" @filtered="onFiltered">
       <div slot="table-busy" class="text-center text-danger my-2">
         <b-spinner class="align-middle"></b-spinner>
         <strong>Loading...</strong>
@@ -277,6 +337,7 @@
       lowDate: "",
       maxDate: "",
       filter: "",
+      filterOn: [],
       isBusy: false,
       fields: null,
       myJson: citiesitems, //oletusdata
@@ -483,6 +544,26 @@
         }
       },
       
+      async showRemoveTool() {
+        this.myJson.data = null;
+        this.fields = null;
+        this.isBusy = true;
+        try {
+          const response = await axios.get(
+            `/api/v1/contrib/kohasuomi/okmstats/removetool/`
+          );
+
+          this.fields = removetoolfields;
+          this.myJson.data = response.data;
+          this.isBusy = !this.isBusy;
+          this.sortBy = null;
+
+        } catch (e) {
+          console.log(e);
+          this.isBusy = false;
+        }
+      },
+      
       async fetchOkm(item) {
         console.log("fetchOkm started");
         let reportid = item[0];
@@ -551,6 +632,7 @@
 <script src="[% PLUGIN_PATH %]/fieldtemplates/okmfields.js"></script>
 <script src="[% PLUGIN_PATH %]/fieldtemplates/cityfields.js"></script>
 <script src="[% PLUGIN_PATH %]/fieldtemplates/okmreportlistfields.js"></script>
+<script src="[% PLUGIN_PATH %]/fieldtemplates/removetoolfields.js"></script>
 <script src="[% PLUGIN_PATH %]/json/cities.js"></script>
 
 
