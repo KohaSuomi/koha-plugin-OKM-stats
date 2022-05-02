@@ -183,4 +183,61 @@ sub getokmreportdata {
     }
 }
 
+sub getlainat {
+    
+   my $c = shift->openapi->valid_input or return;
+
+    return try {
+        
+        my $dbh = C4::Context->dbh();
+        my $sth;
+        my $okmdata;
+        my $ref;
+        
+        my $branch = $c->validation->param('branch');
+        my $lowdate = $c->validation->param('lowdate');
+        my $maxdate = $c->validation->param('maxdate');
+
+        $sth = $dbh->prepare(
+            q{
+                SELECT b.branchname, i.permanent_location, av.lib, i.itype, bde.itemtype, bde.primary_language, IF(bde.fiction>0, "Fiktio", "Fakta"), count(*)
+                FROM statistics s
+                    LEFT JOIN items i ON i.itemnumber = s.itemnumber
+                    LEFT JOIN branches b ON b.branchcode = i.homebranch
+                    LEFT JOIN authorised_values av ON i.permanent_location = av.authorised_value
+                    LEFT JOIN biblio_data_elements bde ON i.biblioitemnumber = bde.biblioitemnumber
+                
+                WHERE b.branchcode = ?
+                AND DATE(s.datetime) BETWEEN ? AND ?
+                AND s.type = 'issue'
+                AND av.category = 'LOC'
+                GROUP BY i.homebranch, i.permanent_location, i.itype, bde.itemtype, bde.primary_language, bde.fiction
+            }
+         );
+
+        $sth->execute($branch, $lowdate, $maxdate);
+        
+        # my @array     = $sth->fetchall();
+        # my $array_ref = \@array;
+        # my $date      = ${$array_ref}[0];
+        # $sth->finish;
+        
+        #my $sql = "SELECT id, individualbranches, startdate, enddate, timestamp from koha_plugin_fi_kohasuomi_okmstats_okm_statistics";
+
+        $ref = $sth->fetchall_arrayref();
+
+        #my $array_ref = \@array;
+        
+        unless ($ref) {
+            return $c->render( status  => 404,
+                            openapi => { error => "Data not found" } );
+        }
+
+        return $c->render( status => 200, openapi => $ref );
+    }
+    catch {
+        $c->unhandled_exception($_);
+    }
+}
+
 1;

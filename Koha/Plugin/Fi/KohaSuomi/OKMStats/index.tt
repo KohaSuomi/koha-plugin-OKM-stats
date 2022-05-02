@@ -116,8 +116,8 @@
           </div>
 
         </b-tab>
-        <b-tab title="Lainat/palautukset/varaukset" @click="showLainatPalautuksetVaraukset">
-          <b-card-text>Lainat/palautukset/varaukset</b-card-text>
+        <b-tab title="Lainat">
+          <b-card-text>Lainaustilastot kirjastoittain ja hyllypaikoittain aikaväliltä</b-card-text>
 
           <template>
             <div>
@@ -126,23 +126,55 @@
               <div class="mt-3">Selected: <strong>{{ selectedBranch }}</strong></div>
             </div>
           </template>
+          
+          <div>
+            <b-row class="mb-12">
+              <!-- pvm-valinta-->
+              <b-col lg="4" class="my-1">
+                <b-input-group class="mb-3">
+                  <b-form-input id="example-input" v-model="lowDate" type="text" placeholder="YYYY-MM-DD"
+                    autocomplete="off"></b-form-input>
+                  <b-input-group-append>
+                    <b-form-datepicker v-model="lowDate" button-only right locale="fi-FI" aria-controls="example-input"
+                      @context="onContext"></b-form-datepicker>
+                  </b-input-group-append>
+                </b-input-group>
+              </b-col>
+              <b-col lg="4" class="my-1">
+                <b-input-group class="mb-3">
+                  <b-form-input id="example-input" v-model="maxDate" type="text" placeholder="YYYY-MM-DD"
+                    autocomplete="off"></b-form-input>
+                  <b-input-group-append>
+                    <b-form-datepicker v-b-popover.hover="
+                      'Valitse loppupvm:ksi viimeiseksi raportoitavaa päivää seuraava päivä'
+                    " title="Ohje:" id="example-datepicker" v-model="maxDate" v-model="maxDate" button-only right
+                      locale="fi-FI" aria-controls="example-input" @context="onContext"></b-form-datepicker>
+                  </b-input-group-append>
+                </b-input-group>
 
-          <b-row class="mb-6">
+              </b-col>
+            </b-row>
+          </div>
+          <div>
+          <b-button type="button" class="btn btn-success" @click="showLainatPalautuksetVaraukset">Hae</b-button>
+          </div>
+          
+          <!-- <b-row class="mb-6">
             <b-col lg="2" class="my-1">
               <b-form-datepicker id="example-datepicker" v-model="lowDate"></b-form-datepicker>
-            </b-col>
+            </b-col>exportToCsv
             <b-col lg="2" class="my-1">
               <b-form-datepicker v-b-popover.hover="
                     'Valitse loppupvm:ksi viimeiseksi raportoitavaa päivää seuraava päivä'
                   " title="Ohje:" id="example-datepicker" v-model="maxDate"></b-form-datepicker>
             </b-col>
-          </b-row>
+          </b-row> -->
         </b-tab>
 
         <b-tab title="Poistot" disabled>
           <b-card-text>Tab contents 3</b-card-text>
         </b-tab>
-        <b-tab title="Poistotyökalu" >
+        <b-tab title="Poistotyökalu" @click="myJson = [], fields = []">
           <b-card-text>Tab contents 3</b-card-text>
           <div class="col-md-12 bg-light float-left">
             <b-row>
@@ -177,8 +209,8 @@
               
               <b-col lg="6" class="my-1">
                 <b-form-group
-                  label="Filter On"
-                  description="Leave all unchecked to filter on all data"
+                  label="Suodatettavat kentät:"
+                  description="Jätä tyhjäksi suodattaaksesi kaikista kentistä"
                   label-cols-sm="3"
                   label-align-sm="right"
                   label-size="sm"
@@ -188,9 +220,9 @@
                     v-model="filterOn"
                     class="mt-1"
                   >
-                    <b-form-checkbox value="1">Signum</b-form-checkbox>
-                    <b-form-checkbox value="2">Luokka</b-form-checkbox>
-                    <b-form-checkbox value="7">Nidetyyppi</b-form-checkbox>
+                    <b-form-checkbox value="1"> Signum</b-form-checkbox>
+                    <b-form-checkbox value="2"> Luokka</b-form-checkbox>
+                    <b-form-checkbox value="7"> Nidetyyppi</b-form-checkbox>
                   </b-form-checkbox-group>
                 </b-form-group>
               </b-col>
@@ -226,8 +258,7 @@
           <b-card-text>Tab contents 3</b-card-text>
         </b-tab>
         
-        <b-tab title="showOkmAllModded" @click="showOkmAllModded">
-          <b-card-text>OKM-tilastot</b-card-text>
+        <b-tab title="OKM-Tilastot" @click="showOkmAllModded">
           <div>
             <b-button v-b-toggle.collapse-1 variant="primary"> Näytä raporttilistaus || Piilota raporttilistaus </b-button>
             <b-collapse id="collapse-1" class="mt-2">
@@ -291,6 +322,12 @@
             </b-col>
           </b-row>
           
+          <b-row align-v="end">
+            <div>
+              Valittu: <b>{{ selectedOkm }}</b>
+            </div>
+          </b-row>
+          
         </b-tab>
 
       </b-tabs>
@@ -341,6 +378,7 @@
       myJson: [], //oletusdata
       lainpalselected: null,
       okmlisting: null,
+      selectedOkm: null,
       okmreportlistfields: null,
       options: [
         { value: null, text: 'Please select an option' },
@@ -372,6 +410,7 @@
 
       console.log("branches is: ");
       console.log(branchcodes);
+
       this.branchcodelist = branchcodes;
     },
 
@@ -395,9 +434,28 @@
 
       },
 
-      showLainatPalautuksetVaraukset() {
+      async showLainatPalautuksetVaraukset() {
         this.myJson.data = null;
         this.fields = null;
+        
+        let branch = 
+        
+        this.isBusy = true;
+        try {
+          const response = await axios.get(
+            `/api/v1/contrib/kohasuomi/okmstats/issues/`, { params: { branch: this.selectedBranch, lowdate: this.lowDate, maxdate: this.maxDate } }
+          );
+          
+          this.fields = lainatfields;
+          this.myJson.data = response.data;
+          
+          this.isBusy = false;
+
+        } catch (e) {
+          console.log(e);
+          this.isBusy = false;
+        }
+        
       },
 
       showAsiakkaat() {
@@ -512,6 +570,21 @@
           );
 
           this.fields = removetoolfields;
+          
+          var result = [];
+          response.data.forEach(function(item)
+            {
+              var obj = {};
+              // then loop through properties
+              item.forEach(function (value)
+              {
+                  // then set property and value
+                  obj[value[0]] = value[0]+"bla";
+              });
+
+              // once all is done push the object
+              result.push(obj);
+            });
           this.myJson.data = response.data;
           this.isBusy = !this.isBusy;
           this.sortBy = null;
@@ -525,6 +598,7 @@
       async fetchOkm(item) {
         console.log("fetchOkm started");
         let reportid = item[0];
+        selectedOkm = reportid;
         console.log(reportid);
         this.myJson.data = null;
         this.fields = null;
@@ -590,7 +664,7 @@
 <script src="[% PLUGIN_PATH %]/fieldtemplates/okmfields.js"></script>
 <script src="[% PLUGIN_PATH %]/fieldtemplates/okmreportlistfields.js"></script>
 <script src="[% PLUGIN_PATH %]/fieldtemplates/removetoolfields.js"></script>
-
+<script src="[% PLUGIN_PATH %]/fieldtemplates/lainatfields.js"></script>
 
 <script>
   fetch("[% PLUGIN_PATH %]/json/okmstatsmoddedjson.json")
