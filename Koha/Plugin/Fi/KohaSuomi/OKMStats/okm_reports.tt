@@ -25,7 +25,11 @@
 
 <div class="main container-fluid" id="page">
     <h1>Koha: OKM Statistics Plugin: Reports</h1>
-    [% IF okm_errors %]<div id="errors">[% okm_errors %]</div>[% END %]
+    [% IF okm_errors %]
+        [% FOREACH err IN okm_errors %]
+            <div id="errors">[% err %]</div>
+        [% END %]
+    [% END %]
 
     [% IF okm_logs %]
     <div class="row">
@@ -124,10 +128,9 @@
     <div class="row">
         <div class="col-sm-12">
             [% okm_asHtml = "$PLUGIN_DIR/includes/okm_asHtml.inc" %]
-            [% INCLUDE $okm_asHtml libraryGroups=okm.getLibraryGroups() %]
+            [% INCLUDE $okm_asHtml okm_stats = okm libraryGroups=okm.getLibraryGroups() %]
                 <div id="le_report_html">[% okm_report_html %]</div>
-                <div id="le_report_csv">[% okm_report_csv %]</div> 
-            
+                <div id="le_report_csv">[% okm_report_csv %]</div>
         </div>
     </div>[% END %]
 </div> [%# #page %]

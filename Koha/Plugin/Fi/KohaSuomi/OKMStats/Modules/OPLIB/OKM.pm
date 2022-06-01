@@ -29,6 +29,9 @@ use File::Basename qw( dirname );
 use YAML::XS;
 use JSON;
 
+use utf8;
+use Encode qw( encode_utf8 );
+
 use DateTime;
 
 use C4::Items;
@@ -726,7 +729,8 @@ sub Retrieve {
         my ($startDate, $endDate) = StandardizeTimeperiodParameter($timeperiod);
         $okm_serialized = _RetrieveByParams($startDate->iso8601(), $endDate->iso8601(), $individualBranches);
     }
-    return _deserialize($okm_serialized) if $okm_serialized;
+    #return _deserialize($okm_serialized) if $okm_serialized;
+    return decode_json(encode_utf8($okm_serialized)) if $okm_serialized;
     return undef;
 }
 sub _RetrieveById {
