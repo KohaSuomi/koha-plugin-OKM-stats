@@ -118,7 +118,7 @@ sub createStatistics {
             $self->_processItemsDataRow( $stats->{deleted}, $deletedItems->{$itemnumber} );
         }
 
-        my $acquiredItems = $self->fetchAcquisitions($notforloan, @branches);
+        my $acquiredItems = $self->fetchAcquisitions($notforloan, $excluded_itemtypes, @branches);
         foreach my $itemnumber (sort {$a <=> $b} keys %$acquiredItems) {
             $self->_processItemsDataRow( $stats->{acquisitions}, $acquiredItems->{$itemnumber});
         }
@@ -188,7 +188,7 @@ sub fetchDeletedItems {
 }
 
 sub fetchAcquisitions {
-    my ($self, $notforloan, @branches) = @_;
+    my ($self, $notforloan, $excluded_itemtypes, @branches) = @_;
     my @cc = caller(0);
     print '    #'.DateTime->now()->iso8601()."# Starting ".$cc[3]." #\n" if $self->{verbose};
     my $dbh = C4::Context->dbh();
@@ -197,6 +197,7 @@ sub fetchAcquisitions {
         FROM items i
         LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(i.biblioitemnumber = bde.biblioitemnumber)
         WHERE dateaccessioned >= ? AND dateaccessioned <= ?
+        AND bde.itemtype NOT IN (" . join(',', map {"'$_'"} $excluded_itemtypes).")
         AND i.notforloan not in (" . join(',', map {"'$_'"} $notforloan).")
         AND i.homebranch in (" . join(',', map {"'$_'"} @branches).")
         GROUP BY itemnumber";
