@@ -1,5 +1,3 @@
-[% PROCESS OKMGroupStatisticsAsHtml libraryGroups=libraryGroups %]
-
 <table>
     <thead>
         <tr>
