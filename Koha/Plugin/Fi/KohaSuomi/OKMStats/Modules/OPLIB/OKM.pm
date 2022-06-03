@@ -893,12 +893,12 @@ sub _validateConfigurationAndPreconditions {
     ##Check that all itemtypes and statistical categories are mapped
     ##when set to 0, statistical category must be used
     my %statCategories = ( "Books" => 1, "SheetMusicAndScores" => 1,
-                        "Recordings" => 1, "Videos" => 1, "Other" => 1, 
-                        "Celia" => 1, "Online" => 1, "Electronic" => 1);
+                        "Recordings" => 1, "Videos" => 1, "Other" => 1,
+                        "Celia" => 1, "Online" => 1, "Electronic" => 1,
+                        "Serials" => 1);
     
     foreach my $itype (@itypes) {
             my $mapping = $self->{conf}->{itemTypeToStatisticalCategory}->{$itype};
-                    
             unless ($mapping) { #Is itemtype mapped?
                 my @cc = caller(0);
                 push (@preconditionerr, $cc[3]."():> System preference 'OKM' has an unmapped itemtype '" . $itype . "'. Put it under 'itemTypeToStatisticalCategory'."."\n");
