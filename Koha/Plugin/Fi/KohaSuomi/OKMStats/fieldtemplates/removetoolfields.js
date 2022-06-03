@@ -1,5 +1,5 @@
 const removetoolfields = [
-    { label: "Viivakoodi", key: "0", sortable: true },
+    { label: "Viivakoodi", key: "0", formatter: "linkify", colType: "html", sortable: true },
     { label: "Signum", key: "1" , sortable: true},
     { label: "Luokka", key: "2" , sortable: true},
     { label: "Tekijä", key: "3", sortable: true },
