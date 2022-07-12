@@ -142,8 +142,8 @@ sub fetchItems {
         LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(i.biblioitemnumber = bde.biblioitemnumber)
         WHERE (i.homebranch IN (" . join(',', map {"'$_'"} @branches).")
         OR i.holdingbranch IN (" . join(',', map {"'$_'"} @branches)."))
-        AND i.notforloan NOT IN (" . join(',', map {"'$_'"} $notforloan).")
-        AND bde.itemtype NOT IN (" . join(',', map {"'$_'"} $excluded_itemtypes).")
+        AND i.notforloan NOT IN (" . join(',', map {"'$_'"} @$notforloan).")
+        AND bde.itemtype NOT IN (" . join(',', map {"'$_'"} @$excluded_itemtypes).")
         GROUP BY itemnumber";
     if ($self->{limit}) {
         $query .= ' LIMIT '.$self->{limit};
@@ -169,8 +169,8 @@ sub fetchDeletedItems {
         FROM deleteditems di
         LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(bde.biblioitemnumber = di.biblioitemnumber)
         WHERE di.timestamp > ? AND di.timestamp < ?
-        AND bde.itemtype NOT IN (" . join(',', map {"'$_'"} $excluded_itemtypes).")
-        AND di.notforloan not in (" . join(',', map {"'$_'"} $notforloan).")
+        AND bde.itemtype NOT IN (" . join(',', map {"'$_'"} @$excluded_itemtypes).")
+        AND di.notforloan not in (" . join(',', map {"'$_'"} @$notforloan).")
         AND di.homebranch in (" . join(',', map {"'$_'"} @branches).")
         GROUP BY itemnumber";
     if ($self->{limit}) {
@@ -197,8 +197,8 @@ sub fetchAcquisitions {
         FROM items i
         LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(i.biblioitemnumber = bde.biblioitemnumber)
         WHERE dateaccessioned >= ? AND dateaccessioned <= ?
-        AND bde.itemtype NOT IN (" . join(',', map {"'$_'"} $excluded_itemtypes).")
-        AND i.notforloan not in (" . join(',', map {"'$_'"} $notforloan).")
+        AND bde.itemtype NOT IN (" . join(',', map {"'$_'"} @$excluded_itemtypes).")
+        AND i.notforloan not in (" . join(',', map {"'$_'"} @$notforloan).")
         AND i.homebranch in (" . join(',', map {"'$_'"} @branches).")
         GROUP BY itemnumber";
     if ($self->{limit}) {
@@ -270,7 +270,7 @@ sub fetchIssues_newway {
         datetime, itemtype, hashed_borrowernumber, transaction_type
         FROM pseudonymized_transactions
         WHERE ( transaction_type = 'issue' OR transaction_type = 'renew' )
-        AND categorycode in (" . join(",", map {"'$_'"} $patronCategories).")
+        AND categorycode in (" . join(",", map {"'$_'"} @{$patronCategories}).")
         AND holdingbranch in (" . join(',', map {"'$_'"} @branches).")
         AND datetime >= ?
         AND datetime <= ?";
