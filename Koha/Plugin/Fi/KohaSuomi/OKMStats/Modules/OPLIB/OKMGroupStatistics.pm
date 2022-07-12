@@ -50,7 +50,7 @@ sub new {
         books_fact_juvenile => 0,
         sheet_music_score => 0,
         musical_regordins => 0,
-        other_regording => 0,
+        other_regordings => 0,
         videos => 0,
         celia => 0,
         other => 0
