@@ -362,7 +362,7 @@ sub _processItemsDataRow {
         elsif ($isItemMusical) {
             $stats->{musical_regordins}++;
         } else {
-            $stats->{other_regording}++;
+            $stats->{other_regordings}++;
         }
     } elsif ( $statCat eq 'Other') {
         $stats->{other}++;
