@@ -333,7 +333,7 @@ sub _processItemsDataRow {
         $stats->{expenditure_acquisitions_books} += $row->{price} if $row->{price};
 
         if (not(defined($primaryLanguage)) || $primaryLanguage eq 'fin') {
-            $stats->{book_finnish}++;
+            $stats->{books_finnish}++;
         } elsif ($primaryLanguage eq 'swe') {
             $stats->{books_swedish}++;
         } elsif ($primaryLanguage eq 'sme') {
