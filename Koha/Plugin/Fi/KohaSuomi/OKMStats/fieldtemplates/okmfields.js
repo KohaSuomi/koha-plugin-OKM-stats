@@ -1,7 +1,7 @@
 let okmfields = [
     {
         label: "Kirjastotunnus",
-        key: "branchCategory",
+        key: "library",
         sortable: true,
         stickyColumn: true,
         isRowHeader: true,
