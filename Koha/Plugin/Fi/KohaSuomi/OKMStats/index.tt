@@ -640,7 +640,7 @@
 
         this.fields = okmfields;
 
-        this.myJson.data = okmstatsmoddedjson;
+        this.myJson.data = null;
 
         this.isBusy = false;
       },
