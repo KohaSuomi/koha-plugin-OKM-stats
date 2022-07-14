@@ -702,8 +702,8 @@
           this.isBusy = false;
         }
       },
-
-      exportToCsv() {
+      
+      exportToCsvOld() {
         let moddedData = this.filtered;
 
         var items = moddedData;
@@ -727,8 +727,67 @@
         downloadLink.click();
         document.body.removeChild(downloadLink);
       },
+
+      
+      exportToCsv() {
+        let moddedData = this.filtered;
+        
+        const newArray = moddedData.map(({itemtypes, ...rest}) => rest);
+        
+        console.log("this filtered:");
+        for(var i = 0; i < moddedData.length; i++) {
+          console.log(moddedData.length);
+          delete moddedData[i].issues.itemtypes;
+          delete moddedData[i].deleted.itemtypes;
+          delete moddedData[i].acquisitions.itemtypes;
+          delete moddedData[i].collection_by_homebranch.itemtypes;
+          delete moddedData[i].collection_by_holdingbranch.itemtypes;
+          
+          
+        }
+        
+        let stringified = JSON.stringify(moddedData);
+        console.log("after remove:");
+        console.log(stringified);
+        
+        //console.log("modded stringified:");
+        //console.log(stringified);
+        
+
+        var items = moddedData;
+        const replacer = (key, value) => (value === null ? "" : value); // specify how you want to handle null values here
+        const header = Object.keys(items[0]);
+        let csv = items.map((row) =>
+          header
+            .map((fieldName) => JSON.stringify(row[fieldName], replacer))
+            .join(",")
+        );
+        csv.unshift(header.join(","));
+        csv = csv.join("\r\n");
+
+        //Download the file as CSV
+        var downloadLink = document.createElement("a");
+        var csvBlob = new Blob(["\ufeff", csv]);
+        var url = URL.createObjectURL(csvBlob);
+        downloadLink.href = url;
+
+        var months = new Array("Tammi", "Helmi", "Maalis", "Huhti", "Touko", "Kesä", "Heinä", "Elo", "Syys", "Loka", "Marras", "Joulu");
+        var now = new Date();
+        var date = now.getDate();
+        var year = now.getFullYear();
+        var month = months[now.getMonth()];
+        var fileName = "CSV"+year+month+date;
+
+        downloadLink.download = fileName; //Name the file here
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+
+      }
     }
   })
+
+      
 </script>
 </body>
 
