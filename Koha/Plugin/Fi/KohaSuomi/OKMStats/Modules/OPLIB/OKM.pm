@@ -125,8 +125,10 @@ sub createStatistics {
 
         my $issues = $self->fetchIssues($patronCategories, @branches);
         foreach my $itemnumber (sort {$a <=> $b} keys %$issues) {
-            $self->_processItemsDataRow( $stats->{issues}, $issues->{$itemnumber} );
-            $self->_processBorrowers( $stats->{active_borrowers}, $issues->{$itemnumber}->{hashed_borrowernumber} );
+            foreach my $datetime (keys %{$issues->{$itemnumber}} ){
+                $self->_processItemsDataRow( $stats->{issues}, $issues->{$itemnumber}->{$datetime} );
+                $self->_processBorrowers( $stats->{active_borrowers}, $issues->{$itemnumber}->{$datetime}->{hashed_borrowernumber} );
+            }
         }
     }
 }
@@ -222,8 +224,8 @@ sub fetchIssues {
     print '    #'.DateTime->now()->iso8601()."# Starting ".$cc[3]." #\n" if $self->{verbose};
     my $dbh = C4::Context->dbh();
     my $query = "(
-            SELECT s.branch, i.itemnumber, i.biblionumber, i.location, i.cn_sort, i.homebranch,
-            i.holdingbranch, i.price, bde.itemtype, bde.primary_language, bde.fiction, bde.musical, bde.celia
+            SELECT s.branch, s.datetime, s.itemnumber, bde.itemtype, bde.biblioitemnumber,
+            bde.primary_language, bde.fiction, bde.musical, bde.celia
             FROM statistics s
             LEFT JOIN items i ON(s.itemnumber = i.itemnumber)
             LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(i.biblioitemnumber = bde.biblioitemnumber)
@@ -231,20 +233,16 @@ sub fetchIssues {
             AND (s.type='issue' or s.type='renew')
             AND s.branch IN(" . join(",", map {"'$_'"} @branches).")
             AND s.usercode IN(" . join(",", map {"'$_'"} @{$patronCategories}).")
-            GROUP BY itemnumber
-        )
-        UNION
-        (
-            SELECT s.branch, di.itemnumber, di.biblionumber, di.location, di.cn_sort, di.homebranch,
-            di.holdingbranch, di.price, bde.itemtype, bde.primary_language, bde.fiction, bde.musical, bde.celia
+        ) UNION (
+            SELECT s.branch, s.datetime, s.itemnumber, bde.itemtype, bde.biblioitemnumber,
+            bde.primary_language, bde.fiction, bde.musical, bde.celia
             FROM statistics s
-            LEFT JOIN deleteditems di ON(s.itemnumber = di.itemnumber)
+            LEFT JOIN items di ON(s.itemnumber = di.itemnumber)
             LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(di.biblioitemnumber = bde.biblioitemnumber)
             WHERE s.datetime >= ? AND s.datetime <= ?
             AND (s.type='issue' or s.type='renew')
             AND s.branch IN(" . join(",", map {"'$_'"} @branches).")
             AND s.usercode IN(" . join(",", map {"'$_'"} @{$patronCategories}).")
-            GROUP BY itemnumber
         )";
     if ($self->{limit}) {
         $query .= ' LIMIT '.$self->{limit};
@@ -255,8 +253,9 @@ sub fetchIssues {
         my @cc = caller(0);
         die $cc[3]."():> ".$sth->errstr;
     }
-
-    my $issues = $sth->fetchall_hashref('itemnumber');
+    #since any table used here has no unique value to use as hash key
+    #we need to use itemnumber and datetime to take all issues into account
+    my $issues = $sth->fetchall_hashref([ qw( itemnumber datetime ) ]);
     return $issues;
 }
 
@@ -313,11 +312,10 @@ sub _processItemsDataRow {
     my ($self, $stats, $row) = @_;
     my $itemtype = $row->{itemtype};
     my $statCat = $self->{conf}->{itemTypeToStatisticalCategory}->{$itemtype} if $itemtype;
-    return undef if $statCat eq 'Electronic';
     unless ($statCat) {
-        $self->log("Couldn't get the statistical category for this item:<br/> - biblionumber => ".$row->{biblionumber}."<br/> - itemnumber => ".$row->{itemnumber}."<br/> - itype => ".$row->{itype}."<br/>Using category 'Other'.");
         $statCat = 'Other';
     }
+    return undef if $statCat eq 'Electronic';
 
     my $primaryLanguage = $row->{primary_language};
     my $isChildrensMaterial = $self->isItemChildrens($row);
@@ -372,7 +370,7 @@ sub _processItemsDataRow {
         $stats->{celia}++;
     }
 
-    $stats->{itemtypes}->{$itemtype}++;
+    $stats->{itemtypes}->{$itemtype}++ if $itemtype;
 }
 
 sub getLibraryGroups {
