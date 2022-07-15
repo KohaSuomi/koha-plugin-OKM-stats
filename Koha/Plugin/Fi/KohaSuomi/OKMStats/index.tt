@@ -315,7 +315,7 @@
                 <p class="card-text">Valitse näytettävä raportti klikkaamalla riviä</p>
                 <!--- #The row-clicked event will pass 3 parameters to your function. The first being the item specific to the row that was clicked. The second will be the index of the row, and the third is a native click event.
                 This means you can use the arguments keyword to get the index and pass it to your function. -->
-                <b-table striped hover :fields="okmreportlistfields" :items="okmlisting" @row-clicked="fetchOkm(arguments[0])">
+                <b-table striped bordered hover :fields="okmreportlistfields" :items="okmlisting" @row-clicked="fetchOkm(arguments[0])">
                 </b-table>
               </b-card>
             </b-collapse>
@@ -350,6 +350,14 @@
             </b-form-group>
           </b-col>
           
+          <div>  
+
+                    <b-button type="button" class="btn btn-info" @click="okmViewCollectionHomebranch=!okmViewCollectionHomebranch">Näytä/Piilota Kokoelmat (koti)</b-button>
+                    <b-button type="button" class="btn btn-info" @click="showHideAge=!showHideAge">Näytä/Piilota Kokoelmat (sijainti)</b-button>
+                    <b-button type="button" class="btn btn-info" @click="showHideAge=!showHideAge">Show/Hide x</b-button>
+
+                  </div>
+          
           <b-row>
             <b-col lg="8" class="my-1">
               <b-form-group label="Suodata" label-for="filter-input" label-cols-sm="3" label-align-sm="right" label-size="sm"
@@ -361,6 +369,8 @@
                       <b>{{ sortDesc ? "Descending" : "Ascending" }}</b>
                     </div>
                   </b-row>
+                  
+                  
         
                   <b-input-group class="mt-3">
                     <b-button :disabled="!filter" @click="filter = null" lg="4">Tyhjennä suodatin</b-button>
@@ -389,7 +399,8 @@
 
   <div id="datatable">
     <!-- sido tablen näyttämä data muuttujaan v-model: filtered, kutsu metodissa this.filtered -->
-    <b-table v-model="filtered" striped hover responsive="sm" selectable bordered outlined small sort-icon-left
+    <!-- sticky-header pitää rivien otsikot paikallaan, mutta ei ole kovin käytettävä. -->
+    <b-table v-model="filtered" striped hover responsive="sm" selectable bordered outlined small sort-icon-left no-border-collapse
       :sort-by.sync="sortBy" :filter-included-fields="filterOn" :sort-desc.sync="sortDesc" :items="myJson.data" :fields="fields"  :busy="isBusy"
       :filter="filter">
       
@@ -430,6 +441,7 @@
       okmlisting: null,
       selectedOkm: null,
       okmreportlistfields: null,
+      okmViewCollectionHomebranch: true,
       options: [
         { value: null, text: 'Please select an option' },
         { value: 'Lainaus', text: 'Lainaus' },
