@@ -77,8 +77,8 @@ let okmfields = [
         { label: "Lainaus: Videotallenteet", key: "issues.videos" , sortable: true,},
         { label: "Lainaus: Muut aineistot", key: "issues.other" , sortable: true,},
         
-        { label: "Sanomalehdet", key: "serials.newspaper" , sortable: true, variant: 'info'},
-        { label: "Aikakauslehdet", key: "serials.serials" , sortable: true,},
+        //{ label: "Sanomalehdet", key: "serials.newspaper" , sortable: true, variant: 'info'},
+        //{ label: "Aikakauslehdet", key: "serials.serials" , sortable: true,},
         
         { label: "Poistot", key: "deleted.total" , sortable: true, variant: 'info'},
         
