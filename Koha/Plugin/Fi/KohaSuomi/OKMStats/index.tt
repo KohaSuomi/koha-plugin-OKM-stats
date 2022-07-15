@@ -51,7 +51,7 @@
   <div>
     <b-card no-body>
       <b-tabs pills card>
-        <b-tab title="Hankinnat" @click="showHankinnat">
+        <b-tab disabled title="Hankinnat" @click="showHankinnat">
           <b-card-text>Tab contents 2</b-card-text>
           <b-button @click="toggleBusy">Toggle Busy State</b-button>
 
@@ -108,10 +108,10 @@
           </div>
 
         </b-tab>
-        <b-tab title="Kokoelmat(collection)">
+        <b-tab disabled title="Kokoelmat(collection)">
           <b-card-text>Tab contents 3</b-card-text>
         </b-tab>
-        <b-tab title="Asiakkaat(users)" @click="showAsiakkaat">
+        <b-tab disabled title="Asiakkaat(users)" @click="showAsiakkaat">
           <b-card-text>Asiakkaat</b-card-text>
           <div>
             Branchcode:
@@ -120,7 +120,7 @@
           </div>
 
         </b-tab>
-        <b-tab title="Lainat">
+        <b-tab disabled title="Lainat">
           <b-card-text>Lainaustilastot kirjastoittain ja hyllypaikoittain aikaväliltä</b-card-text>
 
           <template>
@@ -175,7 +175,7 @@
           </b-row> -->
         </b-tab>
         
-        <b-tab title="Uusinnat">
+        <b-tab disabled title="Uusinnat">
           <b-card-text>Uusinnat hyllypaikoittain aikaväliltä</b-card-text>
 
           <template>
@@ -220,7 +220,7 @@
           
         </b-tab>
 
-        <b-tab title="Poistot" disabled>
+        <b-tab disabled title="Poistot" disabled>
           <b-card-text>Tab contents 3</b-card-text>
         </b-tab>
         <b-tab title="Poistotyökalu" @click="myJson = [], fields = []">
@@ -303,7 +303,7 @@
           
           
         </b-tab>
-        <b-tab title="Kaukopalvelu" disabled>
+        <b-tab disabled title="Kaukopalvelu" disabled>
           <b-card-text>Tab contents 3</b-card-text>
         </b-tab>
         
@@ -352,9 +352,9 @@
           
           <div>  
 
-                    <b-button type="button" class="btn btn-info" @click="okmViewCollectionHomebranch=!okmViewCollectionHomebranch">Näytä/Piilota Kokoelmat (koti)</b-button>
-                    <b-button type="button" class="btn btn-info" @click="showHideAge=!showHideAge">Näytä/Piilota Kokoelmat (sijainti)</b-button>
-                    <b-button type="button" class="btn btn-info" @click="showHideAge=!showHideAge">Show/Hide x</b-button>
+                    <b-button type="button" disabled @click="okmViewCollectionHomebranch=!okmViewCollectionHomebranch">Näytä/Piilota Kokoelmat (koti)</b-button>
+                    <b-button type="button" disabled @click="showHideAge=!showHideAge">Näytä/Piilota Kokoelmat (sijainti)</b-button>
+                    <b-button type="button" disabled @click="showHideAge=!showHideAge">Show/Hide x</b-button>
 
                   </div>
           
