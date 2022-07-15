@@ -315,7 +315,7 @@
                 <p class="card-text">Valitse näytettävä raportti klikkaamalla riviä</p>
                 <!--- #The row-clicked event will pass 3 parameters to your function. The first being the item specific to the row that was clicked. The second will be the index of the row, and the third is a native click event.
                 This means you can use the arguments keyword to get the index and pass it to your function. -->
-                <b-table striped bordered hover :fields="okmreportlistfields" :items="okmlisting" @row-clicked="fetchOkm(arguments[0])">
+                <b-table striped bordered hover selectable :select-mode="okmSelectMode" :fields="okmreportlistfields" :items="okmlisting" @row-clicked="fetchOkm(arguments[0])">
                 </b-table>
               </b-card>
             </b-collapse>
@@ -442,6 +442,7 @@
       selectedOkm: null,
       okmreportlistfields: null,
       okmViewCollectionHomebranch: true,
+      okmSelectMode: 'single',
       options: [
         { value: null, text: 'Please select an option' },
         { value: 'Lainaus', text: 'Lainaus' },
