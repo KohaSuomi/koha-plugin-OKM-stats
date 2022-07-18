@@ -49,8 +49,8 @@ sub new {
         books_fact_adult => 0,
         books_fact_juvenile => 0,
         sheet_music_score => 0,
-        musical_regordins => 0,
-        other_regordings => 0,
+        musical_recordings => 0,
+        other_recordings => 0,
         videos => 0,
         celia => 0,
         other => 0

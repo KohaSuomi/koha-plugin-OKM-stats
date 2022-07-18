@@ -15,7 +15,7 @@
             <th>Collection by homebranch books fact juvenile</th>
             <th>Collection by homebranch sheet music score</th>
             <th>Collection by homebranch musical recordings</th>
-            <th>Collection by homebranch other regordings</th>
+            <th>Collection by homebranch other recordings</th>
             <th>Collection by homebranch videos</th>
             <th>Collection by homebranch celia</th>
             <th>Collection by homebranch other</th>
@@ -32,7 +32,7 @@
             <th>Collection by holdingbranch books fact juvenile</th>
             <th>Collection by holdingbranch sheet music score</th>
             <th>Collection by holdingbranch musical recordings</th>
-            <th>Collection by holdingbranch other regordings</th>
+            <th>Collection by holdingbranch other recordings</th>
             <th>Collection by holdingbranch videos</th>
             <th>Collection by holdingbranch celia</th>
             <th>Collection by holdingbranch other</th>
@@ -49,7 +49,7 @@
             <th>Issues books fact juvenile</th>
             <th>Issues sheet music score</th>
             <th>Issues musical recordings</th>
-            <th>Issues other regordings</th>
+            <th>Issues other recordings</th>
             <th>Issues videos</th>
             <th>Issues celia</th>
             <th>Issues other</th>
@@ -66,7 +66,7 @@
             <th>Deleted books fact juvenile</th>
             <th>Deleted sheet music score</th>
             <th>Deleted musical recordings</th>
-            <th>Deleted other regordings</th>
+            <th>Deleted other recordings</th>
             <th>Deleted videos</th>
             <th>Deleted celia</th>
             <th>Deleted other</th>
@@ -83,7 +83,7 @@
             <th>Acquisitions books fact juvenile</th>
             <th>Acquisitions sheet music score</th>
             <th>Acquisitions musical recordings</th>
-            <th>Acquisitions other regordings</th>
+            <th>Acquisitions other recordings</th>
             <th>Acquisitions videos</th>
             <th>Acquisitions celia</th>
             <th>Acquisitions other</th>
@@ -106,8 +106,8 @@
         <td>[% okm_stat.collection_by_homebranch.books_fact_adult %]</td>
         <td>[% okm_stat.collection_by_homebranch.books_fact_juvenile %]</td>
         <td>[% okm_stat.collection_by_homebranch.sheet_music_score %]</td>
-        <td>[% okm_stat.collection_by_homebranch.musical_regordins %]</td>
-        <td>[% okm_stat.collection_by_homebranch.other_regordings %]</td>
+        <td>[% okm_stat.collection_by_homebranch.musical_recordings %]</td>
+        <td>[% okm_stat.collection_by_homebranch.other_recordings %]</td>
         <td>[% okm_stat.collection_by_homebranch.videos %]</td>
         <td>[% okm_stat.collection_by_homebranch.celia %]</td>
         <td>[% okm_stat.collection_by_homebranch.other %]</td>
@@ -123,8 +123,8 @@
         <td>[% okm_stat.collection_by_holdingbranch.books_fact_adult %]</td>
         <td>[% okm_stat.collection_by_holdingbranch.books_fact_juvenile %]</td>
         <td>[% okm_stat.collection_by_holdingbranch.sheet_music_score %]</td>
-        <td>[% okm_stat.collection_by_holdingbranch.musical_regordins %]</td>
-        <td>[% okm_stat.collection_by_holdingbranch.other_regordings %]</td>
+        <td>[% okm_stat.collection_by_holdingbranch.musical_recordings %]</td>
+        <td>[% okm_stat.collection_by_holdingbranch.other_recordings %]</td>
         <td>[% okm_stat.collection_by_holdingbranch.videos %]</td>
         <td>[% okm_stat.collection_by_holdingbranch.celia %]</td>
         <td>[% okm_stat.collection_by_holdingbranch.other %]</td>
@@ -140,8 +140,8 @@
         <td>[% okm_stat.issues.books_fact_adult %]</td>
         <td>[% okm_stat.issues.books_fact_juvenile %]</td>
         <td>[% okm_stat.issues.sheet_music_score %]</td>
-        <td>[% okm_stat.issues.musical_regordins %]</td>
-        <td>[% okm_stat.issues.other_regordings %]</td>
+        <td>[% okm_stat.issues.musical_recordings %]</td>
+        <td>[% okm_stat.issues.other_recordings %]</td>
         <td>[% okm_stat.issues.videos %]</td>
         <td>[% okm_stat.issues.celia %]</td>
         <td>[% okm_stat.issues.other %]</td>
@@ -157,8 +157,8 @@
         <td>[% okm_stat.deleted.books_fact_adult %]</td>
         <td>[% okm_stat.deleted.books_fact_juvenile %]</td>
         <td>[% okm_stat.deleted.sheet_music_score %]</td>
-        <td>[% okm_stat.deleted.musical_regordins %]</td>
-        <td>[% okm_stat.deleted.other_regordings %]</td>
+        <td>[% okm_stat.deleted.musical_recordings %]</td>
+        <td>[% okm_stat.deleted.other_recordings %]</td>
         <td>[% okm_stat.deleted.videos %]</td>
         <td>[% okm_stat.deleted.celia %]</td>
         <td>[% okm_stat.deleted.other %]</td>
@@ -174,8 +174,8 @@
         <td>[% okm_stat.acquisitions.books_fact_adult %]</td>
         <td>[% okm_stat.acquisitions.books_fact_juvenile %]</td>
         <td>[% okm_stat.acquisitions.sheet_music_score %]</td>
-        <td>[% okm_stat.acquisitions.musical_regordins %]</td>
-        <td>[% okm_stat.acquisitions.other_regordings %]</td>
+        <td>[% okm_stat.acquisitions.musical_recordings %]</td>
+        <td>[% okm_stat.acquisitions.other_recordings %]</td>
         <td>[% okm_stat.acquisitions.videos %]</td>
         <td>[% okm_stat.acquisitions.celia %]</td>
         <td>[% okm_stat.acquisitions.other %]</td>
