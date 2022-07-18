@@ -358,9 +358,9 @@ sub _processItemsDataRow {
             $stats->{celia}++;
         }
         elsif ($isItemMusical) {
-            $stats->{musical_regordins}++;
+            $stats->{musical_recordings}++;
         } else {
-            $stats->{other_regordings}++;
+            $stats->{other_recordings}++;
         }
     } elsif ( $statCat eq 'Other') {
         $stats->{other}++;
