@@ -87,6 +87,8 @@
             <th>Acquisitions videos</th>
             <th>Acquisitions celia</th>
             <th>Acquisitions other</th>
+            <th>Acquisitions expenditures</th>
+            <th>Acquisitions expenditures books</th>
             <!--Active borrowers-->
             <th>Active borrowers</th>
         </tr>
@@ -179,6 +181,8 @@
         <td>[% okm_stat.acquisitions.videos %]</td>
         <td>[% okm_stat.acquisitions.celia %]</td>
         <td>[% okm_stat.acquisitions.other %]</td>
+        <td>[% okm_stat.acquisitions.expenditures %]</td>
+        <td>[% okm_stat.acquisitions.expenditures_books %]</td>
         <!--Active borrowers-->
         <td>[% okm_stat.active_borrowers %]</td>
     </tr>
