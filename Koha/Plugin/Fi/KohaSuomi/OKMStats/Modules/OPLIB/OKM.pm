@@ -371,6 +371,13 @@ sub _processItemsDataRow {
     }
 
     $stats->{itemtypes}->{$itemtype}++ if $itemtype;
+
+    if($row->{price}){
+        $stats->{expenditures} += sprintf("%.1f", $row->{price});
+        if($statCat eq "Books"){
+            $stats->{expenditures_books} += sprintf("%.1f", $row->{price});
+        }
+    }
 }
 
 sub getLibraryGroups {
