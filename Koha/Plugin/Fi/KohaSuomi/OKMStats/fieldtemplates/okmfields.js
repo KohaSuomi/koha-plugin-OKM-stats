@@ -10,7 +10,7 @@ let okmfields = [
         
         
         { label: "Kokoelmat (sijainti): Yhteensä", key: "collection_by_holdingbranch.total", sortable: true, variant: 'info'},
-        { label: "Kokoelmat (sijainti): Kirjat Yhteensä", key: "collection_by_holdingbranch.books_total" , sortable: true, },
+        { label: "Kokoelmat (sijainti): Kirjat Yhteensä", key: "collection_by_holdingbranch.books_total" , sortable: true },
         { label: "Kokoelmat (sijainti): Kirjat Suomenkieliset ", key: "collection_by_holdingbranch.books_finnish" , sortable: true, },
         { label: "Kokoelmat (sijainti): Kirjat Ruotsinkieliset ", key: "collection_by_holdingbranch.books_swedish" , sortable: true, },
         { label: "Kokoelmat (sijainti): Kirjat Saamenkieliset", key: "collection_by_holdingbranch.books_sami" , sortable: true, },

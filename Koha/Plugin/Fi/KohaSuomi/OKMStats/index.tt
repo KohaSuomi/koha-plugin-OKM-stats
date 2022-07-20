@@ -11,6 +11,7 @@
     #datatable {
       margin-left: 5 !important;
       margin-right: 5 !important;
+       margin-bottom: 55 !important;
     }
     
   </style>
@@ -350,9 +351,19 @@
             </b-form-group>
           </b-col>
           
-          <div>  
+          <div> 
+          <div>Piilota:
+          </div> 
+     <b-input-group>   
+    <b-button type="button" :pressed.sync="hideOkmCollectionHoldingBranch" variant="primary">Kokoelma (sijaintikirj.)</b-button>
+    <b-button type="button" :pressed.sync="hideOkmCollectionHomeBranch" variant="primary">Kokoelma (koti)</b-button>
+    
+    </b-input-group>
+    <b-row>
+    <p>Pressed State: <strong>{{ hideOkmCollectionHoldingBranch }}</strong> Pressed State: <strong>{{ hideOkmCollectionHomeBranch }}</strong></p>
 
-                    <b-button type="button" disabled @click="okmViewCollectionHomebranch=!okmViewCollectionHomebranch">Näytä/Piilota Kokoelmat (koti)</b-button>
+    </b-row>                
+                    
                     <b-button type="button" disabled @click="showHideAge=!showHideAge">Näytä/Piilota Kokoelmat (sijainti)</b-button>
                     <b-button type="button" disabled @click="showHideAge=!showHideAge">Show/Hide x</b-button>
 
@@ -371,10 +382,11 @@
                   </b-row>
                   
                   
-        
+                 
                   <b-input-group class="mt-3">
                     <b-button :disabled="!filter" @click="filter = null" lg="4">Tyhjennä suodatin</b-button>
                     <b-button @click="sortBy = null" lg="4">Tyhjennä järjestys</b-button>
+                    
                   </b-input-group>
                 </b-input-group>
               </b-form-group>
@@ -400,9 +412,11 @@
   <div id="datatable">
     <!-- sido tablen näyttämä data muuttujaan v-model: filtered, kutsu metodissa this.filtered -->
     <!-- sticky-header pitää rivien otsikot paikallaan, mutta ei ole kovin käytettävä. -->
-    <b-table v-model="filtered" striped hover responsive="sm" selectable bordered outlined small sort-icon-left no-border-collapse
+    <b-table v-model="filtered" sticky-header head-variant="light" striped hover responsive="sm" selectable bordered outlined small sort-icon-left no-border-collapse
       :sort-by.sync="sortBy" :filter-included-fields="filterOn" :sort-desc.sync="sortDesc" :items="myJson.data" :fields="fields"  :busy="isBusy"
       :filter="filter">
+      
+      
       
       <div slot="table-busy" class="text-center text-danger my-2">
         <b-spinner class="align-middle"></b-spinner>
@@ -410,6 +424,10 @@
       </div>
   </div>
 </div>
+
+</b-row>
+          
+      <b-row align-v="end">
 
 
 <!-- Start running your app -->
@@ -443,6 +461,8 @@
       okmreportlistfields: null,
       okmViewCollectionHomebranch: true,
       okmSelectMode: 'single',
+      hideOkmCollectionHoldingBranch: false,
+      hideOkmCollectionHomeBranch: false,
       options: [
         { value: null, text: 'Please select an option' },
         { value: 'Lainaus', text: 'Lainaus' },
@@ -464,6 +484,11 @@
             return { text: f.label, value: f.key };
           });
       },
+      btnStates() {
+        return this.buttons.map(btn => btn.state)
+      }
+      
+      
     },
 
     mounted: function () {
@@ -482,7 +507,17 @@
       toggleBusy() {
         this.isBusy = !this.isBusy;
       },
-      
+      hideCollectionHome(){
+        
+        okmHomeFieldsHidden = true;
+        
+        console.log(this.fields);
+        //this.fields.collection_by_homebranch.total.visible= !this.fields.collection_by_homebranch.total.visible;
+        
+        //delete this.fields[17];
+        //delete this.fields[18];
+        //delete this.fields[19];
+      },
       
       onContext(ctx) {
         // Päivämäärälle: The date formatted in the locale, or the `label-no-date-selected` string
@@ -590,45 +625,7 @@
         this.isBusy = false;
       },
 
-      showOkmAll() {
-        this.isBusy = !this.isBusy;
-        this.myJson.data = null;
-        this.fields = null;
-
-        //this.fields = [
-        //  { label: "City", key: "city_name", sortable: true },
-        //  { label: "Zipcode", key: "city_zipcode" },
-        //];
-        // Converting JSON object to JS object
-        //var obj = JSON.parse(JSON.stringify(okmall));
-
-        //console.log(okmall);
-
-        const keys = [];
-
-        for (let [key, value] of Object.entries(okmall)) {
-          console.log(key, value);
-          keys.push({ library: key });
-        }
-
-        console.log(keys);
-
-        for (const [key, value] of Object.entries(keys)) {
-          console.log(key, value);
-        }
-
-        //const builtarray = [];
-        //var labels = '{"data":[{"library":"SII_PK"},{"library":"SII_AU"},{"library":"SII_VU"}]}';
-
-        //var okmmoddata = JSON.parse(labels);
-
-        //okmmoddata.data.library["SII_PK"].issues = okmall.SII_PK.issues;
-
-        this.fields = okmfields;
-
-        this.myJson.data = okmstatsmoddedjson;
-        this.isBusy = !this.isBusy;
-      },
+      
 
       async showOkmAllModded() {
 
@@ -688,12 +685,59 @@
         this.myJson.data = null;
         this.fields = null;
         this.isBusy = true;
+        
+        console.log("hideOkmCollectionHoldingBranch:");
+         console.log(this.hideOkmCollectionHoldingBranch);
+         console.log("hideOkmCollectionHomeBranch:");
+         console.log(this.hideOkmCollectionHomeBranch);
+         
+        if (this.hideOkmCollectionHoldingBranch === false && this.hideOkmCollectionHomeBranch === false ){
+
+            console.log("2x false");
+            this.fields = okmfields;
+            console.log(okmfields);
+          }
+        else if (this.hideOkmCollectionHoldingBranch === true && this.hideOkmCollectionHomeBranch === false ){
+            console.log("true + false");
+          
+         // If we want to copy a primitive value, we can use assignment operator (=), but for objects we cannot use the assignment operator.  
+         var okmfieldsfiltered = [...okmfields];
+            for (let i = 1; i < 17; i++) {
+              delete okmfieldsfiltered[i];
+              
+            }
+            this.fields = okmfieldsfiltered;
+          } 
+          else if (this.hideOkmCollectionHoldingBranch === false && this.hideOkmCollectionHomeBranch === true ){
+            console.log("false + true");
+        
+         var okmfieldsfiltered = [...okmfields];
+            for (let i = 17; i < 33; i++) {
+              delete okmfieldsfiltered[i];
+            } 
+            this.fields = okmfieldsfiltered;      
+          }
+          
+          else if (this.hideOkmCollectionHoldingBranch === true && this.hideOkmCollectionHomeBranch === true ){
+            console.log("true + true");
+          
+         var okmfieldsfiltered = [...okmfields];
+            for (let i = 1; i < 33; i++) {
+              delete okmfieldsfiltered[i];
+            } 
+            this.fields = okmfieldsfiltered;
+          }
+          else {
+            this.fields = okmfields;
+          }
+          
+          
+          
         try {
           const response = await axios.get(
             `/api/v1/contrib/kohasuomi/okmstats/reportsstats/`, { params: { okm_id: reportid } }
           );
-
-          this.fields = okmfields;
+          
           //this.myJson.data = response.data;
           console.log("Fetched okm report data:");
           console.log(response.data);
@@ -701,19 +745,31 @@
           stringified = stringified.replace(/\\/g,'');
           stringified = stringified.substring(3);
           stringified = stringified.slice(0, -3);
-          console.log("okm stringified:");
-          console.log(stringified);
+          //console.log("okm stringified:");
+          //console.log(stringified);
           
-          let jsonified = JSON.parse(stringified); 
+          let jsonified = JSON.parse(stringified);
+          
+           
           
           this.myJson.data = jsonified;
-          
-          this.isBusy = false;
-
-        } catch (e) {
+          } catch (e) {
           console.log(e);
           this.isBusy = false;
         }
+          
+         
+         
+          
+          
+          
+          
+          
+          
+          this.isBusy = false;
+          
+
+        
       },
       
       exportToCsvOld() {
@@ -745,7 +801,7 @@
       exportToCsv() {
         let moddedData = this.filtered;
         
-        const newArray = moddedData.map(({itemtypes, ...rest}) => rest);
+        //const newArray = moddedData.map(({itemtypes, ...rest}) => rest);
         
         console.log("this filtered:");
         for(var i = 0; i < moddedData.length; i++) {
@@ -759,26 +815,74 @@
           
         }
         
-        let stringified = JSON.stringify(moddedData);
-        console.log("after remove:");
-        console.log(stringified);
+        //         const flattenJSON = (obj = {}, res = {}, extraKey = '') => {
+        //   for(key in obj){
+        //       if(typeof obj[key] !== 'object'){
+        //         res[extraKey + key] = obj[key];
+        //       }else{
+        //         flattenJSON(obj[key], res, `${extraKey}${key}.`);
+        //       };
+        //   };
+        //   return res;
+        // };
         
-        //console.log("modded stringified:");
-        //console.log(stringified);
+  //return newObj;
+
+        //var items = flattenJSON(moddedData);
+        var items = flatten(moddedData);
+        console.log("flattened:");
+        console.log(items);
+        //console.log(Object.keys(items));
+        //console.log(Object.values(items));
         
+         
+        
+        
+        
+        //var json = JSON.stringify(items);
+        
+        // if (typeof Object.keys( json[0]) !== 'undefined' && Object.keys( json[0]) !== null && Object.keys( json[0]).length > 0) {
+        //       var fields = Object.keys(json[0]);
+        //   }
+        //var items = moddedData;
+        //var csv = "";
+var keys = Object.keys(items);
 
-        var items = moddedData;
-        const replacer = (key, value) => (value === null ? "" : value); // specify how you want to handle null values here
-        const header = Object.keys(items[0]);
-        let csv = items.map((row) =>
-          header
-            .map((fieldName) => JSON.stringify(row[fieldName], replacer))
-            .join(",")
-        );
-        csv.unshift(header.join(","));
-        csv = csv.join("\r\n");
+for (let i = 0; i < keys.length; i++) {
+  let val = items[keys[i]];
+  console.log("val:");
+  console.log(val);
+                
+        }
+//var values = Object.values(items);
 
-        //Download the file as CSV
+    // Build header
+    var result = keys.join(",") + "\n";
+    
+    for (let i = 0; i < keys.length; i++) {
+  let val = items[keys[i]];
+  result += val;
+  result += ",";
+  console.log(val);
+    }
+    
+    // result += values.join(",") + "\n";
+    // console.log(result);
+
+    // Add the rows
+    
+
+        // for(var i = 0; i < this.fields.length; i++) {
+        //   csv += JSON.stringify(this.fields[i].label);
+        //   csv += ",";          
+        // }
+        
+        // csv = csv.replace(/['"]+/g, '');
+        // csv = csv.slice(0, csv.length - 1);
+        // csv += '\r\n';
+
+        let csv = result;
+                //Download the file as CSV
         var downloadLink = document.createElement("a");
         var csvBlob = new Blob(["\ufeff", csv]);
         var url = URL.createObjectURL(csvBlob);
@@ -795,6 +899,45 @@
         document.body.appendChild(downloadLink);
         downloadLink.click();
         document.body.removeChild(downloadLink);
+        
+    //return str;
+        //console.log(str);
+        
+        //console.log("modded stringified:");
+        //console.log(stringified);
+        
+
+        //var items = moddedData;
+        /* const replacer = (key, value) => (value === null ? "" : value); // specify how you want to handle null values here
+        const header = Object.keys(items[0]);
+        let csv = items.map((row) =>
+          header
+            .map((fieldName) => JSON.stringify(row[fieldName], replacer))
+            .join(",")
+        );
+        csv.unshift(header.join(","));
+        csv = csv.join("\r\n"); */
+        // let csv = "";
+        // for(var i = 0; i < this.fields.length; i++) {
+        //   csv += JSON.stringify(this.fields[i].label);
+        //   csv += ",";          
+        // }
+        
+        // csv = csv.replace(/['"]+/g, '');
+        // csv = csv.slice(0, csv.length - 1);
+        // csv += '\r\n';
+        
+        //console.log(csv);
+        
+        
+
+
+
+        
+        
+        
+
+
 
       }
     }
@@ -806,6 +949,7 @@
 
 <script src="[% PLUGIN_PATH %]/json/okmstatsmoddedjson.js"></script>
 <script src="[% PLUGIN_PATH %]/fieldtemplates/okmfields.js"></script>
+<script src="[% PLUGIN_PATH %]/fieldtemplates/okmfieldsholdingbranchhidden.js"></script>
 <script src="[% PLUGIN_PATH %]/fieldtemplates/okmreportlistfields.js"></script>
 <script src="[% PLUGIN_PATH %]/fieldtemplates/removetoolfields.js"></script>
 <script src="[% PLUGIN_PATH %]/fieldtemplates/lainatfields.js"></script>
@@ -815,6 +959,20 @@
     .then(response => response.json());
  // .then(jsonObject => console.log(jsonObject));
 
-</script>
+function flatten (obj) {
+  var newObj = {};
+  for (var key in obj) {
+    if (typeof obj[key] === 'object' && obj[key] !== null) {
+      var temp = flatten(obj[key])
+      for (var key2 in temp) {
+        newObj[key+"_"+key2] = temp[key2];
+      }
+    } else {
+      newObj[key] = obj[key];
+    }
+  }
+  return newObj;
+}
 
+</script>
 </html>
