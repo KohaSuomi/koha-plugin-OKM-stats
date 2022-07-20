@@ -354,13 +354,17 @@
           <div> 
           <div>Piilota:
           </div> 
-     <b-input-group>   
+    <b-input-group>   
     <b-button type="button" :pressed.sync="hideOkmCollectionHoldingBranch" variant="primary">Kokoelma (sijaintikirj.)</b-button>
     <b-button type="button" :pressed.sync="hideOkmCollectionHomeBranch" variant="primary">Kokoelma (koti)</b-button>
+    <b-button type="button" :pressed.sync="hideOkmAcquisitions" variant="primary">Hankinnat</b-button>
+    <b-button type="button" :pressed.sync="hideOkmIssues" variant="primary">Lainaus</b-button>
+   
     
     </b-input-group>
     <b-row>
-    <p>Pressed State: <strong>{{ hideOkmCollectionHoldingBranch }}</strong> Pressed State: <strong>{{ hideOkmCollectionHomeBranch }}</strong></p>
+    <p>Pressed State: <strong>{{ hideOkmCollectionHoldingBranch }}</strong> Pressed State: <strong>{{ hideOkmCollectionHomeBranch }}</strong>Pressed State: <strong>{{ hideOkmAcquisitions }}</strong>
+    Pressed State: <strong>{{ hideOkmIssues }}</strong></p>
 
     </b-row>                
                     
@@ -463,6 +467,8 @@
       okmSelectMode: 'single',
       hideOkmCollectionHoldingBranch: false,
       hideOkmCollectionHomeBranch: false,
+      hideOkmAcquisitions: false,
+      hideOkmIssues: false,
       options: [
         { value: null, text: 'Please select an option' },
         { value: 'Lainaus', text: 'Lainaus' },
@@ -691,45 +697,33 @@
          console.log("hideOkmCollectionHomeBranch:");
          console.log(this.hideOkmCollectionHomeBranch);
          
-        if (this.hideOkmCollectionHoldingBranch === false && this.hideOkmCollectionHomeBranch === false ){
-
-            console.log("2x false");
-            this.fields = okmfields;
-            console.log(okmfields);
-          }
-        else if (this.hideOkmCollectionHoldingBranch === true && this.hideOkmCollectionHomeBranch === false ){
-            console.log("true + false");
-          
          // If we want to copy a primitive value, we can use assignment operator (=), but for objects we cannot use the assignment operator.  
          var okmfieldsfiltered = [...okmfields];
-            for (let i = 1; i < 17; i++) {
+         
+         if (this.hideOkmCollectionHoldingBranch === true) {
+          for (let i = 1; i < 17; i++) {
               delete okmfieldsfiltered[i];
               
             }
-            this.fields = okmfieldsfiltered;
-          } 
-          else if (this.hideOkmCollectionHoldingBranch === false && this.hideOkmCollectionHomeBranch === true ){
-            console.log("false + true");
-        
-         var okmfieldsfiltered = [...okmfields];
-            for (let i = 17; i < 33; i++) {
+         }
+         if (this.hideOkmCollectionHomeBranch === true) {
+          for (let i = 17; i < 33; i++) {
               delete okmfieldsfiltered[i];
             } 
-            this.fields = okmfieldsfiltered;      
-          }
-          
-          else if (this.hideOkmCollectionHoldingBranch === true && this.hideOkmCollectionHomeBranch === true ){
-            console.log("true + true");
-          
-         var okmfieldsfiltered = [...okmfields];
-            for (let i = 1; i < 33; i++) {
+         }
+         if (this.hideOkmAcquisitions === true) {
+          for (let i = 33; i < 49; i++) {
               delete okmfieldsfiltered[i];
             } 
-            this.fields = okmfieldsfiltered;
-          }
-          else {
-            this.fields = okmfields;
-          }
+         }
+         if (this.hideOkmIssues === true) {
+          for (let i = 49; i < 65; i++) {
+              delete okmfieldsfiltered[i];
+            } 
+         }
+         
+        this.fields = okmfieldsfiltered;
+          
           
           
           
