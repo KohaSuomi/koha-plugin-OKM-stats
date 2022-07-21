@@ -146,12 +146,13 @@ sub fetchItems {
         OR i.holdingbranch IN (" . join(',', map {"'$_'"} @branches)."))
         AND i.notforloan NOT IN (" . join(',', map {"'$_'"} @$notforloan).")
         AND bde.itemtype NOT IN (" . join(',', map {"'$_'"} @$excluded_itemtypes).")
+        AND i.dateaccessioned < ?
         GROUP BY itemnumber";
     if ($self->{limit}) {
         $query .= ' LIMIT '.$self->{limit};
     }
     my $sth = $dbh->prepare($query);
-    $sth->execute();
+    $sth->execute($self->{endDate});
     if ($sth->err) {
         my @cc = caller(0);
         die $cc[3]."():> ".$sth->errstr;
