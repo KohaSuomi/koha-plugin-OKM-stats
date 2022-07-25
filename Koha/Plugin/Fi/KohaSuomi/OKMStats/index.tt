@@ -312,12 +312,7 @@
           <div>
             <b-button v-b-toggle.collapse-1 variant="primary"> Näytä raporttilistaus || Piilota raporttilistaus </b-button>
             <b-row>
-            <b-col lg="8" class="my-1">
-              <b-form-group label="Suodata" label-for="filter-input" label-cols-sm="3" label-align-sm="right" label-size="sm"
-                class="mb-0">
-                
-              </b-form-group>
-            </b-col>
+            
           </b-row>
             <b-collapse id="collapse-1" class="mt-2">
               <b-card>
@@ -331,10 +326,9 @@
           </div>
           <div>
             <b-col lg="4" class="pb-2">
-            <b-button type="button" class="btn btn-success" @click="exportToCsv">Vie CSV</b-button> 
+            <b-button type="button" class="btn btn-success" id="table-export" variant="primary">Vie XLS</b-button>
           </b-col>
-          </div>
-          
+          </div> 
           
           
           <div> 
@@ -345,10 +339,11 @@
     <b-button type="button" :pressed.sync="hideOkmCollectionHomeBranch" variant="primary">Kokoelma (koti)</b-button>
     <b-button type="button" :pressed.sync="hideOkmAcquisitions" variant="primary">Hankinnat</b-button>
     <b-button type="button" :pressed.sync="hideOkmIssues" variant="primary">Lainaus</b-button>
-    <b-button type="button" class="btn btn-success" id="table-export" variant="primary">Copy</b-button>
+    
    
     
     </b-input-group>
+    
     <b-row>
     <p>Pressed State: <strong>{{ hideOkmCollectionHoldingBranch }}</strong> Pressed State: <strong>{{ hideOkmCollectionHomeBranch }}</strong>Pressed State: <strong>{{ hideOkmAcquisitions }}</strong>
     Pressed State: <strong>{{ hideOkmIssues }}</strong></p>
@@ -423,12 +418,12 @@
 
   
 
-  <div id="datatable">
+  <div id="datatable" ref="scrollhere">
     <!-- sido tablen näyttämä data muuttujaan v-model: filtered, kutsu metodissa this.filtered -->
     <!-- sticky-header pitää rivien otsikot paikallaan, mutta ei ole kovin käytettävä. -->
     <b-table v-model="filtered" id="bsvue-datatable" sticky-header head-variant="light" striped hover responsive="sm" selectable bordered outlined small sort-icon-left no-border-collapse
       :sort-by.sync="sortBy" :filter-included-fields="filterOn" :sort-desc.sync="sortDesc" :items="myJson.data" :fields="fields"  :busy="isBusy"
-      :filter="filter" label-sort-asc="" label-sort-desc="" label-sort-clear="">
+      :filter="filter" label-sort-asc="" label-sort-desc="" label-sort-clear="" >
       
       
       
@@ -549,7 +544,6 @@
       return modded;
       },
 
-
       showHankinnat() {
 
         this.fields = null;
@@ -669,6 +663,10 @@
         this.myJson.data = null;
 
         this.isBusy = false;
+        
+        
+
+
       },
 
       async showRemoveTool() {
@@ -771,6 +769,8 @@
           
           
           this.isBusy = false;
+          //this.$nextTick(() => this.$refs.scrollhere.scrollIntoView({block: "end"}));
+          this.$nextTick(() => this.$refs.scrollhere.scrollIntoView());
           
 
         
