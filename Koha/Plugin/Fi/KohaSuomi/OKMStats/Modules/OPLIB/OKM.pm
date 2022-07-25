@@ -226,7 +226,8 @@ sub fetchIssues {
     my $dbh = C4::Context->dbh();
     my $query = "(
             SELECT s.branch, s.datetime, s.itemnumber, bde.itemtype, bde.biblioitemnumber,
-            bde.primary_language, bde.fiction, bde.musical, bde.celia
+            bde.primary_language, bde.fiction, bde.musical, bde.celia, i.itemnumber, i.biblionumber,
+            i.location, i.cn_sort, i.homebranch
             FROM statistics s
             LEFT JOIN items i ON(s.itemnumber = i.itemnumber)
             LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(i.biblioitemnumber = bde.biblioitemnumber)
@@ -237,7 +238,8 @@ sub fetchIssues {
             AND b.categorycode IN(" . join(",", map {"'$_'"} @{$patronCategories}).")
         ) UNION (
             SELECT s.branch, s.datetime, s.itemnumber, bde.itemtype, bde.biblioitemnumber,
-            bde.primary_language, bde.fiction, bde.musical, bde.celia
+            bde.primary_language, bde.fiction, bde.musical, bde.celia, di.itemnumber, di.biblionumber,
+            di.location, di.cn_sort, di.homebranch
             FROM statistics s
             LEFT JOIN items di ON(s.itemnumber = di.itemnumber)
             LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(di.biblioitemnumber = bde.biblioitemnumber)
