@@ -26,24 +26,24 @@
 
 
   <!-- Load required Bootstrap and BootstrapVue CSS -->
-  <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap/dist/css/bootstrap.min.css" />
+  <link type="text/css" rel="stylesheet" href="[% PLUGIN_PATH %]/includes/bootstrap.min.css" />
   <link type="text/css" rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-vue/2.9.0/bootstrap-vue.css" />
+    href="[% PLUGIN_PATH %]/includes/bootstrap-vue.css" />
 
   <!-- Load polyfills to support older browsers -->
   <script src="//polyfill.io/v3/polyfill.min.js?features=es2015%2CIntersectionObserver"
     crossorigin="anonymous"></script>
 
   <!-- Load Vue followed by BootstrapVue -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.16/vue.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-vue/2.9.0/bootstrap-vue.js"></script>
+  <script src="[% PLUGIN_PATH %]/includes/vue.js"></script>
+  <script src="[% PLUGIN_PATH %]/includes/bootstrap-vue.js"></script>
 
   <!-- Load the following for BootstrapVueIcons support -->
-  <script src="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue-icons.min.js"></script>
+  <script src="[% PLUGIN_PATH %]/includes/bootstrap-vue-icons.min.js"></script>
 
-  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"
-    integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script src="[% PLUGIN_PATH %]/includes/axios.min.js"></script>
+  <script src="[% PLUGIN_PATH %]/includes/jquery-3.6.0.min.js"></script>
+    <script src="[% PLUGIN_PATH %]/includes/jquery.table2excel.min.js"></script>
 
 </head>
 
@@ -311,12 +311,20 @@
         <b-tab title="OKM-Tilastot" @click="showOkmAllModded">
           <div>
             <b-button v-b-toggle.collapse-1 variant="primary"> Näytä raporttilistaus || Piilota raporttilistaus </b-button>
+            <b-row>
+            <b-col lg="8" class="my-1">
+              <b-form-group label="Suodata" label-for="filter-input" label-cols-sm="3" label-align-sm="right" label-size="sm"
+                class="mb-0">
+                
+              </b-form-group>
+            </b-col>
+          </b-row>
             <b-collapse id="collapse-1" class="mt-2">
               <b-card>
                 <p class="card-text">Valitse näytettävä raportti klikkaamalla riviä</p>
                 <!--- #The row-clicked event will pass 3 parameters to your function. The first being the item specific to the row that was clicked. The second will be the index of the row, and the third is a native click event.
                 This means you can use the arguments keyword to get the index and pass it to your function. -->
-                <b-table striped bordered hover selectable :select-mode="okmSelectMode" :fields="okmreportlistfields" :items="okmlisting" @row-clicked="fetchOkm(arguments[0])">
+                <b-table striped bordered hover selectable :filter="okmListFilter" :select-mode="okmSelectMode" :fields="okmreportlistfields" :items="okmlisting" @row-clicked="fetchOkm(arguments[0])">
                 </b-table>
               </b-card>
             </b-collapse>
@@ -327,9 +335,29 @@
           </b-col>
           </div>
           
-          <b-col lg="6" class="my-1">
+          
+          
+          <div> 
+          <div>Piilota:
+          </div> 
+    <b-input-group>   
+    <b-button type="button" :pressed.sync="hideOkmCollectionHoldingBranch" variant="primary">Kokoelma (sijaintikirj.)</b-button>
+    <b-button type="button" :pressed.sync="hideOkmCollectionHomeBranch" variant="primary">Kokoelma (koti)</b-button>
+    <b-button type="button" :pressed.sync="hideOkmAcquisitions" variant="primary">Hankinnat</b-button>
+    <b-button type="button" :pressed.sync="hideOkmIssues" variant="primary">Lainaus</b-button>
+    <b-button type="button" class="btn btn-success" id="table-export" variant="primary">Copy</b-button>
+   
+    
+    </b-input-group>
+    <b-row>
+    <p>Pressed State: <strong>{{ hideOkmCollectionHoldingBranch }}</strong> Pressed State: <strong>{{ hideOkmCollectionHomeBranch }}</strong>Pressed State: <strong>{{ hideOkmAcquisitions }}</strong>
+    Pressed State: <strong>{{ hideOkmIssues }}</strong></p>
+
+    </b-row>
+    
+    <b-col lg="6" class="my-1">
             <b-form-group
-              label="Filter"
+              label="Suodata"
               label-for="filter-input"
               label-cols-sm="3"
               label-align-sm="right"
@@ -349,29 +377,11 @@
                 </b-input-group-append>
               </b-input-group>
             </b-form-group>
-          </b-col>
-          
-          <div> 
-          <div>Piilota:
-          </div> 
-    <b-input-group>   
-    <b-button type="button" :pressed.sync="hideOkmCollectionHoldingBranch" variant="primary">Kokoelma (sijaintikirj.)</b-button>
-    <b-button type="button" :pressed.sync="hideOkmCollectionHomeBranch" variant="primary">Kokoelma (koti)</b-button>
-    <b-button type="button" :pressed.sync="hideOkmAcquisitions" variant="primary">Hankinnat</b-button>
-    <b-button type="button" :pressed.sync="hideOkmIssues" variant="primary">Lainaus</b-button>
-   
-    
-    </b-input-group>
-    <b-row>
-    <p>Pressed State: <strong>{{ hideOkmCollectionHoldingBranch }}</strong> Pressed State: <strong>{{ hideOkmCollectionHomeBranch }}</strong>Pressed State: <strong>{{ hideOkmAcquisitions }}</strong>
-    Pressed State: <strong>{{ hideOkmIssues }}</strong></p>
-
-    </b-row>                
+          </b-col>               
                     
-                    <b-button type="button" disabled @click="showHideAge=!showHideAge">Näytä/Piilota Kokoelmat (sijainti)</b-button>
-                    <b-button type="button" disabled @click="showHideAge=!showHideAge">Show/Hide x</b-button>
+                    
 
-                  </div>
+    </div>
           
           <b-row>
             <b-col lg="8" class="my-1">
@@ -416,9 +426,9 @@
   <div id="datatable">
     <!-- sido tablen näyttämä data muuttujaan v-model: filtered, kutsu metodissa this.filtered -->
     <!-- sticky-header pitää rivien otsikot paikallaan, mutta ei ole kovin käytettävä. -->
-    <b-table v-model="filtered" sticky-header head-variant="light" striped hover responsive="sm" selectable bordered outlined small sort-icon-left no-border-collapse
+    <b-table v-model="filtered" id="bsvue-datatable" sticky-header head-variant="light" striped hover responsive="sm" selectable bordered outlined small sort-icon-left no-border-collapse
       :sort-by.sync="sortBy" :filter-included-fields="filterOn" :sort-desc.sync="sortDesc" :items="myJson.data" :fields="fields"  :busy="isBusy"
-      :filter="filter">
+      :filter="filter" label-sort-asc="" label-sort-desc="" label-sort-clear="">
       
       
       
@@ -445,7 +455,6 @@
     data: {
       branchcodes: null,
       branchcodelist: [],
-
       sortBy: "library",
       sortDesc: false,
       selected: null,
@@ -469,6 +478,7 @@
       hideOkmCollectionHomeBranch: false,
       hideOkmAcquisitions: false,
       hideOkmIssues: false,
+      okmListFilter: "",
       options: [
         { value: null, text: 'Please select an option' },
         { value: 'Lainaus', text: 'Lainaus' },
@@ -968,5 +978,49 @@ function flatten (obj) {
   return newObj;
 }
 
+
+
+/* $(document).ready(function() {
+
+//https://stackoverflow.com/questions/34280674/bootstrap-datatable-exclude-certain-visible-columns-from-export
+  // Do not export these columns
+  //var hideFromExport = [0,1,2];
+  var hideFromExport = [];
+
+  var table = $('#bsvue-datatable').DataTable({
+    dom: 'Bfrtip',
+    buttons: [{
+      extend: 'copyHtml5',
+      exportOptions: {
+        columns: function ( idx, data, node ) {
+          var isVisible = table.column( idx ).visible();
+          var isNotForExport = $.inArray( idx, hideFromExport ) !== -1;
+          return isVisible && !isNotForExport ? true : false; 
+        }
+      }
+    }, 'colvis']
+  });
+}); */
+
+$(function() {
+        $("#table-export").click(function(e){
+          var table = $("#bsvue-datatable");
+          if(table && table.length){
+            $(table).table2excel({
+              exclude: ".noExl",
+              name: "Excel Document Name",
+              filename: "OKM_" + new Date().toISOString().replace(/[\-\:\.]/g, "") + ".xls",
+              fileext: ".xls",
+              exclude_img: true,
+              exclude_links: true,
+              exclude_inputs: true,
+              preserveColors: true
+            });
+          }
+        });
+        
+      });
 </script>
+
+
 </html>
