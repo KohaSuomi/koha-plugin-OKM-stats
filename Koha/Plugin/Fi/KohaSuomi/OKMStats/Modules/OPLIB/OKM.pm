@@ -124,12 +124,14 @@ sub createStatistics {
         }
 
         my $issues = $self->fetchIssues($patronCategories, @branches);
+        my @borrowernumbers;
         foreach my $itemnumber (sort {$a <=> $b} keys %$issues) {
             foreach my $datetime (keys %{$issues->{$itemnumber}} ){
                 $self->_processItemsDataRow( $stats->{issues}, $issues->{$itemnumber}->{$datetime} );
-                $self->_processBorrowers( $stats->{active_borrowers}, $issues->{$itemnumber}->{$datetime}->{hashed_borrowernumber} );
+                push @borrowernumbers, $issues->{$itemnumber}->{$datetime}->{borrowernumber};
             }
         }
+        $self->_processBorrowers( $stats, \@borrowernumbers );
     }
 }
 
@@ -227,7 +229,7 @@ sub fetchIssues {
     my $query = "(
             SELECT s.branch, s.datetime, s.itemnumber, bde.itemtype, bde.biblioitemnumber,
             bde.primary_language, bde.fiction, bde.musical, bde.celia, i.itemnumber, i.biblionumber,
-            i.location, i.cn_sort, i.homebranch
+            i.location, i.cn_sort, i.homebranch, b.borrowernumber
             FROM statistics s
             LEFT JOIN items i ON(s.itemnumber = i.itemnumber)
             LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(i.biblioitemnumber = bde.biblioitemnumber)
@@ -239,7 +241,7 @@ sub fetchIssues {
         ) UNION (
             SELECT s.branch, s.datetime, s.itemnumber, bde.itemtype, bde.biblioitemnumber,
             bde.primary_language, bde.fiction, bde.musical, bde.celia, di.itemnumber, di.biblionumber,
-            di.location, di.cn_sort, di.homebranch
+            di.location, di.cn_sort, di.homebranch, b.borrowernumber
             FROM statistics s
             LEFT JOIN items di ON(s.itemnumber = di.itemnumber)
             LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(di.biblioitemnumber = bde.biblioitemnumber)
@@ -299,11 +301,13 @@ sub fetchIssues_newway {
 =cut
 
 sub _processBorrowers {
-    my ($self, $active_borrowers, $borrowernumber) = @_;
+    my ($self, $stats, $borrowernumbers) = @_;
     my %seen;
-    if($borrowernumber){
-        next if $seen{ $borrowernumber }++;
-        $active_borrowers++;
+    foreach my $borrowernumber (@$borrowernumbers){
+        if($borrowernumber){
+            next if $seen{ $borrowernumber }++;
+            $stats->{active_borrowers}++;
+        }
     }
 }
 
