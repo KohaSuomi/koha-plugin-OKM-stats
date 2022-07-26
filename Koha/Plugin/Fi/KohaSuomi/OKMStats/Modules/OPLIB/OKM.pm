@@ -377,6 +377,8 @@ sub _processItemsDataRow {
         $stats->{videos}++;
     } elsif ($statCat eq 'Celia') {
         $stats->{celia}++;
+    } elsif ($statCat eq 'SheetMusicAndScores'){
+        $stats->{sheet_music_score}++;
     }
 
     $stats->{itemtypes}->{$itemtype}++ if $itemtype;
