@@ -8,12 +8,12 @@
     .sr-only {
       display: none;
     }
+
     #datatable {
       margin-left: 5 !important;
       margin-right: 5 !important;
-       margin-bottom: 55 !important;
+      margin-bottom: 55 !important;
     }
-    
   </style>
   <!-- Required meta tags -->
   <meta charset="utf-8" />
@@ -27,8 +27,7 @@
 
   <!-- Load required Bootstrap and BootstrapVue CSS -->
   <link type="text/css" rel="stylesheet" href="[% PLUGIN_PATH %]/includes/bootstrap.min.css" />
-  <link type="text/css" rel="stylesheet"
-    href="[% PLUGIN_PATH %]/includes/bootstrap-vue.css" />
+  <link type="text/css" rel="stylesheet" href="[% PLUGIN_PATH %]/includes/bootstrap-vue.css" />
 
   <!-- Load polyfills to support older browsers -->
   <script src="//polyfill.io/v3/polyfill.min.js?features=es2015%2CIntersectionObserver"
@@ -43,7 +42,7 @@
 
   <script src="[% PLUGIN_PATH %]/includes/axios.min.js"></script>
   <script src="[% PLUGIN_PATH %]/includes/jquery-3.6.0.min.js"></script>
-    <script src="[% PLUGIN_PATH %]/includes/jquery.table2excel.min.js"></script>
+  <script src="[% PLUGIN_PATH %]/includes/jquery.table2excel.min.js"></script>
 
 </head>
 
@@ -103,7 +102,6 @@
                       locale="fi-FI" aria-controls="example-input" @context="onContext"></b-form-datepicker>
                   </b-input-group-append>
                 </b-input-group>
-
               </b-col>
             </b-row>
           </div>
@@ -131,7 +129,7 @@
               <div class="mt-3">Selected: <strong>{{ selectedBranch }}</strong></div>
             </div>
           </template>
-          
+
           <div>
             <b-row class="mb-12">
               <!-- pvm-valinta-->
@@ -161,9 +159,9 @@
             </b-row>
           </div>
           <div>
-          <b-button type="button" class="btn btn-success" @click="showLainat">Hae</b-button>
+            <b-button type="button" class="btn btn-success" @click="showLainat">Hae</b-button>
           </div>
-          
+
           <!-- <b-row class="mb-6">
             <b-col lg="2" class="my-1">
               <b-form-datepicker id="example-datepicker" v-model="lowDate"></b-form-datepicker>
@@ -175,7 +173,7 @@
             </b-col>
           </b-row> -->
         </b-tab>
-        
+
         <b-tab disabled title="Uusinnat">
           <b-card-text>Uusinnat hyllypaikoittain aikaväliltä</b-card-text>
 
@@ -186,7 +184,7 @@
               <div class="mt-3">Selected: <strong>{{ selectedBranch }}</strong></div>
             </div>
           </template>
-          
+
           <div>
             <b-row class="mb-12">
               <!-- pvm-valinta-->
@@ -216,9 +214,9 @@
             </b-row>
           </div>
           <div>
-          <b-button type="button" class="btn btn-success" @click="showUusinnat">Hae</b-button>
+            <b-button type="button" class="btn btn-success" @click="showUusinnat">Hae</b-button>
           </div>
-          
+
         </b-tab>
 
         <b-tab disabled title="Poistot" disabled>
@@ -232,58 +230,39 @@
                 <b-button type="button" class="btn btn-success" @click="exportToCsv">Vie CSV</b-button>
                 <b-button type="button" class="btn btn-success" @click="showRemoveTool">Hae nidetiedot</b-button>
               </b-col>
-              
+
               <b-col lg="6" class="my-1">
-                <b-form-group
-                  label="Filter"
-                  label-for="filter-input"
-                  label-cols-sm="3"
-                  label-align-sm="right"
-                  label-size="sm"
-                  class="mb-0"
-                >
+                <b-form-group label="Filter" label-for="filter-input" label-cols-sm="3" label-align-sm="right"
+                  label-size="sm" class="mb-0">
                   <b-input-group size="sm">
-                    <b-form-input
-                      id="filter-input"
-                      v-model="filter"
-                      type="search"
-                      placeholder="Type to Search"
-                    ></b-form-input>
-        
+                    <b-form-input id="filter-input" v-model="filter" type="search" placeholder="Type to Search">
+                    </b-form-input>
+
                     <b-input-group-append>
                       <b-button :disabled="!filter" @click="filter = ''">Clear</b-button>
                     </b-input-group-append>
                   </b-input-group>
                 </b-form-group>
               </b-col>
-              
+
               <b-col lg="6" class="my-1">
-                <b-form-group
-                  label="Suodatettavat kentät:"
-                  description="Jätä tyhjäksi suodattaaksesi kaikista kentistä"
-                  label-cols-sm="3"
-                  label-align-sm="right"
-                  label-size="sm"
-                  class="mb-0"
-                >
-                  <b-form-checkbox-group
-                    v-model="filterOn"
-                    class="mt-1"
-                  >
+                <b-form-group label="Suodatettavat kentät:" description="Jätä tyhjäksi suodattaaksesi kaikista kentistä"
+                  label-cols-sm="3" label-align-sm="right" label-size="sm" class="mb-0">
+                  <b-form-checkbox-group v-model="filterOn" class="mt-1">
                     <b-form-checkbox value="1"> Signum</b-form-checkbox>
                     <b-form-checkbox value="2"> Luokka</b-form-checkbox>
                     <b-form-checkbox value="7"> Nidetyyppi</b-form-checkbox>
                   </b-form-checkbox-group>
                 </b-form-group>
               </b-col>
-        
+
             </b-row>
           </div>
-          
+
           <b-row>
             <b-col lg="8" class="my-1">
-              <b-form-group label="Suodata" label-for="filter-input" label-cols-sm="3" label-align-sm="right" label-size="sm"
-                class="mb-0">
+              <b-form-group label="Suodata" label-for="filter-input" label-cols-sm="3" label-align-sm="right"
+                label-size="sm" class="mb-0">
                 <b-input-group size="sm">
                   <b-row align-v="end">
                     <div>
@@ -291,7 +270,7 @@
                       <b>{{ sortDesc ? "Descending" : "Ascending" }}</b>
                     </div>
                   </b-row>
-        
+
                   <b-input-group class="mt-3">
                     <b-button :disabled="!filter" @click="filter = null" lg="4">Tyhjennä suodatin</b-button>
                     <b-button @click="sortBy = null" lg="4">Tyhjennä järjestys</b-button>
@@ -300,88 +279,77 @@
               </b-form-group>
             </b-col>
           </b-row>
-          
-          
-          
+
+
+
         </b-tab>
         <b-tab disabled title="Kaukopalvelu" disabled>
           <b-card-text>Tab contents 3</b-card-text>
         </b-tab>
-        
+
         <b-tab title="OKM-Tilastot" @click="showOkmAllModded">
           <div>
-            <b-button v-b-toggle.collapse-1 variant="primary"> Näytä raporttilistaus || Piilota raporttilistaus </b-button>
+            <b-button v-b-toggle.collapse-1 variant="primary"> Näytä raporttilistaus || Piilota raporttilistaus
+            </b-button>
             <b-row>
-            
-          </b-row>
+
+            </b-row>
             <b-collapse id="collapse-1" class="mt-2">
               <b-card>
                 <p class="card-text">Valitse näytettävä raportti klikkaamalla riviä</p>
                 <!--- #The row-clicked event will pass 3 parameters to your function. The first being the item specific to the row that was clicked. The second will be the index of the row, and the third is a native click event.
                 This means you can use the arguments keyword to get the index and pass it to your function. -->
-                <b-table striped bordered hover selectable :filter="okmListFilter" :select-mode="okmSelectMode" :fields="okmreportlistfields" :items="okmlisting" @row-clicked="fetchOkm(arguments[0])">
+                <b-table striped bordered hover selectable :filter="okmListFilter" :select-mode="okmSelectMode"
+                  :fields="okmreportlistfields" :items="okmlisting" @row-clicked="fetchOkm(arguments[0])">
                 </b-table>
               </b-card>
             </b-collapse>
           </div>
           <div>
             <b-col lg="4" class="pb-2">
-            <b-button type="button" class="btn btn-success" id="table-export" variant="primary">Vie XLS</b-button>
-          </b-col>
-          </div> 
-          
-          
-          <div> 
-          <div>Piilota:
-          </div> 
-    <b-input-group>   
-    <b-button type="button" :pressed.sync="hideOkmCollectionHoldingBranch" variant="primary">Kokoelma (sijaintikirj.)</b-button>
-    <b-button type="button" :pressed.sync="hideOkmCollectionHomeBranch" variant="primary">Kokoelma (koti)</b-button>
-    <b-button type="button" :pressed.sync="hideOkmAcquisitions" variant="primary">Hankinnat</b-button>
-    <b-button type="button" :pressed.sync="hideOkmIssues" variant="primary">Lainaus</b-button>
-    
-   
-    
-    </b-input-group>
-    
-    <b-row>
-    <p>Pressed State: <strong>{{ hideOkmCollectionHoldingBranch }}</strong> Pressed State: <strong>{{ hideOkmCollectionHomeBranch }}</strong>Pressed State: <strong>{{ hideOkmAcquisitions }}</strong>
-    Pressed State: <strong>{{ hideOkmIssues }}</strong></p>
+              <b-button type="button" class="btn btn-success" id="table-export" variant="primary">Vie XLS</b-button>
+            </b-col>
+          </div>
 
-    </b-row>
-    
-    <b-col lg="6" class="my-1">
-            <b-form-group
-              label="Suodata"
-              label-for="filter-input"
-              label-cols-sm="3"
-              label-align-sm="right"
-              label-size="sm"
-              class="mb-0"
-            >
-              <b-input-group size="sm">
-                <b-form-input
-                  id="filter-input"
-                  v-model="filter"
-                  type="search"
-                  placeholder="Type to Search"
-                ></b-form-input>
-    
-                <b-input-group-append>
-                  <b-button :disabled="!filter" @click="filter = ''">Clear</b-button>
-                </b-input-group-append>
-              </b-input-group>
-            </b-form-group>
-          </b-col>               
-                    
-                    
 
-    </div>
-          
+          <div>
+            <div>Piilota:
+            </div>
+            <b-input-group>
+              <b-button type="button" :pressed.sync="hideOkmCollectionHoldingBranch" variant="primary">Kokoelma
+                (sijaintikirj.)</b-button>
+              <b-button type="button" :pressed.sync="hideOkmCollectionHomeBranch" variant="primary">Kokoelma (koti)
+              </b-button>
+              <b-button type="button" :pressed.sync="hideOkmAcquisitions" variant="primary">Hankinnat</b-button>
+              <b-button type="button" :pressed.sync="hideOkmIssues" variant="primary">Lainaus</b-button>
+            </b-input-group>
+
+            <b-row>
+              <p>Pressed State: <strong>{{ hideOkmCollectionHoldingBranch }}</strong> Pressed State: <strong>{{
+                  hideOkmCollectionHomeBranch }}</strong>Pressed State: <strong>{{ hideOkmAcquisitions }}</strong>
+                Pressed State: <strong>{{ hideOkmIssues }}</strong></p>
+
+            </b-row>
+
+            <b-col lg="6" class="my-1">
+              <b-form-group label="Suodata" label-for="filter-input" label-cols-sm="3" label-align-sm="right"
+                label-size="sm" class="mb-0">
+                <b-input-group size="sm">
+                  <b-form-input id="filter-input" v-model="filter" type="search" placeholder="Type to Search">
+                  </b-form-input>
+
+                  <b-input-group-append>
+                    <b-button :disabled="!filter" @click="filter = ''">Clear</b-button>
+                  </b-input-group-append>
+                </b-input-group>
+              </b-form-group>
+            </b-col>
+          </div>
+
           <b-row>
             <b-col lg="8" class="my-1">
-              <b-form-group label="Suodata" label-for="filter-input" label-cols-sm="3" label-align-sm="right" label-size="sm"
-                class="mb-0">
+              <b-form-group label="Suodata" label-for="filter-input" label-cols-sm="3" label-align-sm="right"
+                label-size="sm" class="mb-0">
                 <b-input-group size="sm">
                   <b-row align-v="end">
                     <div>
@@ -389,44 +357,39 @@
                       <b>{{ sortDesc ? "Descending" : "Ascending" }}</b>
                     </div>
                   </b-row>
-                  
-                  
-                 
+
+
+
                   <b-input-group class="mt-3">
                     <b-button :disabled="!filter" @click="filter = null" lg="4">Tyhjennä suodatin</b-button>
                     <b-button @click="sortBy = null" lg="4">Tyhjennä järjestys</b-button>
-                    
+
                   </b-input-group>
                 </b-input-group>
               </b-form-group>
             </b-col>
           </b-row>
-          
+
           <b-row align-v="end">
             <div>
               Valittu: <b>{{ selectedOkm }}</b>
             </div>
           </b-row>
-          
+
         </b-tab>
 
       </b-tabs>
     </b-card>
   </div>
 
-
-
-  
-
   <div id="datatable" ref="scrollhere">
     <!-- sido tablen näyttämä data muuttujaan v-model: filtered, kutsu metodissa this.filtered -->
     <!-- sticky-header pitää rivien otsikot paikallaan, mutta ei ole kovin käytettävä. -->
-    <b-table v-model="filtered" id="bsvue-datatable" sticky-header head-variant="light" striped hover responsive="sm" selectable bordered outlined small sort-icon-left no-border-collapse
-      :sort-by.sync="sortBy" :filter-included-fields="filterOn" :sort-desc.sync="sortDesc" :items="myJson.data" :fields="fields"  :busy="isBusy"
-      :filter="filter" label-sort-asc="" label-sort-desc="" label-sort-clear="" >
-      
-      
-      
+    <b-table v-model="filtered" id="bsvue-datatable" sticky-header head-variant="light" striped hover responsive="sm"
+      selectable bordered outlined small sort-icon-left no-border-collapse :sort-by.sync="sortBy"
+      :filter-included-fields="filterOn" :sort-desc.sync="sortDesc" :items="myJson.data" :fields="fields" :busy="isBusy"
+      :filter="filter" label-sort-asc="" label-sort-desc="" label-sort-clear="">
+
       <div slot="table-busy" class="text-center text-danger my-2">
         <b-spinner class="align-middle"></b-spinner>
         <strong>Loading...</strong>
@@ -435,592 +398,360 @@
 </div>
 
 </b-row>
-          
-      <b-row align-v="end">
+
+<b-row align-v="end">
 
 
-<!-- Start running your app -->
+  <!-- Start running your app -->
 
+  <script>
 
-
-<script>
-
-  window.app = new Vue({
-    el: '#app',
-    data: {
-      branchcodes: null,
-      branchcodelist: [],
-      sortBy: "library",
-      sortDesc: false,
-      selected: null,
-      selectedBranch: null,
-      filtered: null,
-      selectedMonth: null,
-      lowDate: "",
-      maxDate: "",
-      filter: "",
-      filterOn: [],
-      isBusy: false,
-      fields: null,
-      myJson: [], //oletusdata
-      lainpalselected: null,
-      okmlisting: null,
-      selectedOkm: null,
-      okmreportlistfields: null,
-      okmViewCollectionHomebranch: true,
-      okmSelectMode: 'single',
-      hideOkmCollectionHoldingBranch: false,
-      hideOkmCollectionHomeBranch: false,
-      hideOkmAcquisitions: false,
-      hideOkmIssues: false,
-      okmListFilter: "",
-      options: [
-        { value: null, text: 'Please select an option' },
-        { value: 'Lainaus', text: 'Lainaus' },
-        { value: 'Palautus', text: 'Palautus' },
-        { value: { C: '3PO' }, text: 'This is an option with object value' },
-        { value: 'd', text: 'This one is disabled', disabled: true }
-      ]
-
-    },
-
-
-    computed: {
-
-      sortOptions() {
-        // Create an options list from our fields
-        return this.fields
-          .filter((f) => f.sortable)
-          .map((f) => {
-            return { text: f.label, value: f.key };
-          });
-      },
-      btnStates() {
-        return this.buttons.map(btn => btn.state)
-      }
-      
-      
-    },
-
-    mounted: function () {
-      // `this` points to the vm instance
-      let branchcodes = ([% To.json(branches) %]);
-      //let branchcodes = [];
-
-      console.log("branches is: ");
-      console.log(branchcodes);
-
-      this.branchcodelist = branchcodes;
-    },
-
-    // define methods under the `methods` object
-    methods: {
-      toggleBusy() {
-        this.isBusy = !this.isBusy;
-      },
-      hideCollectionHome(){
-        
-        okmHomeFieldsHidden = true;
-        
-        console.log(this.fields);
-        //this.fields.collection_by_homebranch.total.visible= !this.fields.collection_by_homebranch.total.visible;
-        
-        //delete this.fields[17];
-        //delete this.fields[18];
-        //delete this.fields[19];
-      },
-      
-      onContext(ctx) {
-        // Päivämäärälle: The date formatted in the locale, or the `label-no-date-selected` string
-        this.formatted = ctx.selectedFormatted
-        // The following will be an empty string until a valid date is entered
-        this.selected = ctx.selectedYMD
-      },
-      
-      linkify(value, key, item) {
-        let toadd = "cat";
-        let modded = item[0];
-        modded = modded.concat(toadd);
-      return modded;
-      },
-
-      showHankinnat() {
-
-        this.fields = null;
-        this.myJson.data = null;
-
-      },
-
-      async showLainat() {
-        this.myJson.data = null;
-        this.fields = null;
-        
-        this.isBusy = true;
-        try {
-          const response = await axios.get(
-            `/api/v1/contrib/kohasuomi/okmstats/issues/`, { params: { branch: this.selectedBranch, lowdate: this.lowDate, maxdate: this.maxDate } }
-          );
-          
-          this.fields = lainatfields;
-          this.myJson.data = response.data;
-          
-          this.isBusy = false;
-
-        } catch (e) {
-          console.log(e);
-          this.isBusy = false;
-        }
-        
-      },
-
-      showAsiakkaat() {
-        this.myJson.data = null;
-        this.fields = null;
-
-      },
-      
-      async showUusinnat() {
-        this.myJson.data = null;
-        this.fields = null;
-        
-        this.isBusy = true;
-        try {
-          const response = await axios.get(
-            `/api/v1/contrib/kohasuomi/okmstats/issues/`, { params: { branch: this.selectedBranch, lowdate: this.lowDate, maxdate: this.maxDate } }
-          );
-          
-          this.fields = lainatfields;
-          this.myJson.data = response.data;
-          
-          this.isBusy = false;
-
-        } catch (e) {
-          console.log(e);
-          this.isBusy = false;
-        }
-        
-      },
-
-      showAsiakkaat() {
-        this.myJson.data = null;
-        this.fields = null;
+    window.app = new Vue({
+      el: '#app',
+      data: {
+        branchcodes: null,
+        branchcodelist: [],
+        sortBy: "library",
+        sortDesc: false,
+        selected: null,
+        selectedBranch: null,
+        filtered: null,
+        selectedMonth: null,
+        lowDate: "",
+        maxDate: "",
+        filter: "",
+        filterOn: [],
+        isBusy: false,
+        fields: null,
+        myJson: [], //oletusdata
+        lainpalselected: null,
+        okmlisting: null,
+        selectedOkm: null,
+        okmreportlistfields: null,
+        okmViewCollectionHomebranch: true,
+        okmSelectMode: 'single',
+        hideOkmCollectionHoldingBranch: false,
+        hideOkmCollectionHomeBranch: false,
+        hideOkmAcquisitions: false,
+        hideOkmIssues: false,
+        okmListFilter: "",
+        options: [
+          { value: null, text: 'Please select an option' },
+          { value: 'Lainaus', text: 'Lainaus' },
+          { value: 'Palautus', text: 'Palautus' },
+          { value: { C: '3PO' }, text: 'This is an option with object value' },
+          { value: 'd', text: 'This one is disabled', disabled: true }
+        ]
 
       },
 
 
+      computed: {
 
-      showIssues() {
-        this.myJson.data = null;
-        this.fields = null;
-        this.itemtypefields = null;
-        this.isBusy = !this.isBusy;
-
-        this.fields = "";
-
-        this.myJson.data = "";
-        this.filter = "";
-        this.isBusy = false;
-      },
-
-      showIssues2() {
-        this.myJson.data = null;
-        this.fields = null;
-        this.itemtypefields = null;
-        this.isBusy = !this.isBusy;
-
-        this.fields = null;
-
-        this.myJson.data = null;
-        this.filter = "";
-        this.isBusy = false;
-      },
-
-      
-
-      async showOkmAllModded() {
-
-        //console.log(okmstatsmoddedjson);
-        this.isBusy = true;
-        this.myJson.data = null;
-        this.fields = null;
-
-        try {
-          const response = await axios.get(
-            `/api/v1/contrib/kohasuomi/okmstats/reports/`
-          );
-
-          this.okmlisting = response.data;
-          this.okmreportlistfields = okmreportlistfields;
-          console.log(response.data);
-
-        } catch (e) {
-          console.log(e);
-          this.isBusy = false;
+        sortOptions() {
+          // Create an options list from our fields
+          return this.fields
+            .filter((f) => f.sortable)
+            .map((f) => {
+              return { text: f.label, value: f.key };
+            });
+        },
+        btnStates() {
+          return this.buttons.map(btn => btn.state)
         }
 
-        this.fields = okmfields;
-
-        this.myJson.data = null;
-
-        this.isBusy = false;
-        
-        
-
 
       },
 
-      async showRemoveTool() {
-        this.myJson.data = null;
-        this.fields = null;
-        this.isBusy = true;
-        try {
-          const response = await axios.get(
-            `/api/v1/contrib/kohasuomi/okmstats/removetool/`
-          );
+      mounted: function () {
+        // `this` points to the vm instance
+        let branchcodes = ([% To.json(branches) %]);
+        //let branchcodes = [];
 
-         
-            
-          this.fields = removetoolfields;
-          this.myJson.data = response.data;
+        console.log("branches is: ");
+        console.log(branchcodes);
+
+        this.branchcodelist = branchcodes;
+      },
+
+      // define methods under the `methods` object
+      methods: {
+        toggleBusy() {
           this.isBusy = !this.isBusy;
-          this.sortBy = null;
+        },
+        hideCollectionHome() {
 
-        } catch (e) {
-          console.log(e);
-          this.isBusy = false;
-        }
-      },
-      
-      async fetchOkm(item) {
-        console.log("fetchOkm started");
-        let reportid = item[0];
-        selectedOkm = reportid;
-        console.log(reportid);
-        this.myJson.data = null;
-        this.fields = null;
-        this.isBusy = true;
-        
-        console.log("hideOkmCollectionHoldingBranch:");
-         console.log(this.hideOkmCollectionHoldingBranch);
-         console.log("hideOkmCollectionHomeBranch:");
-         console.log(this.hideOkmCollectionHomeBranch);
-         
-         // If we want to copy a primitive value, we can use assignment operator (=), but for objects we cannot use the assignment operator.  
-         var okmfieldsfiltered = [...okmfields];
-         
-         if (this.hideOkmCollectionHoldingBranch === true) {
-          for (let i = 1; i < 17; i++) {
-              delete okmfieldsfiltered[i];
-              
-            }
-         }
-         if (this.hideOkmCollectionHomeBranch === true) {
-          for (let i = 17; i < 33; i++) {
-              delete okmfieldsfiltered[i];
-            } 
-         }
-         if (this.hideOkmAcquisitions === true) {
-          for (let i = 33; i < 49; i++) {
-              delete okmfieldsfiltered[i];
-            } 
-         }
-         if (this.hideOkmIssues === true) {
-          for (let i = 49; i < 65; i++) {
-              delete okmfieldsfiltered[i];
-            } 
-         }
-         
-        this.fields = okmfieldsfiltered;
-          
-          
-          
-          
-        try {
-          const response = await axios.get(
-            `/api/v1/contrib/kohasuomi/okmstats/reportsstats/`, { params: { okm_id: reportid } }
-          );
-          
-          //this.myJson.data = response.data;
-          console.log("Fetched okm report data:");
-          console.log(response.data);
-          let stringified = JSON.stringify(response.data);
-          stringified = stringified.replace(/\\/g,'');
-          stringified = stringified.substring(3);
-          stringified = stringified.slice(0, -3);
-          //console.log("okm stringified:");
-          //console.log(stringified);
-          
-          let jsonified = JSON.parse(stringified);
-          
-           
-          
-          this.myJson.data = jsonified;
+          okmHomeFieldsHidden = true;
+
+          console.log(this.fields);
+          //this.fields.collection_by_homebranch.total.visible= !this.fields.collection_by_homebranch.total.visible;
+
+          //delete this.fields[17];
+          //delete this.fields[18];
+          //delete this.fields[19];
+        },
+
+        onContext(ctx) {
+          // Päivämäärälle: The date formatted in the locale, or the `label-no-date-selected` string
+          this.formatted = ctx.selectedFormatted
+          // The following will be an empty string until a valid date is entered
+          this.selected = ctx.selectedYMD
+        },
+
+        linkify(value, key, item) {
+          let toadd = "cat";
+          let modded = item[0];
+          modded = modded.concat(toadd);
+          return modded;
+        },
+
+        showHankinnat() {
+
+          this.fields = null;
+          this.myJson.data = null;
+
+        },
+
+        async showLainat() {
+          this.myJson.data = null;
+          this.fields = null;
+
+          this.isBusy = true;
+          try {
+            const response = await axios.get(
+              `/api/v1/contrib/kohasuomi/okmstats/issues/`, { params: { branch: this.selectedBranch, lowdate: this.lowDate, maxdate: this.maxDate } }
+            );
+
+            this.fields = lainatfields;
+            this.myJson.data = response.data;
+
+            this.isBusy = false;
+
           } catch (e) {
-          console.log(e);
+            console.log(e);
+            this.isBusy = false;
+          }
+
+        },
+
+        showAsiakkaat() {
+          this.myJson.data = null;
+          this.fields = null;
+
+        },
+
+        async showUusinnat() {
+          this.myJson.data = null;
+          this.fields = null;
+
+          this.isBusy = true;
+          try {
+            const response = await axios.get(
+              `/api/v1/contrib/kohasuomi/okmstats/issues/`, { params: { branch: this.selectedBranch, lowdate: this.lowDate, maxdate: this.maxDate } }
+            );
+
+            this.fields = lainatfields;
+            this.myJson.data = response.data;
+
+            this.isBusy = false;
+
+          } catch (e) {
+            console.log(e);
+            this.isBusy = false;
+          }
+
+        },
+
+        showAsiakkaat() {
+          this.myJson.data = null;
+          this.fields = null;
+
+        },
+
+
+
+        showIssues() {
+          this.myJson.data = null;
+          this.fields = null;
+          this.itemtypefields = null;
+          this.isBusy = !this.isBusy;
+
+          this.fields = "";
+
+          this.myJson.data = "";
+          this.filter = "";
           this.isBusy = false;
-        }
-          
-         
-         
-          
-          
-          
-          
-          
-          
+        },
+
+        showIssues2() {
+          this.myJson.data = null;
+          this.fields = null;
+          this.itemtypefields = null;
+          this.isBusy = !this.isBusy;
+
+          this.fields = null;
+
+          this.myJson.data = null;
+          this.filter = "";
+          this.isBusy = false;
+        },
+
+        async showOkmAllModded() {
+
+          //console.log(okmstatsmoddedjson);
+          this.isBusy = true;
+          this.myJson.data = null;
+          this.fields = null;
+
+          try {
+            const response = await axios.get(
+              `/api/v1/contrib/kohasuomi/okmstats/reports/`
+            );
+
+            this.okmlisting = response.data;
+            this.okmreportlistfields = okmreportlistfields;
+            console.log(response.data);
+
+          } catch (e) {
+            console.log(e);
+            this.isBusy = false;
+          }
+
+          this.fields = okmfields;
+
+          this.myJson.data = null;
+
+          this.isBusy = false;
+
+        },
+
+        async showRemoveTool() {
+          this.myJson.data = null;
+          this.fields = null;
+          this.isBusy = true;
+          try {
+            const response = await axios.get(
+              `/api/v1/contrib/kohasuomi/okmstats/removetool/`
+            );
+
+            this.fields = removetoolfields;
+            this.myJson.data = response.data;
+            this.isBusy = !this.isBusy;
+            this.sortBy = null;
+
+          } catch (e) {
+            console.log(e);
+            this.isBusy = false;
+          }
+        },
+
+        async fetchOkm(item) {
+          console.log("fetchOkm started");
+          let reportid = item[0];
+          selectedOkm = reportid;
+          console.log(reportid);
+          this.myJson.data = null;
+          this.fields = null;
+          this.isBusy = true;
+
+          console.log("hideOkmCollectionHoldingBranch:");
+          console.log(this.hideOkmCollectionHoldingBranch);
+          console.log("hideOkmCollectionHomeBranch:");
+          console.log(this.hideOkmCollectionHomeBranch);
+
+          // If we want to copy a primitive value, we can use assignment operator (=), but for objects we cannot use the assignment operator.  
+          var okmfieldsfiltered = [...okmfields];
+
+          if (this.hideOkmCollectionHoldingBranch === true) {
+            for (let i = 1; i < 17; i++) {
+              delete okmfieldsfiltered[i];
+
+            }
+          }
+          if (this.hideOkmCollectionHomeBranch === true) {
+            for (let i = 17; i < 33; i++) {
+              delete okmfieldsfiltered[i];
+            }
+          }
+          if (this.hideOkmAcquisitions === true) {
+            for (let i = 33; i < 49; i++) {
+              delete okmfieldsfiltered[i];
+            }
+          }
+          if (this.hideOkmIssues === true) {
+            for (let i = 49; i < 65; i++) {
+              delete okmfieldsfiltered[i];
+            }
+          }
+
+          this.fields = okmfieldsfiltered;
+
+          try {
+            const response = await axios.get(
+              `/api/v1/contrib/kohasuomi/okmstats/reportsstats/`, { params: { okm_id: reportid } }
+            );
+
+            //this.myJson.data = response.data;
+            console.log("Fetched okm report data:");
+            console.log(response.data);
+            let stringified = JSON.stringify(response.data);
+            stringified = stringified.replace(/\\/g, '');
+            stringified = stringified.substring(3);
+            stringified = stringified.slice(0, -3);
+            //console.log("okm stringified:");
+            //console.log(stringified);
+
+            let jsonified = JSON.parse(stringified);
+
+            this.myJson.data = jsonified;
+          } catch (e) {
+            console.log(e);
+            this.isBusy = false;
+          }
+
           this.isBusy = false;
           //this.$nextTick(() => this.$refs.scrollhere.scrollIntoView({block: "end"}));
           this.$nextTick(() => this.$refs.scrollhere.scrollIntoView());
-          
-
-        
-      },
-      
-      exportToCsvOld() {
-        let moddedData = this.filtered;
-
-        var items = moddedData;
-        const replacer = (key, value) => (value === null ? "" : value); // specify how you want to handle null values here
-        const header = Object.keys(items[0]);
-        let csv = items.map((row) =>
-          header
-            .map((fieldName) => JSON.stringify(row[fieldName], replacer))
-            .join(",")
-        );
-        csv.unshift(header.join(","));
-        csv = csv.join("\r\n");
-
-        //Download the file as CSV
-        var downloadLink = document.createElement("a");
-        var blob = new Blob(["\ufeff", csv]);
-        var url = URL.createObjectURL(blob);
-        downloadLink.href = url;
-        downloadLink.download = "DataDump.csv"; //Name the file here
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
-      },
-
-      
-      exportToCsv() {
-        let moddedData = this.filtered;
-        
-        //const newArray = moddedData.map(({itemtypes, ...rest}) => rest);
-        
-        console.log("this filtered:");
-        for(var i = 0; i < moddedData.length; i++) {
-          console.log(moddedData.length);
-          delete moddedData[i].issues.itemtypes;
-          delete moddedData[i].deleted.itemtypes;
-          delete moddedData[i].acquisitions.itemtypes;
-          delete moddedData[i].collection_by_homebranch.itemtypes;
-          delete moddedData[i].collection_by_holdingbranch.itemtypes;
-          
-          
-        }
-        
-        //         const flattenJSON = (obj = {}, res = {}, extraKey = '') => {
-        //   for(key in obj){
-        //       if(typeof obj[key] !== 'object'){
-        //         res[extraKey + key] = obj[key];
-        //       }else{
-        //         flattenJSON(obj[key], res, `${extraKey}${key}.`);
-        //       };
-        //   };
-        //   return res;
-        // };
-        
-  //return newObj;
-
-        //var items = flattenJSON(moddedData);
-        var items = flatten(moddedData);
-        console.log("flattened:");
-        console.log(items);
-        //console.log(Object.keys(items));
-        //console.log(Object.values(items));
-        
-         
-        
-        
-        
-        //var json = JSON.stringify(items);
-        
-        // if (typeof Object.keys( json[0]) !== 'undefined' && Object.keys( json[0]) !== null && Object.keys( json[0]).length > 0) {
-        //       var fields = Object.keys(json[0]);
-        //   }
-        //var items = moddedData;
-        //var csv = "";
-var keys = Object.keys(items);
-
-for (let i = 0; i < keys.length; i++) {
-  let val = items[keys[i]];
-  console.log("val:");
-  console.log(val);
-                
-        }
-//var values = Object.values(items);
-
-    // Build header
-    var result = keys.join(",") + "\n";
-    
-    for (let i = 0; i < keys.length; i++) {
-  let val = items[keys[i]];
-  result += val;
-  result += ",";
-  console.log(val);
-    }
-    
-    // result += values.join(",") + "\n";
-    // console.log(result);
-
-    // Add the rows
-    
-
-        // for(var i = 0; i < this.fields.length; i++) {
-        //   csv += JSON.stringify(this.fields[i].label);
-        //   csv += ",";          
-        // }
-        
-        // csv = csv.replace(/['"]+/g, '');
-        // csv = csv.slice(0, csv.length - 1);
-        // csv += '\r\n';
-
-        let csv = result;
-                //Download the file as CSV
-        var downloadLink = document.createElement("a");
-        var csvBlob = new Blob(["\ufeff", csv]);
-        var url = URL.createObjectURL(csvBlob);
-        downloadLink.href = url;
-
-        var months = new Array("Tammi", "Helmi", "Maalis", "Huhti", "Touko", "Kesä", "Heinä", "Elo", "Syys", "Loka", "Marras", "Joulu");
-        var now = new Date();
-        var date = now.getDate();
-        var year = now.getFullYear();
-        var month = months[now.getMonth()];
-        var fileName = "CSV"+year+month+date;
-
-        downloadLink.download = fileName; //Name the file here
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
-        
-    //return str;
-        //console.log(str);
-        
-        //console.log("modded stringified:");
-        //console.log(stringified);
-        
-
-        //var items = moddedData;
-        /* const replacer = (key, value) => (value === null ? "" : value); // specify how you want to handle null values here
-        const header = Object.keys(items[0]);
-        let csv = items.map((row) =>
-          header
-            .map((fieldName) => JSON.stringify(row[fieldName], replacer))
-            .join(",")
-        );
-        csv.unshift(header.join(","));
-        csv = csv.join("\r\n"); */
-        // let csv = "";
-        // for(var i = 0; i < this.fields.length; i++) {
-        //   csv += JSON.stringify(this.fields[i].label);
-        //   csv += ",";          
-        // }
-        
-        // csv = csv.replace(/['"]+/g, '');
-        // csv = csv.slice(0, csv.length - 1);
-        // csv += '\r\n';
-        
-        //console.log(csv);
-        
-        
-
-
-
-        
-        
-        
-
-
-
-      }
-    }
-  })
-
-      
-</script>
-</body>
-
-<script src="[% PLUGIN_PATH %]/json/okmstatsmoddedjson.js"></script>
-<script src="[% PLUGIN_PATH %]/fieldtemplates/okmfields.js"></script>
-<script src="[% PLUGIN_PATH %]/fieldtemplates/okmfieldsholdingbranchhidden.js"></script>
-<script src="[% PLUGIN_PATH %]/fieldtemplates/okmreportlistfields.js"></script>
-<script src="[% PLUGIN_PATH %]/fieldtemplates/removetoolfields.js"></script>
-<script src="[% PLUGIN_PATH %]/fieldtemplates/lainatfields.js"></script>
-
-<script>
-  fetch("[% PLUGIN_PATH %]/json/okmstatsmoddedjson.json")
-    .then(response => response.json());
- // .then(jsonObject => console.log(jsonObject));
-
-function flatten (obj) {
-  var newObj = {};
-  for (var key in obj) {
-    if (typeof obj[key] === 'object' && obj[key] !== null) {
-      var temp = flatten(obj[key])
-      for (var key2 in temp) {
-        newObj[key+"_"+key2] = temp[key2];
-      }
-    } else {
-      newObj[key] = obj[key];
-    }
-  }
-  return newObj;
-}
-
-
-
-/* $(document).ready(function() {
-
-//https://stackoverflow.com/questions/34280674/bootstrap-datatable-exclude-certain-visible-columns-from-export
-  // Do not export these columns
-  //var hideFromExport = [0,1,2];
-  var hideFromExport = [];
-
-  var table = $('#bsvue-datatable').DataTable({
-    dom: 'Bfrtip',
-    buttons: [{
-      extend: 'copyHtml5',
-      exportOptions: {
-        columns: function ( idx, data, node ) {
-          var isVisible = table.column( idx ).visible();
-          var isNotForExport = $.inArray( idx, hideFromExport ) !== -1;
-          return isVisible && !isNotForExport ? true : false; 
         }
       }
-    }, 'colvis']
-  });
-}); */
+    })
 
-$(function() {
-        $("#table-export").click(function(e){
-          var table = $("#bsvue-datatable");
-          if(table && table.length){
-            $(table).table2excel({
-              exclude: ".noExl",
-              name: "Excel Document Name",
-              filename: "OKM_" + new Date().toISOString().replace(/[\-\:\.]/g, "") + ".xls",
-              fileext: ".xls",
-              exclude_img: true,
-              exclude_links: true,
-              exclude_inputs: true,
-              preserveColors: true
-            });
-          }
-        });
-        
+
+  </script>
+  </body>
+
+  <script src="[% PLUGIN_PATH %]/json/okmstatsmoddedjson.js"></script>
+  <script src="[% PLUGIN_PATH %]/fieldtemplates/okmfields.js"></script>
+  <script src="[% PLUGIN_PATH %]/fieldtemplates/okmfieldsholdingbranchhidden.js"></script>
+  <script src="[% PLUGIN_PATH %]/fieldtemplates/okmreportlistfields.js"></script>
+  <script src="[% PLUGIN_PATH %]/fieldtemplates/removetoolfields.js"></script>
+  <script src="[% PLUGIN_PATH %]/fieldtemplates/lainatfields.js"></script>
+
+  <script>
+    fetch("[% PLUGIN_PATH %]/json/okmstatsmoddedjson.json")
+      .then(response => response.json());
+    // .then(jsonObject => console.log(jsonObject));
+
+    //table2excel export bootstrap table
+    $(function () {
+      $("#table-export").click(function (e) {
+        var table = $("#bsvue-datatable");
+        if (table && table.length) {
+          $(table).table2excel({
+            exclude: ".noExl",
+            name: "Excel Document Name",
+            filename: "OKM_" + new Date().toLocaleDateString("en-UK").replace(/\//g, '-') + ".xls",
+            fileext: ".xls",
+            exclude_img: true,
+            exclude_links: true,
+            exclude_inputs: true,
+            preserveColors: true
+          });
+        }
       });
-</script>
+
+    });
+  </script>
 
 
 </html>
