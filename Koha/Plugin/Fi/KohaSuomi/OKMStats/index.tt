@@ -51,11 +51,13 @@
   <div>
     <b-card no-body>
       <b-tabs pills card>
-        <b-tab disabled title="Hankinnat" @click="showHankinnat">
+        <b-tab title="Hankinnat" @click="showHankinnat">
           <b-card-text>Tab contents 2</b-card-text>
           <b-button @click="toggleBusy">Toggle Busy State</b-button>
 
-          <b-button type="button" class="btn btn-success" @click="exportToCsv">CSV</b-button>
+          <b-col lg="4" class="pb-2">
+            <b-button type="button" class="btn btn-success" id="table-export" variant="primary">Vie XLS</b-button>
+          </b-col>
 
           <b-dropdown id="dropdown-divider" text="Kuukausi" class="m-2">
             <b-dropdown-item-button>Tammikuu</b-dropdown-item-button>
@@ -227,7 +229,9 @@
           <div class="col-md-12 bg-light float-left">
             <b-row>
               <b-col lg="4" class="pb-2">
-                <b-button type="button" class="btn btn-success" @click="exportToCsv">Vie CSV</b-button>
+
+                  <b-button type="button" class="btn btn-success" id="table-export" variant="primary">Vie XLS</b-button>
+
                 <b-button type="button" class="btn btn-success" @click="showRemoveTool">Hae nidetiedot</b-button>
               </b-col>
 
@@ -306,7 +310,9 @@
             </b-collapse>
           </div>
           <div>
+            <br>
             <b-col lg="4" class="pb-2">
+              <b-button id="button1" onclick="CopyToClipboard('bsvue-datatable')">Kopioi leikepöydälle</b-button>
               <b-button type="button" class="btn btn-success" id="table-export" variant="primary">Vie XLS</b-button>
             </b-col>
           </div>
@@ -322,7 +328,12 @@
               </b-button>
               <b-button type="button" :pressed.sync="hideOkmAcquisitions" variant="primary">Hankinnat</b-button>
               <b-button type="button" :pressed.sync="hideOkmIssues" variant="primary">Lainaus</b-button>
+              
+              
             </b-input-group>
+            
+            
+            <br /><br />
 
             <b-row>
               <p>Pressed State: <strong>{{ hideOkmCollectionHoldingBranch }}</strong> Pressed State: <strong>{{
@@ -479,6 +490,7 @@
         toggleBusy() {
           this.isBusy = !this.isBusy;
         },
+    
         hideCollectionHome() {
 
           okmHomeFieldsHidden = true;
@@ -751,6 +763,24 @@
       });
 
     });
+    
+    function CopyToClipboard(containerid) {
+  if (document.selection) {
+    var range = document.body.createTextRange();
+    range.moveToElementText(document.getElementById(containerid));
+    range.select().createTextRange();
+    document.execCommand("copy");
+  } else if (window.getSelection) {
+    var range = document.createRange();
+    range.selectNode(document.getElementById(containerid));
+    window.getSelection().addRange(range);
+    document.execCommand("copy");
+    window.getSelection().removeAllRanges();// to deselect
+    alert("Taulukko kopioitu leikepöydälle.")
+  }
+}
+    
+    
   </script>
 
 
