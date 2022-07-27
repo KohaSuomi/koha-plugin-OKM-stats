@@ -51,7 +51,7 @@
   <div>
     <b-card no-body>
       <b-tabs pills card>
-        <b-tab title="Hankinnat" @click="showHankinnat">
+        <b-tab disabled title="Hankinnat" @click="showHankinnat">
           <b-card-text>Tab contents 2</b-card-text>
           <b-button @click="toggleBusy">Toggle Busy State</b-button>
 
@@ -224,7 +224,7 @@
         <b-tab disabled title="Poistot" disabled>
           <b-card-text>Tab contents 3</b-card-text>
         </b-tab>
-        <b-tab title="Poistotyökalu" @click="myJson = [], fields = []">
+        <b-tab disabled title="Poistotyökalu" @click="myJson = [], fields = []">
           <b-card-text>Tab contents 3</b-card-text>
           <div class="col-md-12 bg-light float-left">
             <b-row>
@@ -293,7 +293,7 @@
 
         <b-tab title="OKM-Tilastot" @click="showOkmAllModded">
           <div>
-            <b-button v-b-toggle.collapse-1 variant="primary"> Näytä raporttilistaus || Piilota raporttilistaus
+            <b-button v-b-toggle.collapse-1 variant="primary" @click="getOKMlisting"> Näytä raporttilistaus || Piilota raporttilistaus
             </b-button>
             <b-row>
 
@@ -614,6 +614,17 @@
           this.myJson.data = null;
           this.fields = null;
 
+          
+
+          this.fields = okmfields;
+
+          this.myJson.data = null;
+
+          this.isBusy = false;
+
+        },
+        
+        async getOKMlisting(){
           try {
             const response = await axios.get(
               `/api/v1/contrib/kohasuomi/okmstats/reports/`
@@ -626,14 +637,7 @@
           } catch (e) {
             console.log(e);
             this.isBusy = false;
-          }
-
-          this.fields = okmfields;
-
-          this.myJson.data = null;
-
-          this.isBusy = false;
-
+          }      
         },
 
         async showRemoveTool() {
