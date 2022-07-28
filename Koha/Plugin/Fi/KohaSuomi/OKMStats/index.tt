@@ -395,7 +395,7 @@
   <div id="datatable" ref="scrollhere">
     <!-- sido tablen näyttämä data muuttujaan v-model: filtered, kutsu metodissa this.filtered -->
     <!-- sticky-header pitää rivien otsikot paikallaan, mutta ei ole kovin käytettävä. -->
-    <b-table v-model="filtered" id="bsvue-datatable" head-variant="light" striped hover responsive="sm"
+    <b-table v-model="filtered" id="bsvue-datatable" sticky-header="500px" striped hover responsive="sm"
       selectable bordered outlined small sort-icon-left no-border-collapse :sort-by.sync="sortBy"
       :filter-included-fields="filterOn" :sort-desc.sync="sortDesc" :items="myJson.data" :fields="fields" :busy="isBusy"
       :filter="filter" label-sort-asc="" label-sort-desc="" label-sort-clear="">
@@ -405,6 +405,9 @@
         <strong>Loading...</strong>
       </div>
   </div>
+  <br>
+  <br>
+  <br>
 </div>
 
 </b-row>
