@@ -343,7 +343,8 @@ sub _processItemsDataRow {
             $stats->{books_finnish}++;
         } elsif ($primaryLanguage eq 'swe') {
             $stats->{books_swedish}++;
-        } elsif ($primaryLanguage eq 'sme') {
+        } elsif ($primaryLanguage eq 'sma' || $primaryLanguage eq 'sme' || $primaryLanguage eq 'smi'
+        || $primaryLanguage eq 'smj' || $primaryLanguage eq 'smn' || $primaryLanguage eq 'sms') {
             $stats->{books_sami}++;
         } else {
             $stats->{books_other_lang}++;
