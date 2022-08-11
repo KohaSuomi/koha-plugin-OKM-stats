@@ -130,7 +130,7 @@ sub createStatistics {
         my @borrowernumbers;
         foreach my $itemnumber (sort {$a <=> $b} keys %$issues) {
             foreach my $datetime (keys %{$issues->{$itemnumber}} ){
-                $self->_processItemsDataRow( $stats->{issues}, $issues->{$itemnumber}->{$datetime} );
+                $self->_processItemsDataRow( $stats->{issues}, $issues->{$itemnumber}->{$datetime}, "issues" );
                 push @borrowernumbers, $issues->{$itemnumber}->{$datetime}->{borrowernumber};
             }
         }
@@ -321,7 +321,7 @@ sub _processBorrowers {
 =cut
 
 sub _processItemsDataRow {
-    my ($self, $stats, $row) = @_;
+    my ($self, $stats, $row, $type) = @_;
     my $itemtype = $row->{itemtype};
     my $statCat = $self->{conf}->{itemTypeToStatisticalCategory}->{$itemtype} if $itemtype;
     unless ($statCat) {
@@ -375,7 +375,7 @@ sub _processItemsDataRow {
         } else {
             $stats->{other_recordings}++;
         }
-    } elsif ( $statCat eq 'Other') {
+    } elsif ( $statCat eq 'Other' || ( $type && $type eq "issues" && $statCat eq "Serials" ) ) {
         $stats->{other}++;
     } elsif ($statCat eq 'Videos') {
         $stats->{videos}++;
