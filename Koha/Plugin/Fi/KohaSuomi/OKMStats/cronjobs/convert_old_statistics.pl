@@ -83,6 +83,12 @@ foreach my $statistic (@statistics){
 
     while(my ($key, $value) = each %$old_okm_statistics){
         my $branch = $value->{branchCategory};
+        ##If branch doesn't exists, add it
+        if(!$new_okm_statistics->{$branch}){
+            my $new_okm_group_statistics = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::OPLIB::OKMGroupStatistics->new();
+            $new_okm_statistics->{$branch}->{statistics} = $new_okm_group_statistics;
+            $new_okm_statistics->{$branch}->{statistics}->{library} = $branch;
+        }
 
         $new_okm_statistics->{$branch}->{statistics}->{collection_by_homebranch}->{total} = $value->{statistics}->{collection};
         $new_okm_statistics->{$branch}->{statistics}->{collection_by_homebranch}->{books_total} = $value->{statistics}->{collectionBooksTotal};
