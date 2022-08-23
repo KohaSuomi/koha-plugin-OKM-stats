@@ -54,7 +54,7 @@ use Koha::DateUtils qw(dt_from_string);
 @PARAM4 String, a .csv-row with each element as a branchcode
                 'JOE_JOE,JOE_RAN,[...]'
                 or
-                '_A' which means ALL BRANCHES. Then the function fetches all the branchcodes from DB.
+                'ALL' which means ALL BRANCHES. Then the function fetches all the branchcodes from DB.
 
 =cut
 
@@ -434,7 +434,7 @@ sub getBranchCategoriesAndBranches {
     if($individualBranches){
         my @iBranchcodes;
 
-        if ($individualBranches eq '_A') {
+        if ($individualBranches eq 'ALL') {
             my @branchcodes = Koha::Libraries->search();
             foreach my $branchcode (@branchcodes){
                 push @iBranchcodes, $branchcode->branchcode;

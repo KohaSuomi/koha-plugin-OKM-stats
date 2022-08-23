@@ -68,7 +68,7 @@ This script has the following parameters :
 
     -i --individual Individual branches. Instead of using the OKM library groups, we can generate
                     statistics for individual branches. This is a comma-separated list of branchcodes.
-                    If "-i '_A'" is given, then all branches are accounted for.
+                    If "-i 'ALL'" is given, then all branches are accounted for.
                     USAGE: '-i JOE_JOE,JOE_LIP,JOE_RAN,JOE_KAR'
 
     --html          Print as an HTML table
@@ -92,7 +92,7 @@ EXAMPLES:
     #Generate monthly reports, using the bash 'date' to generate the previous month for OKM branchcategories
     ./generateOKMAnnualStatistics.pl --timeperiod $(($(date +%m)-1)) -r -v
     #For all branches
-    ./generateOKMAnnualStatistics.pl --timeperiod $(($(date +%m)-1)) --individual '_A' -r -v
+    ./generateOKMAnnualStatistics.pl --timeperiod $(($(date +%m)-1)) --individual 'ALL' -r -v
 
 ENDUSAGE
 
@@ -136,7 +136,7 @@ sub rebuildAllStatistics {
 
     ##Calculate OKM statistics for all branches for given year.
     print '#'.DateTime->now()->iso8601().'# Building statistics for all branches, year '.$yearStart->year()." #\n";
-    my $okm = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::OPLIB::OKM->new( undef, $yearStart->year(), $limit, '_A', $verbose );
+    my $okm = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::OPLIB::OKM->new( undef, $yearStart->year(), $limit, 'ALL', $verbose );
     $okm->createStatistics();
     $okm->save() if $okm;
 
@@ -155,7 +155,7 @@ sub rebuildAllStatistics {
                                                   );
         my $timeperiod = $startMonth->iso8601().' - '.$endMonth->iso8601();
         print '#'.DateTime->now()->iso8601().'# Building statistics for all branches, '.$startMonth->month_name()." #\n";
-        my $okm = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::OPLIB::OKM->new( undef, $timeperiod, $limit, '_A', $verbose );
+        my $okm = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::OPLIB::OKM->new( undef, $timeperiod, $limit, 'ALL', $verbose );
         $okm->createStatistics();
         $okm->save() if $okm;
 
