@@ -307,9 +307,14 @@
             <b-collapse id="collapse-1" class="mt-2">
               <b-card>
                 <p class="card-text">Valitse näytettävä raportti klikkaamalla riviä</p>
+                
+                <div>
+                  <b-form-input v-model="okmListFilter" placeholder="Suodata"></b-form-input>
+                  <div class="mt-2">Suodatettu: {{ okmListFilter }}</div>
+                </div>
                 <!--- #The row-clicked event will pass 3 parameters to your function. The first being the item specific to the row that was clicked. The second will be the index of the row, and the third is a native click event.
                 This means you can use the arguments keyword to get the index and pass it to your function. -->
-                <b-table class="w-75" striped bordered sticky-column hover selectable :filter="okmListFilter" :select-mode="okmSelectMode"
+                <b-table class="w-75" striped bordered sticky-column sticky-header="500px" hover selectable :filter="okmListFilter" :select-mode="okmSelectMode"
                   :fields="okmreportlistfields" :items="okmlisting" @row-clicked="fetchOkm(arguments[0])">
                 </b-table>
               </b-card>
@@ -345,11 +350,13 @@
             </b-row> -->
 
             <b-col lg="6" class="my-1">
-              <b-form-group label="Suodata" label-for="filter-input" label-cols-sm="3" label-align-sm="right"
-                label-size="sm" class="mb-0">
+              
                 <b-input-group size="sm">
-                  <b-form-input id="filter-input" v-model="filter" type="search" placeholder="Type to Search">
-                  </b-form-input>
+                  <div>
+                    <b-form-input id="filter-input" v-model="filter" type="search" placeholder="Suodata"></b-form-input>
+                    <div class="mt-2">Suodatettu: {{ filter }}</div>
+                  </div>
+                  
 
                   <b-input-group-append>
                     <b-button :disabled="!filter" @click="filter = ''">Clear</b-button>
@@ -361,9 +368,7 @@
 
           <b-row>
             <b-col lg="8" class="my-1">
-              <b-form-group label="Suodata" label-for="filter-input" label-cols-sm="3" label-align-sm="right" label-size="sm"
-                class="mb-0">
-              </b-form-group>
+              
           
           
               <b-row>
