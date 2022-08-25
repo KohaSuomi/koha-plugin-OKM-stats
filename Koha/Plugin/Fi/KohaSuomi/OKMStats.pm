@@ -170,7 +170,7 @@ sub uninstall() {
     return 1;
 }
 
-sub tool {
+sub report {
     my ( $self, $args ) = @_;
     my $cgi = $self->{'cgi'};
     my $template = $self->get_template({ file => 'index.tt' });
