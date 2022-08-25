@@ -299,14 +299,14 @@
 
         <b-tab title="OKM-Tilastot" @click="showOkmAllModded">
           <div>
-            <b-button v-b-toggle.collapse-1 variant="primary" @click="getOKMlisting"> Näytä raporttilistaus || Piilota raporttilistaus
+            <b-button v-b-toggle.collapse-1 variant="primary" @click="getOKMlisting"> Näytä/Piilota raporttilistaus
             </b-button>
             <b-row>
 
             </b-row>
             <b-collapse id="collapse-1" class="mt-2">
               <b-card>
-                <p class="card-text">Valitse näytettävä raportti klikkaamalla riviä</p>
+                <p class="card-text">Valitse näytettävä raportti klikkaamalla riviä. Luotu-sarake ei ole suodatettavissa.</p>
                 
                 <div>
                   <b-form-input v-model="okmListFilter" placeholder="Suodata"></b-form-input>
@@ -314,7 +314,7 @@
                 </div>
                 <!--- #The row-clicked event will pass 3 parameters to your function. The first being the item specific to the row that was clicked. The second will be the index of the row, and the third is a native click event.
                 This means you can use the arguments keyword to get the index and pass it to your function. -->
-                <b-table class="w-75" striped bordered sticky-column sticky-header="500px" hover selectable :filter="okmListFilter" :select-mode="okmSelectMode"
+                <b-table class="w-75" striped bordered sticky-column :filter-ignored-fields="['4']" sticky-header="400px" hover selectable :filter="okmListFilter" :select-mode="okmSelectMode"
                   :fields="okmreportlistfields" :items="okmlisting" @row-clicked="fetchOkm(arguments[0])">
                 </b-table>
               </b-card>
@@ -332,9 +332,9 @@
             <div>Piilota:
             </div>
             <b-input-group>
-              <b-button type="button" :pressed.sync="hideOkmCollectionHoldingBranch" @click="toggleOkmFields" variant="primary">Kokoelma
+              <b-button type="button" :pressed.sync="hideOkmCollectionHoldingBranch" @click="toggleOkmFields" variant="primary">Kokoelmat
                 (sijaintikirj.)</b-button>
-              <b-button type="button" :pressed.sync="hideOkmCollectionHomeBranch" @click="toggleOkmFields" variant="primary">Kokoelma (koti)
+              <b-button type="button" :pressed.sync="hideOkmCollectionHomeBranch" @click="toggleOkmFields" variant="primary">Kokoelmat (koti)
               </b-button>
               <b-button type="button" :pressed.sync="hideOkmAcquisitions" @click="toggleOkmFields" variant="primary">Hankinnat</b-button>
               <b-button type="button" :pressed.sync="hideOkmIssues" @click="toggleOkmFields" variant="primary">Lainaus</b-button>
@@ -353,13 +353,13 @@
               
                 <b-input-group size="sm">
                   <div>
-                    <b-form-input id="filter-input" v-model="filter" type="search" placeholder="Suodata"></b-form-input>
-                    <div class="mt-2">Suodatettu: {{ filter }}</div>
+                    
+                    
                   </div>
                   
 
                   <b-input-group-append>
-                    <b-button :disabled="!filter" @click="filter = ''">Clear</b-button>
+                    <!--<b-button :disabled="!filter" @click="filter = ''">Clear</b-button> -->
                   </b-input-group-append>
                 </b-input-group>
               </b-form-group>
@@ -373,16 +373,22 @@
           
               <b-row>
                 <div>
+                  <b-input-group>
+                  <b-form-input id="filter-input" v-model="filter" type="search" placeholder="Suodata"></b-form-input>
                   <b-button :disabled="!filter" @click="filter = null" lg="4">Tyhjennä suodatin</b-button>
                   <b-button @click="sortBy = null" lg="4">Tyhjennä järjestys</b-button>
-                  <b-button id="button1" onclick="CopyToClipboard('bsvue-datatable')">Kopioi leikepöydälle</b-button>
-                  <b-button type="button" class="btn btn-success" id="table-export" variant="primary">Vie XLS</b-button>
+                  <b-button id="button1" v-b-popover.hover.top="
+                  'Nähtävissä oleva data päätyy leikepöydälle. Käytä suodatusta tarvittaessa.'" onclick="CopyToClipboard('bsvue-datatable')">Kopioi leikepöydälle</b-button>
+                  <b-button type="button" class="btn btn-success" id="table-export" v-b-popover.hover.top="
+                  'Nähtävissä oleva data päätyy tiedostoon. Käytä suodatusta tarvittaessa.'" variant="primary">Vie XLS</b-button>
                 </div>
+              </b-input-group>
               </b-row>
               <b-row align-v="end">
                 <div>
                   Sorting By: <b>{{ sortBy }}</b>, Sort Direction:
                   <b>{{ sortDesc ? "Descending" : "Ascending" }}</b>
+                  <div class="mt-2">Suodatettu: {{ filter }}</div>
                 </div>
               </b-row>
           
@@ -392,9 +398,6 @@
           </b-row>
 
           <b-row align-v="end">
-            <div>
-              Valittu: <b>{{ selectedOkm }}</b>
-            </div>
           </b-row>
 
         </b-tab>
@@ -451,7 +454,6 @@
         myJson: [], //oletusdata
         lainpalselected: null,
         okmlisting: null,
-        selectedOkm: null,
         okmreportlistfields: null,
         okmViewCollectionHomebranch: true,
         okmSelectMode: 'single',
@@ -710,8 +712,7 @@
         async fetchOkm(item) {
           console.log("fetchOkm started");
           let reportid = item[0];
-          selectedOkm = reportid;
-          console.log(reportid);
+
           this.myJson.data = null;
           this.fields = null;
           this.isBusy = true;
