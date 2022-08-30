@@ -110,7 +110,7 @@ sub getokmdetails {
 
         $sth = $dbh->prepare(
             q{
-                SELECT id, individualbranches, DATE_FORMAT(startdate, GET_FORMAT(DATE, 'EUR')), DATE_FORMAT(enddate, GET_FORMAT(DATE, 'EUR')), timestamp from koha_plugin_fi_kohasuomi_okmstats_okm_statistics
+                SELECT id, individualbranches, startdate, enddate, timestamp from koha_plugin_fi_kohasuomi_okmstats_okm_statistics
             }
          );
 
