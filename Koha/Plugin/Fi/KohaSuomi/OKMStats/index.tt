@@ -317,11 +317,13 @@
                 <!--- #The row-clicked event will pass 3 parameters to your function. The first being the item specific to the row that was clicked. The second will be the index of the row, and the third is a native click event.
                 This means you can use the arguments keyword to get the index and pass it to your function. -->
                 <b-table class="w-75" striped bordered sticky-column :filter-ignored-fields="['4']" sticky-header="340px" hover selectable :filter="okmListFilter" :select-mode="okmSelectMode" :busy="isBusy"
-                  :fields="okmreportlistfields" :items="okmlisting" @row-clicked="fetchOkm(arguments[0])">
-                  <div slot="table-busy" class="text-center text-danger my-2">
-                    <b-spinner class="align-middle"></b-spinner>
-                    <strong>Loading...</strong>
-                  </div>
+                  :fields="okmreportlistfields" :sort-compare="dateCompare" :items="okmlisting" @row-clicked="fetchOkm(arguments[0])">
+                  <template v-slot:table-busy>
+                    <div>
+                      <b-spinner></b-spinner>
+                      <strong>Loading...</strong>
+                    </div>
+                  </template>
                 
               </b-card>
             </b-collapse>
@@ -517,6 +519,25 @@
         toggleBusy() {
           this.isBusy = !this.isBusy;
         },
+        dateCompare(itemA, itemB, key) {
+      if (key !== '2' && key !=='3') {
+        // If field is not `date` we let b-table handle the sorting
+        return false
+      } else {
+        // Convert the string formatted date to a number that can be compared
+        // Get the values being compared from the items
+        let a = itemA[key]
+        let b = itemB[key]
+        // Split them into an array of parts (dd, mm, and yyyy)
+        a = a.split('.')
+        b = b.split('.')
+        // convert string parts to numbers
+        a = (parseInt(a[2], 10) * 10000) + (parseInt(a[1], 10) * 100) + parseInt(a[0])
+        b = (parseInt(b[2], 10) * 10000) + (parseInt(b[1], 10) * 100) + parseInt(b[0])
+        // Return the comparison result
+        return a - b
+      }
+    },
         
         toggleOkmFields() {
           
@@ -784,7 +805,7 @@
             this.isBusy = false;
           }
 
-          this.isBusy = false;
+          this.isBusy = true;
           //this.$nextTick(() => this.$refs.scrollhere.scrollIntoView({block: "end"}));
           this.$nextTick(() => this.$refs.scrollhere.scrollIntoView());
         }
