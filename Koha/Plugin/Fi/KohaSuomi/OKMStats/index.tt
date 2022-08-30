@@ -317,12 +317,11 @@
                 <!--- #The row-clicked event will pass 3 parameters to your function. The first being the item specific to the row that was clicked. The second will be the index of the row, and the third is a native click event.
                 This means you can use the arguments keyword to get the index and pass it to your function. -->
                 <b-table class="w-75" striped bordered sticky-column :filter-ignored-fields="['4']" sticky-header="340px" hover selectable :filter="okmListFilter" :select-mode="okmSelectMode" :busy="isBusy"
-                  :fields="okmreportlistfields" :sort-compare="dateCompare" :items="okmlisting" @row-clicked="fetchOkm(arguments[0])">
-                  <template v-slot:table-busy>
-                    <div>
-                      <b-spinner></b-spinner>
-                      <strong>Loading...</strong>
-                    </div>
+                :fields="okmreportlistfields" :items="okmlisting" :sort-compare="dateCompare" @row-clicked="fetchOkm(arguments[0])">
+                <div slot="table-busy" class="text-center text-danger my-2">
+                  <b-spinner class="align-middle"></b-spinner>
+                  <strong>Loading...</strong>
+                </div>
                   </template>
                 
               </b-card>
@@ -805,7 +804,7 @@
             this.isBusy = false;
           }
 
-          this.isBusy = true;
+          this.isBusy = false;
           //this.$nextTick(() => this.$refs.scrollhere.scrollIntoView({block: "end"}));
           this.$nextTick(() => this.$refs.scrollhere.scrollIntoView());
         }
