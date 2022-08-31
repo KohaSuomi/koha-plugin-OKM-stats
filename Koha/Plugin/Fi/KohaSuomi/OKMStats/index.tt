@@ -380,7 +380,8 @@
                 <div>
                   <b-input-group>
                   <div class="w-25">
-                    <b-form-input id="filter-input" v-model="filter" type="search" placeholder="Suodata"></b-form-input>
+                    <b-form-input id="filter-input" v-model="filter" v-b-popover.hover.top="
+                    'Käytä pilkkua erottimena jos haluat suodattaa useammalla merkkijonolla esim. joe,val. Kirjainkoolla ei ole merkitystä.'"type="search" placeholder="Suodata"></b-form-input>
                   </div>
                     
                     <b-button :disabled="!filter" @click="filter = null" lg="4">Tyhjennä suodatin</b-button>
@@ -424,7 +425,7 @@
     <b-table v-model="filtered" id="bsvue-datatable" sticky-header="500px" striped hover responsive="sm"
       selectable bordered outlined small sort-icon-left no-border-collapse :sort-by.sync="sortBy"
       :filter-included-fields="filterOn" :sort-desc.sync="sortDesc" :items="myJson.data" :fields="fields" :busy="isBusy"
-      :filter="filter" label-sort-asc="" label-sort-desc="" label-sort-clear="">
+      :filter="filter" label-sort-asc="" label-sort-desc="" label-sort-clear="" :filter-function="filterFn">
 
       <div slot="table-busy" class="text-center text-danger my-2">
         <b-spinner class="align-middle"></b-spinner>
@@ -515,6 +516,23 @@
 
       // define methods under the `methods` object
       methods: {
+      
+        //for comma separated filtering
+        normalizeString(s) {
+      return `${s}`.trim().toLowerCase();
+    },
+    //comma separated filering
+    filterFn(row) {
+      return this.filter.split(',')
+        .map(this.normalizeString)
+        .some(
+          term => Object.values(row)
+            .map(this.normalizeString)
+            .some(
+              val => val.indexOf(term) > -1
+            )
+        );
+    },
         toggleBusy() {
           this.isBusy = !this.isBusy;
         },
