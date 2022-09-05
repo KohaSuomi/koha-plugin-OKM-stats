@@ -2,8 +2,7 @@
 [% USE To %]
 
 <html lang="en">
-
-<head>
+  
   <style>
     .sr-only {
       display: none;
@@ -23,6 +22,9 @@
       margin-bottom: 55 !important;
     }
   </style>
+
+<head>
+  
   <!-- Required meta tags -->
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
@@ -389,7 +391,7 @@
                     <b-button id="button1" v-b-popover.hover.top="
                                 'Nähtävissä oleva data päätyy leikepöydälle. Käytä suodatusta tarvittaessa.'"
                       onclick="CopyToClipboard('bsvue-datatable')">Kopioi leikepöydälle</b-button>
-                    <b-button type="button" class="btn btn-success" id="table-export" v-b-popover.hover.top="
+                    <b-button type="button" class="btn btn-success" id="table-export" @click="exportXls" v-b-popover.hover.top="
                                 'Nähtävissä oleva data päätyy tiedostoon. Käytä suodatusta tarvittaessa.'" variant="primary">Vie XLS
                     </b-button>
                   </b-input-group>
@@ -426,6 +428,11 @@
       selectable bordered outlined small sort-icon-left no-border-collapse :sort-by.sync="sortBy"
       :filter-included-fields="filterOn" :sort-desc.sync="sortDesc" :items="myJson.data" :fields="fields" :busy="isBusy"
       :filter="filter" label-sort-asc="" label-sort-desc="" label-sort-clear="" :filter-function="filterFn">
+      
+      <template v-slot:cell(library)="data">
+        <b-button size="sm" margin-right=10px @click="deleteItem(data.item.library)"></b-button>
+        {{data.item.library}}
+      </template>
 
       <div slot="table-busy" class="text-center text-danger my-2">
         <b-spinner class="align-middle"></b-spinner>
@@ -485,7 +492,6 @@
 
       },
 
-
       computed: {
 
         sortOptions() {
@@ -516,6 +522,43 @@
 
       // define methods under the `methods` object
       methods: {
+        //https://gist.github.com/TheDiligentDev/a2a2a256dee23818ef2bd7ffa9a896b1
+        deleteItem(library) {
+          console.log("deleteItem:");
+          
+          console.log(library);
+          console.log(this.myJson.data);
+          
+          
+          var arr = [...this.myJson.data];
+          var toDelete = library;
+          console.log("todelete:");
+          console.log(toDelete);
+          //var index = arr.indexOf(toDelete);
+          //var index = arr.findIndex( s => s.value == 'SII_VU' );
+          //var index = arr.findIndex(o=>o.value === library);
+          
+          var index = findIndexByProperty(arr,"library",library);
+          
+          console.log("index: ");
+          console.log(index);
+          
+          if (index > -1) {
+            arr.splice(index, 1);
+          }
+           
+          console.log("after");
+          console.log(arr);
+          
+          this.myJson.data = arr;
+          this.sortBy = "collection_by_holdingbranch.total";
+          this.sortBy = "library";
+          //console.log(index);
+          //if (index !== -1) {
+          //  this.myJson.data.splice(index, 1);
+          //}
+          
+        },
       
         //for comma separated filtering
         normalizeString(s) {
@@ -619,6 +662,24 @@
           this.fields = null;
           this.myJson.data = null;
 
+        },
+        
+        //table2excel export bootstrap table
+        exportXls() {
+          console.log("export");
+            var table = $("#bsvue-datatable");
+            if (table && table.length) {
+              $(table).table2excel({
+                exclude: ".noExl",
+                name: "Excel Document Name",
+                filename: "OKM_" + new Date().toLocaleDateString("en-UK").replace(/\//g, '-') + ".xls",
+                fileext: ".xls",
+                exclude_img: true,
+                exclude_links: true,
+                exclude_inputs: true,
+                preserveColors: true
+              });
+            }
         },
 
         async showLainat() {
@@ -844,25 +905,9 @@
       .then(response => response.json());
     // .then(jsonObject => console.log(jsonObject));
 
-    //table2excel export bootstrap table
-    $(function () {
-      $("#table-export").click(function (e) {
-        var table = $("#bsvue-datatable");
-        if (table && table.length) {
-          $(table).table2excel({
-            exclude: ".noExl",
-            name: "Excel Document Name",
-            filename: "OKM_" + new Date().toLocaleDateString("en-UK").replace(/\//g, '-') + ".xls",
-            fileext: ".xls",
-            exclude_img: true,
-            exclude_links: true,
-            exclude_inputs: true,
-            preserveColors: true
-          });
-        }
-      });
-
-    });
+    
+    
+    
     
     function CopyToClipboard(containerid) {
   if (document.selection) {
@@ -879,6 +924,14 @@
     alert("Taulukko kopioitu leikepöydälle.")
   }
 }
+
+function findIndexByProperty(array, name, value) {
+  for (var i = 0; i < array.length; i++) {
+    if (array[i][name] === value) { return i; }
+  }
+  return -1;
+}
+
     
     
   </script>
