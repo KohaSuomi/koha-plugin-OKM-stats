@@ -347,6 +347,7 @@
               <b-button type="button" :pressed.sync="hideOkmIssues" @click="toggleOkmFields" variant="primary">Piilota/Näytä Lainaus</b-button>
               
               
+              
             </b-input-group>
 
             <!-- <b-row>
@@ -621,6 +622,8 @@
             for (let i = 33; i < 49; i++) {
               delete okmfieldsfiltered[i];
             }
+            delete okmfieldsfiltered[67];
+            delete okmfieldsfiltered[68];
           }
           if (this.hideOkmIssues === true) {
             for (let i = 49; i < 65; i++) {
