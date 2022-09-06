@@ -394,10 +394,6 @@
                     <b-button type="button" class="btn btn-success" id="table-export" @click="exportXls" v-b-popover.hover.top="
                                 'Nähtävissä oleva data päätyy tiedostoon. Käytä suodatusta tarvittaessa.'" variant="primary">Vie XLS
                     </b-button>
-                    <b-button
-  :class="[hideOkmCollectionHoldingBranch ? 'btn-success' : 'btn-info']"
-  @click="toggle"
->{{isActive ? 'ON' : 'OFF'}}</b-button>
                   </b-input-group>
                 </div>
               
@@ -487,7 +483,6 @@
         hideOkmIssues: false,
         hideOkmDeleted: false,
         hideOkmActiveBorrowers: false,
-        isActive: true,
 
         options: [
           { value: null, text: 'Please select an option' },
@@ -586,11 +581,8 @@
         toggleBusy() {
           this.isBusy = !this.isBusy;
         },
-        toggle() {
-          console.log("toggled");
-          console.log(this.isActive);
-   this.isActive = !this.isActive;
-},
+        
+        //for euro date sorting
         dateCompare(itemA, itemB, key) {
       if (key !== '2' && key !=='3') {
         // If field is not `date` we let b-table handle the sorting
