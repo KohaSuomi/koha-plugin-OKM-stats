@@ -84,8 +84,8 @@ let okmfields = [
         
         { label: "Aktiiviset asiakkaat", key: "active_borrowers" , sortable: true, variant: 'info'},
         
-        { label: "Hankinta(kulut) yhteensä", key: "acquisitions.expenditure_acquisitions" , sortable: true, variant: 'info'},
-        { label: "Kirjojen hankinta(kulut)", key: "acquisitions.expenditure_acquisitions_books" , sortable: true, variant: 'info'},
+        { label: "Hankinta(kulut) yhteensä", key: "acquisitions.expenditures" , sortable: true, variant: 'info'},
+        { label: "Kirjojen hankinta(kulut)", key: "acquisitions.expenditures_books" , sortable: true, variant: 'info'},
         
         
         
