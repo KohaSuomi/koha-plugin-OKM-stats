@@ -7,14 +7,14 @@
     .sr-only {
       display: none;
     }
-  
-    [aria-pressed='true'] {
+
+/* Custom theme for buttons    [aria-pressed='true'] {
       background-color: #003e78 !important;
     }
   
     .btn-primary:active {
       background-color: #65b5ff !important;
-    }
+    } */
   
     #datatable {
       margin-left: 5 !important;
@@ -339,15 +339,14 @@
           <b-card>
           <div>
             <b-input-group lg="2">
-              <b-button type="button" :pressed.sync="hideOkmCollectionHoldingBranch" @click="toggleOkmFields" variant="primary">Piilota/Näytä Kokoelmat
+              <b-button type="button" :pressed.sync="hideOkmCollectionHoldingBranch" @click="toggleOkmFields" :variant="[hideOkmCollectionHoldingBranch ? 'dark' : 'primary']">{{hideOkmCollectionHoldingBranch ? 'Näytä kokoelmat' : 'Piilota kokoelmat'}}
                 (sijaintikirj.)</b-button>
-              <b-button type="button" :pressed.sync="hideOkmCollectionHomeBranch" @click="toggleOkmFields" variant="primary">Piilota/Näytä Kokoelmat (koti)
-              </b-button>
-              <b-button type="button" :pressed.sync="hideOkmAcquisitions" @click="toggleOkmFields" variant="primary">Piilota/Näytä Hankinnat</b-button>
-              <b-button type="button" :pressed.sync="hideOkmIssues" @click="toggleOkmFields" variant="primary">Piilota/Näytä Lainaus</b-button>
-              
-              
-              
+              <b-button type="button" :pressed.sync="hideOkmCollectionHomeBranch" @click="toggleOkmFields" :variant="[hideOkmCollectionHomeBranch ? 'dark' : 'primary']">{{hideOkmCollectionHomeBranch ? 'Näytä kokoelmat' : 'Piilota kokoelmat'}}
+                  (koti)</b-button>
+              <b-button type="button" :pressed.sync="hideOkmAcquisitions" @click="toggleOkmFields" :variant="[hideOkmAcquisitions ? 'dark' : 'primary']">{{hideOkmAcquisitions ? 'Näytä hankinnat' : 'Piilota hankinnat'}}</b-button>  
+              <b-button type="button" :pressed.sync="hideOkmIssues" @click="toggleOkmFields" :variant="[hideOkmIssues ? 'dark' : 'primary']">{{hideOkmIssues ? 'Näytä lainaus' : 'Piilota lainaus'}}</b-button>
+              <b-button type="button" :pressed.sync="hideOkmDeleted" @click="toggleOkmFields" :variant="[hideOkmDeleted ? 'dark' : 'primary']">{{hideOkmDeleted ? 'Näytä poistot' : 'Piilota poistot'}}</b-button>
+              <b-button type="button" :pressed.sync="hideOkmActiveBorrowers" @click="toggleOkmFields" :variant="[hideOkmActiveBorrowers ? 'dark' : 'primary']">{{hideOkmActiveBorrowers ? 'Näytä akt.asiakkaat' : 'Piilota akt.asiakkaat'}}</b-button>
             </b-input-group>
 
             <!-- <b-row>
@@ -395,6 +394,10 @@
                     <b-button type="button" class="btn btn-success" id="table-export" @click="exportXls" v-b-popover.hover.top="
                                 'Nähtävissä oleva data päätyy tiedostoon. Käytä suodatusta tarvittaessa.'" variant="primary">Vie XLS
                     </b-button>
+                    <b-button
+  :class="[hideOkmCollectionHoldingBranch ? 'btn-success' : 'btn-info']"
+  @click="toggle"
+>{{isActive ? 'ON' : 'OFF'}}</b-button>
                   </b-input-group>
                 </div>
               
@@ -482,6 +485,9 @@
         hideOkmCollectionHomeBranch: false,
         hideOkmAcquisitions: false,
         hideOkmIssues: false,
+        hideOkmDeleted: false,
+        hideOkmActiveBorrowers: false,
+        isActive: true,
 
         options: [
           { value: null, text: 'Please select an option' },
@@ -580,6 +586,11 @@
         toggleBusy() {
           this.isBusy = !this.isBusy;
         },
+        toggle() {
+          console.log("toggled");
+          console.log(this.isActive);
+   this.isActive = !this.isActive;
+},
         dateCompare(itemA, itemB, key) {
       if (key !== '2' && key !=='3') {
         // If field is not `date` we let b-table handle the sorting
@@ -630,20 +641,15 @@
               delete okmfieldsfiltered[i];
             }
           }
+          if (this.hideOkmDeleted === true) {       
+              delete okmfieldsfiltered[65];
+          }
+          if (this.hideOkmActiveBorrowers === true) {         
+              delete okmfieldsfiltered[66];
+          }
+          
           
           this.fields = okmfieldsfiltered;
-        },
-    
-        hideCollectionHome() {
-
-          okmHomeFieldsHidden = true;
-
-          console.log(this.fields);
-          //this.fields.collection_by_homebranch.total.visible= !this.fields.collection_by_homebranch.total.visible;
-
-          //delete this.fields[17];
-          //delete this.fields[18];
-          //delete this.fields[19];
         },
 
         onContext(ctx) {
@@ -854,11 +860,19 @@
             for (let i = 33; i < 49; i++) {
               delete okmfieldsfiltered[i];
             }
+            delete okmfieldsfiltered[67];
+            delete okmfieldsfiltered[68];
           }
           if (this.hideOkmIssues === true) {
             for (let i = 49; i < 65; i++) {
               delete okmfieldsfiltered[i];
             }
+          }
+          if (this.hideOkmDeleted === true) {       
+              delete okmfieldsfiltered[65];
+          }
+          if (this.hideOkmActiveBorrowers === true) {         
+              delete okmfieldsfiltered[66];
           }
 
           this.fields = okmfieldsfiltered;
