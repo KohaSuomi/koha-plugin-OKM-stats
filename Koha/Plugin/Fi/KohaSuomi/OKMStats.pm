@@ -14,20 +14,18 @@ use Koha::Plugins;
 use Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::OPLIB::OKM;
 
 ## Here we set our plugin version
-our $VERSION = "2.0.6";
+our $VERSION = "2.0.7";
 
 ## Here is our metadata, some keys are required, some are optional
 our $metadata = {
-    name            => 'OKM Stats Plugin',
+    name            => 'Raportointityökalu',
     author          => 'Emmi Takkinen, Lari Strand',
     date_authored   => '2021-09-01',
-    date_updated    => "2022-02-28",
+    date_updated    => "2022-09-07",
     minimum_version => '21.05.02.003',
     maximum_version => undef,
     version         => $VERSION,
-    description     => 'This plugin implements every available feature '
-      . 'of the plugin system and is meant '
-      . 'to be documentation and a starting point for writing your own plugins!',
+    description     => 'OKM-tilastot ja erilaisia raportteja/työkaluja/tilastoja kuntien ja kirjastojen tarpeisiin ',
 };
 
 ## This is the minimum code required for a plugin's 'new' method
