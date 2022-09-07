@@ -168,7 +168,7 @@ sub report {
         branches => ($words)
     );
 
-    print $cgi->header(-charset    => 'utf-8');
+    
     $self->output_html( $template->output() );
 }
 
