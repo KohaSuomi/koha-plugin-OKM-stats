@@ -57,6 +57,15 @@
 </head>
 
 <div id="app" class="container-fluid">
+<!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="main-breadcrumb">
+            <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/cgi-bin/koha/mainpage.pl">Etusivu</a></li>
+            <li class="breadcrumb-item"><a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugit</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Raportointityökalu</li>
+            </ol>
+        </nav>
+        <!-- /Breadcrumb -->
 
   <div>
     <b-card no-body>
