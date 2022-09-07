@@ -25,6 +25,7 @@ use Try::Tiny;
 use Scalar::Util qw(blessed);
 use MARC::Record;
 use MARC::File::XML;
+use C4::KohaSuomi::Tweaks;
 
 use Koha::Database;
 
@@ -160,7 +161,7 @@ If the table is empty, returns undef
 =cut
 sub GetLatestDataElementUpdateTime {
     my ($verbose) = @_;
-    my $dbh = C4::Context->dbh();
+    my $dbh = C4::KohaSuomi::Tweaks->dbh();
     my $sthLastModTime = $dbh->prepare("SELECT MAX(last_mod_time) as last_mod_time FROM koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements;");
     $sthLastModTime->execute( );
     my $rv = $sthLastModTime->fetchrow_hashref();
@@ -193,7 +194,7 @@ sub _getBiblioitemsNeedingUpdate {
     my $lastModTime = GetLatestDataElementUpdateTime($verbose) || Koha::Exceptions::Exception->throw($cc[3]."():> You must do a complete rebuilding since none of the biblios have been indexed yet.");
     $lastModTime = $lastModTime->iso8601();
 
-    my $dbh = C4::Context->dbh();
+    my $dbh = C4::KohaSuomi::Tweaks->dbh();
     my $sth = $dbh->prepare("
             (SELECT bi.biblioitemnumber, bi.biblionumber, bi.itemtype, 0 AS deleted FROM biblioitems bi
              LEFT JOIN biblio_metadata bmd ON(bi.biblionumber = bmd.biblionumber)
@@ -254,7 +255,7 @@ Marks all BiblioDataElements to be updated during the next indexing.
 =cut
 
 sub markForReindex {
-    my $dbh = C4::Context->dbh();
+    my $dbh = C4::KohaSuomi::Tweaks->dbh();
     $dbh->do("UPDATE koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements SET last_mod_time = '1900-01-01 01:01:01'");
 }
 
@@ -266,7 +267,7 @@ An ugly copypaste of GetXmlBiblio since GetDeletedXmlBiblio doesn't exists on co
 
 sub _getDeletedXmlBiblio {
     my ($biblionumber) = @_;
-    my $dbh = C4::Context->dbh;
+    my $dbh = C4::KohaSuomi::Tweaks->dbh();
     return unless $biblionumber;
     my ($marcxml) = $dbh->selectrow_array(
         q|
