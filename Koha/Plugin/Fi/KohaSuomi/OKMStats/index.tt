@@ -382,7 +382,7 @@
                 <div>
                   <b-input-group>
                   <div class="w-25">
-                    <b-form-input id="filter-input" v-model="filter" v-b-popover.hover.top="
+                    <b-form-input id="filter-input" v-model="filter" v-b-popover.hover.bottom="
                     'Käytä pilkkua erottimena jos haluat suodattaa useammalla merkkijonolla esim. joe,val. Kirjainkoolla ei ole merkitystä.'"type="search" placeholder="Suodata"></b-form-input>
                   </div>
                     
@@ -516,8 +516,8 @@
         let branchcodes = ([% To.json(branches) %]);
         //let branchcodes = [];
 
-        console.log("branches is: ");
-        console.log(branchcodes);
+        //console.log("branches is: ");
+        //console.log(branchcodes);
 
         this.branchcodelist = branchcodes;
       },
@@ -526,31 +526,31 @@
       methods: {
         //https://gist.github.com/TheDiligentDev/a2a2a256dee23818ef2bd7ffa9a896b1
         deleteItem(library) {
-          console.log("deleteItem:");
+          //console.log("deleteItem:");
           
-          console.log(library);
-          console.log(this.myJson.data);
+          //console.log(library);
+          //console.log(this.myJson.data);
           
           
           var arr = [...this.myJson.data];
           var toDelete = library;
-          console.log("todelete:");
-          console.log(toDelete);
+          //console.log("todelete:");
+          //console.log(toDelete);
           //var index = arr.indexOf(toDelete);
           //var index = arr.findIndex( s => s.value == 'SII_VU' );
           //var index = arr.findIndex(o=>o.value === library);
           
           var index = findIndexByProperty(arr,"library",library);
           
-          console.log("index: ");
-          console.log(index);
+          //console.log("index: ");
+          //console.log(index);
           
           if (index > -1) {
             arr.splice(index, 1);
           }
            
-          console.log("after");
-          console.log(arr);
+          //console.log("after");
+          //console.log(arr);
           
           this.myJson.data = arr;
           this.sortBy = "collection_by_holdingbranch.total";
@@ -605,7 +605,7 @@
         
         toggleOkmFields() {
           
-          console.log("Toggled okmfields");
+          //console.log("Toggled okmfields");
           
           // If we want to copy a primitive value, we can use assignment operator (=), but for objects we cannot use the assignment operator.  
           var okmfieldsfiltered = [...okmfields];
@@ -667,7 +667,7 @@
         
         //table2excel export bootstrap table
         exportXls() {
-          console.log("export");
+          //console.log("export");
             var table = $("#bsvue-datatable");
             if (table && table.length) {
               $(table).table2excel({
@@ -699,7 +699,7 @@
             this.isBusy = false;
 
           } catch (e) {
-            console.log(e);
+            //console.log(e);
             this.isBusy = false;
           }
 
@@ -727,7 +727,7 @@
             this.isBusy = false;
 
           } catch (e) {
-            console.log(e);
+            //console.log(e);
             this.isBusy = false;
           }
 
@@ -793,10 +793,10 @@
 
             this.okmlisting = response.data;
             this.okmreportlistfields = okmreportlistfields;
-            console.log(response.data);
+            //console.log(response.data);
 
           } catch (e) {
-            console.log(e);
+            //console.log(e);
             this.isBusy = false;
           }      
         },
@@ -816,23 +816,18 @@
             this.sortBy = null;
 
           } catch (e) {
-            console.log(e);
+            //console.log(e);
             this.isBusy = false;
           }
         },
 
         async fetchOkm(item) {
-          console.log("fetchOkm started");
+          //console.log("fetchOkm started");
           let reportid = item[0];
 
           this.myJson.data = null;
           this.fields = null;
           this.isBusy = true;
-
-          console.log("hideOkmCollectionHoldingBranch:");
-          console.log(this.hideOkmCollectionHoldingBranch);
-          console.log("hideOkmCollectionHomeBranch:");
-          console.log(this.hideOkmCollectionHomeBranch);
 
           // If we want to copy a primitive value, we can use assignment operator (=), but for objects we cannot use the assignment operator.  
           var okmfieldsfiltered = [...okmfields];
@@ -874,21 +869,20 @@
               `/api/v1/contrib/kohasuomi/okmstats/reportsstats/`, { params: { okm_id: reportid } }
             );
 
-            //this.myJson.data = response.data;
-            console.log("Fetched okm report data:");
-            console.log(response.data);
+            //console.log("Fetched okm report data:");
+            //console.log(response.data);
             let stringified = JSON.stringify(response.data);
             stringified = stringified.replace(/\\/g, '');
             stringified = stringified.substring(3);
             stringified = stringified.slice(0, -3);
-            console.log("okm stringified:");
-            console.log(stringified);
+            //console.log("okm stringified:");
+            //console.log(stringified);
 
             let jsonified = JSON.parse(stringified);
 
             this.myJson.data = jsonified;
           } catch (e) {
-            console.log(e);
+            //console.log(e);
             this.isBusy = false;
           }
 
