@@ -985,10 +985,10 @@ sub StandardizeTimeperiodParameter {
 
     my ($startDate, $endDate);
 
-    if ($timeperiod =~ /^(\d\d\d\d)-(\d\d)-(\d\d)([Tt ]\d\d:\d\d:\d\d)?-(\d\d\d\d)-(\d\d)-(\d\d)([Tt ]\d\d:\d\d:\d\d)?$/) {
+    if ($timeperiod =~ /^(\d\d\d\d)-(\d\d)-(\d\d)([Tt ]\d\d:\d\d:\d\d)?(\s)?-(\s)?(\d\d\d\d)-(\d\d)-(\d\d)([Tt ]\d\d:\d\d:\d\d)?$/) {
         #Make sure the values are correct by casting them into a DateTime
         $startDate = DateTime->new(year => $1, month => $2, day => $3, time_zone => C4::Context->tz());
-        $endDate = DateTime->new(year => $5, month => $6, day => $7, time_zone => C4::Context->tz());
+        $endDate = DateTime->new(year => $7, month => $8, day => $9, time_zone => C4::Context->tz());
     }
     elsif ($timeperiod =~ /^(\d\d\d\d)$/) {
         $startDate = DateTime->from_day_of_year(year => $1, day_of_year => 1, time_zone => C4::Context->tz());
