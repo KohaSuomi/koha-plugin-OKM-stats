@@ -739,13 +739,16 @@ sub Retrieve {
     my $okm_serialized;
     if ($okm_statisticsId) {
         $okm_serialized = _RetrieveById($okm_statisticsId);
+    } elsif ($timeperiod && !$individualBranches) {
+        my ($startDate, $endDate) = StandardizeTimeperiodParameter($timeperiod);
+        $okm_serialized = _retrieve_by_timeperiod($startDate->iso8601(), $endDate->iso8601());
     }
     else {
         my ($startDate, $endDate) = StandardizeTimeperiodParameter($timeperiod);
         $okm_serialized = _RetrieveByParams($startDate->iso8601(), $endDate->iso8601(), $individualBranches);
     }
-    return _deserialize($okm_serialized) if $okm_serialized;
-    return undef;
+
+    return  $okm_serialized if $okm_serialized;
 }
 sub _RetrieveById {
     my ($id) = @_;
@@ -766,12 +769,24 @@ sub _RetrieveByParams {
     $sth->execute( $startDateISO, $endDateISO, defined $individualBranches ? $individualBranches : () );
     return $sth->fetchrow();
 }
+
+sub _retrieve_by_timeperiod {
+    my ($startDateISO, $endDateISO) = @_;
+
+    my $dbh = C4::Context->dbh();
+    my $sth = $dbh->prepare(qq{SELECT * FROM koha_plugin_fi_kohasuomi_okmstats_okm_statistics WHERE startdate >= ? AND enddate <= ?});
+    $sth->execute( $startDateISO, $endDateISO );
+    return $sth->fetchall_arrayref({});
+}
+
 sub RetrieveAll {
     my $dbh = C4::Context->dbh();
     my $sth = $dbh->prepare('SELECT * FROM koha_plugin_fi_kohasuomi_okmstats_okm_statistics ORDER BY enddate DESC');
     $sth->execute(  );
     return $sth->fetchall_arrayref({});
 }
+# We might not need this, remove is necessary.
+# If something broke because this is not used then fix accordingly
 sub _deserialize {
     my $serialized = shift;
     my $VAR1;

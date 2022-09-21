@@ -31,18 +31,19 @@ use Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::OPLIB::OKM;
 use Koha::Libraries;
 
 my $help;
-my ($limit, $rebuild, $asCsv, $asHtml, $individualBranches, $timeperiod, $rebuildAllStatistics, $verbose);
+my ($limit, $rebuild, $asCsv, $asHtml, $individualBranches, $timeperiod, $rebuildAllStatistics, $rebuildAllExistingStats, $verbose);
 
 GetOptions(
-    'h|help'           => \$help,
-    'l|limit:i'        => \$limit,
-    'r|rebuild'        => \$rebuild,
-    'i|individual:s'   => \$individualBranches,
-    't|timeperiod:s'   => \$timeperiod,
-    'html'             => \$asHtml,
-    'csv'              => \$asCsv,
-    'rebuildAllStats:s'=> \$rebuildAllStatistics,
-    'v|verbose'        => \$verbose,
+    'h|help'                    => \$help,
+    'l|limit:i'                 => \$limit,
+    'r|rebuild'                 => \$rebuild,
+    'i|individual:s'            => \$individualBranches,
+    't|timeperiod:s'            => \$timeperiod,
+    'html'                      => \$asHtml,
+    'csv'                       => \$asCsv,
+    'rebuildAllStats:s'         => \$rebuildAllStatistics,
+    'rebuildAllExistingStats:s' => \$rebuildAllExistingStats,
+    'v|verbose'                 => \$verbose,
 );
 my $usage = << 'ENDUSAGE';
 
@@ -84,6 +85,9 @@ This script has the following parameters :
                     Also give the year you want to statisticize.
                     Example: "generateOKMAnnualStatistics.pl --rebuildAllStats 2014"
 
+    --rebuildAllExistingStats
+                    Rebuild all statistics found in database for a given year.
+
 EXAMPLES:
 
     ./generateOKMAnnualStatistics.pl --rebuildAllStats 2014 -v --csv
@@ -94,6 +98,8 @@ EXAMPLES:
     #For all branches
     ./generateOKMAnnualStatistics.pl --timeperiod $(($(date +%m)-1)) --individual 'ALL' -r -v
 
+    ./generateOKMAnnualStatistics.pl --rebuildAllExistingStats 2021 -v
+
 ENDUSAGE
 
 if ($help) {
@@ -103,13 +109,14 @@ if ($help) {
 
 if ($rebuildAllStatistics) {
     rebuildAllStatistics();
+} elsif ($rebuildAllExistingStats){
+    rebuildAllExistingStats();
 }
 else {
     generateStatistics();
 }
 
 sub generateStatistics {
-
     my $okm;
     if (not($rebuild)) {
         $okm = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::OPLIB::OKM::Retrieve( undef, $timeperiod, $individualBranches );
@@ -177,4 +184,21 @@ sub rebuildAllStatistics {
 
         $startMonth = $startMonth->add(months => 1);
     } while ($yearStart->year() == $startMonth->year());
+}
+
+sub rebuildAllExistingStats {
+
+    my $okms = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::OPLIB::OKM::Retrieve(undef, $rebuildAllExistingStats, undef);
+
+    if(scalar @{ $okms } == 0){
+        print "# No statistics found for timeperiod ".$rebuildAllExistingStats.".\n";
+    } else {
+        foreach my $okm (@$okms){
+            my $timeperiod = $okm->{startdate}.'-'.$okm->{enddate};
+            my $individualbranches = $okm->{individualbranches} ne "OKM" ? $okm->{individualbranches} : undef;
+            my $rebuilded_okm = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::OPLIB::OKM->new( undef, $timeperiod, $limit, $individualbranches, $verbose );
+            $rebuilded_okm->createStatistics();
+            $rebuilded_okm->save() if $rebuilded_okm;
+        }
+    }
 }
