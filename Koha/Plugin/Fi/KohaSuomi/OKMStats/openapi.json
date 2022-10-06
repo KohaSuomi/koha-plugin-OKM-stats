@@ -1,5 +1,5 @@
 {
-	"/okmstats/removetool": {
+	"/reportstool/removetool": {
 		"get": {
 			"x-mojo-to": "Fi::KohaSuomi::OKMStats::ReportsController#getremovetooldata",
 			"operationId": "removetool",
@@ -65,9 +65,9 @@
 		}
 	},
 	
-	"/okmstats/reports": {
+	"/reportstool/okmstats/reports": {
 		"get": {
-			"x-mojo-to": "Fi::KohaSuomi::OKMStats::ReportsController#getokmdetails",
+			"x-mojo-to": "Fi::KohaSuomi::OKMStats::ReportsController#getokmreportlist",
 			"operationId": "listOKM",
 			"tags": [
 				"OKM"
@@ -77,7 +77,7 @@
 			],
 			"parameters": [
 				{
-					"name": "city_id",
+					"name": "report_id",
 					"in": "query",
 					"required": false,
 					"description": "Matching criteria",
@@ -131,7 +131,7 @@
 		}
 	},
 	
-	"/okmstats/reportsstats": {
+	"/reportstool/okmstats/reportsstats": {
 		"get": {
 			"x-mojo-to": "Fi::KohaSuomi::OKMStats::ReportsController#getokmreportdata",
 			"operationId": "getOKM",
@@ -197,7 +197,7 @@
 		}
 	},
 	
-	"/okmstats/issues": {
+	"/reportstool/issues": {
 		"get": {
 			"x-mojo-to": "Fi::KohaSuomi::OKMStats::ReportsController#getlainat",
 			"operationId": "getLainat",
@@ -233,6 +233,71 @@
 			"responses": {
 				"200": {
 					"description": "okm report to render",
+					"schema": {
+						"type": "array"
+					}
+				},
+				"403": {
+					"description": "Access forbidden",
+					"schema": {
+						"type": "object",
+						"properties": {
+							"error": {
+								"description": "Error message",
+								"type": "string"
+							}
+						}
+					}
+				},
+				"500": {
+					"description": "Internal error",
+					"schema": {
+						"type": "object",
+						"properties": {
+							"error": {
+								"description": "Error message",
+								"type": "string"
+							}
+						}
+					}
+				},
+				"503": {
+					"description": "Under maintenance",
+					"schema": {
+						"type": "object",
+						"properties": {
+							"error": {
+								"description": "Error message",
+								"type": "string"
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"/reportstool/borrowers/agegroups": {
+		"get": {
+			"x-mojo-to": "Fi::KohaSuomi::OKMStats::ReportsController#getokmreportdata",
+			"operationId": "getAgeGroups",
+			"tags": [
+				"borrowerdata"
+			],
+			"produces": [
+				"application/json"
+			],
+			"parameters": [
+				{
+					"name": "library_id",
+					"in": "query",
+					"required": false,
+					"description": "Matching criteria",
+					"type": "string"					
+				}
+			],
+			"responses": {
+				"200": {
+					"description": "results",
 					"schema": {
 						"type": "array"
 					}

@@ -70,6 +70,80 @@
   <div>
     <b-card no-body>
       <b-tabs pills card>
+      
+<!-- LAINAT -->
+
+        <b-tab title="Lainat" disabled>
+          
+          <div>
+            <b-tabs content-class="mt-3">
+              <b-tab title="Lainaustilastot kirjastoittain
+               ja hyllypaikoittain aikaväliltä" active>
+                
+                <template>
+                  <div>
+                    Branchcode:
+                    <b-form-select v-model="selectedBranch" :options="branchcodelist" size="sm" class="mt-3"></b-form-select>
+                    <div class="mt-3">Selected: <strong>{{ selectedBranch }}</strong></div>
+                  </div>
+                </template>
+      
+                <div>
+                  <b-row class="mb-12">
+                    <!-- pvm-valinta-->
+                    <b-col lg="4" class="my-1">
+                      <b-input-group class="mb-3">
+                        <b-form-input id="example-input" v-model="lowDate" type="text" placeholder="YYYY-MM-DD"
+                          autocomplete="off"></b-form-input>
+                        <b-input-group-append>
+                          <b-form-datepicker v-model="lowDate" button-only right locale="fi-FI" aria-controls="example-input"
+                            @context="onContext"></b-form-datepicker>
+                        </b-input-group-append>
+                      </b-input-group>
+                    </b-col>
+                    <b-col lg="4" class="my-1">
+                      <b-input-group class="mb-3">
+                        <b-form-input id="example-input" v-model="maxDate" type="text" placeholder="YYYY-MM-DD"
+                          autocomplete="off"></b-form-input>
+                        <b-input-group-append>
+                          <b-form-datepicker v-b-popover.hover="
+                            'Valitse loppupvm:ksi viimeiseksi raportoitavaa päivää seuraava päivä'
+                          " title="Ohje:" id="example-datepicker" v-model="maxDate" v-model="maxDate" button-only right
+                            locale="fi-FI" aria-controls="example-input" @context="onContext"></b-form-datepicker>
+                        </b-input-group-append>
+                      </b-input-group>
+      
+                    </b-col>
+                  </b-row>
+                </div>
+                <div>
+                  <b-button type="button" class="btn btn-success" @click="showLainat">Hae</b-button>
+                </div>
+      
+                <!-- <b-row class="mb-6">
+                  <b-col lg="2" class="my-1">
+                    <b-form-datepicker id="example-datepicker" v-model="lowDate"></b-form-datepicker>
+                  </b-col>exportToCsv
+                  <b-col lg="2" class="my-1">
+                    <b-form-datepicker v-b-popover.hover="
+                          'Valitse loppupvm:ksi viimeiseksi raportoitavaa päivää seuraava päivä'
+                        " title="Ohje:" id="example-datepicker" v-model="maxDate"></b-form-datepicker>
+                  </b-col>
+                </b-row> -->
+              </b-tab>
+              
+              
+              </b-tab>
+              <b-tab title="Second"><p>I'm the second tab</p></b-tab>
+              <b-tab title="Disabled" disabled><p>I'm a disabled tab!</p></b-tab>
+            </b-tabs>
+          </div>
+          
+        </b-tab>
+          
+
+<!-- HANKINNAT -->
+
         <b-tab disabled title="Hankinnat" @click="showHankinnat">
           <b-card-text>Tab contents 2</b-card-text>
           <b-button @click="toggleBusy">Toggle Busy State</b-button>
@@ -128,72 +202,56 @@
           </div>
 
         </b-tab>
+        
+<!-- KOKOELMAT -->
+
         <b-tab disabled title="Kokoelmat(collection)">
           <b-card-text>Tab contents 3</b-card-text>
         </b-tab>
+        
+<!-- ASIAKKAAT -->
+
         <b-tab disabled title="Asiakkaat(users)" @click="showAsiakkaat">
-          <b-card-text>Asiakkaat</b-card-text>
           <div>
-            Branchcode:
-            <b-form-select v-model="selectedBranch" :options="branchcodelist" size="sm" class="mt-3"></b-form-select>
-            <div class="mt-3">Selected: <strong>{{ selectedBranch }}</strong></div>
-          </div>
-
-        </b-tab>
-        <b-tab disabled title="Lainat">
-          <b-card-text>Lainaustilastot kirjastoittain ja hyllypaikoittain aikaväliltä</b-card-text>
-
-          <template>
-            <div>
-              Branchcode:
-              <b-form-select v-model="selectedBranch" :options="branchcodelist" size="sm" class="mt-3"></b-form-select>
-              <div class="mt-3">Selected: <strong>{{ selectedBranch }}</strong></div>
-            </div>
-          </template>
-
-          <div>
-            <b-row class="mb-12">
-              <!-- pvm-valinta-->
-              <b-col lg="4" class="my-1">
-                <b-input-group class="mb-3">
-                  <b-form-input id="example-input" v-model="lowDate" type="text" placeholder="YYYY-MM-DD"
-                    autocomplete="off"></b-form-input>
-                  <b-input-group-append>
-                    <b-form-datepicker v-model="lowDate" button-only right locale="fi-FI" aria-controls="example-input"
-                      @context="onContext"></b-form-datepicker>
-                  </b-input-group-append>
-                </b-input-group>
-              </b-col>
-              <b-col lg="4" class="my-1">
-                <b-input-group class="mb-3">
-                  <b-form-input id="example-input" v-model="maxDate" type="text" placeholder="YYYY-MM-DD"
-                    autocomplete="off"></b-form-input>
-                  <b-input-group-append>
+            <b-tabs content-class="mt-3">
+              <b-tab title="Asiakasmäärä ikäryhmittäin" active>
+                
+                <template>
+                  <div>
+                    Branchcode:
+                    <b-form-select v-model="selectedBranch" :options="branchcodelist" size="sm" class="mt-3"></b-form-select>
+                    <div class="mt-3">Selected: <strong>{{ selectedBranch }}</strong></div>
+                  </div>
+                </template>
+      
+                
+                <div>
+                  <b-button type="button" class="btn btn-success" @click="showBorrowersByAgegroups">Hae</b-button>
+                </div>
+      
+                <!-- <b-row class="mb-6">
+                  <b-col lg="2" class="my-1">
+                    <b-form-datepicker id="example-datepicker" v-model="lowDate"></b-form-datepicker>
+                  </b-col>exportToCsv
+                  <b-col lg="2" class="my-1">
                     <b-form-datepicker v-b-popover.hover="
-                      'Valitse loppupvm:ksi viimeiseksi raportoitavaa päivää seuraava päivä'
-                    " title="Ohje:" id="example-datepicker" v-model="maxDate" v-model="maxDate" button-only right
-                      locale="fi-FI" aria-controls="example-input" @context="onContext"></b-form-datepicker>
-                  </b-input-group-append>
-                </b-input-group>
-
-              </b-col>
-            </b-row>
+                          'Valitse loppupvm:ksi viimeiseksi raportoitavaa päivää seuraava päivä'
+                        " title="Ohje:" id="example-datepicker" v-model="maxDate"></b-form-datepicker>
+                  </b-col>
+                </b-row> -->
+              </b-tab>
+              
+              
+              </b-tab>
+              <b-tab title="Second"><p>I'm the second tab</p></b-tab>
+              <b-tab title="Disabled" disabled><p>I'm a disabled tab!</p></b-tab>
+            </b-tabs>
           </div>
-          <div>
-            <b-button type="button" class="btn btn-success" @click="showLainat">Hae</b-button>
-          </div>
 
-          <!-- <b-row class="mb-6">
-            <b-col lg="2" class="my-1">
-              <b-form-datepicker id="example-datepicker" v-model="lowDate"></b-form-datepicker>
-            </b-col>exportToCsv
-            <b-col lg="2" class="my-1">
-              <b-form-datepicker v-b-popover.hover="
-                    'Valitse loppupvm:ksi viimeiseksi raportoitavaa päivää seuraava päivä'
-                  " title="Ohje:" id="example-datepicker" v-model="maxDate"></b-form-datepicker>
-            </b-col>
-          </b-row> -->
         </b-tab>
+
+
+<!-- UUSINNAT -->
 
         <b-tab disabled title="Uusinnat">
           <b-card-text>Uusinnat hyllypaikoittain aikaväliltä</b-card-text>
@@ -239,6 +297,8 @@
           </div>
 
         </b-tab>
+        
+<!-- POISTOT -->
 
         <b-tab disabled title="Poistot" disabled>
           <b-card-text>Tab contents 3</b-card-text>
@@ -306,9 +366,14 @@
 
 
         </b-tab>
+        
+<!-- KAUKOPALVELU -->
+
         <b-tab disabled title="Kaukopalvelu" disabled>
           <b-card-text>Tab contents 3</b-card-text>
         </b-tab>
+
+<!-- OKM-TILASTOT -->
 
         <b-tab title="OKM-Tilastot" @click="showOkmAllModded">
           <div>
@@ -391,8 +456,8 @@
                 <div>
                   <b-input-group>
                   <div class="w-25">
-                    <b-form-input id="filter-input" v-model="filter" v-b-popover.hover.bottom="
-                    'Käytä pilkkua erottimena jos haluat suodattaa useammalla merkkijonolla esim. joe,val. Kirjainkoolla ei ole merkitystä.'"type="search" placeholder="Suodata"></b-form-input>
+                    <b-form-input id="filter-input" v-model="filter" v-b-popover.hover.bottom="'Käytä pilkkua erottimena jos haluat suodattaa useammalla merkkijonolla esim. joe,val. Kirjainkoolla ei ole merkitystä. Yksittäisen rivin voi poistaa kirjastotunnuksen edessä olevalla napilla. Lataa raportti uudelleen palauttaaksesi poistetut rivit.'"
+                    type="search" placeholder="Suodata"></b-form-input>
                   </div>
                     
                     <b-button :disabled="!filter" @click="filter = null" lg="4">Tyhjennä suodatin</b-button>
@@ -430,6 +495,7 @@
     </b-card>
   </div>
 
+<!-- BS-VUE DATATABLE -->
   <div id="datatable" ref="scrollhere">
     <!-- sido tablen näyttämä data muuttujaan v-model: filtered, kutsu metodissa this.filtered -->
     <!-- sticky-header pitää rivien otsikot paikallaan, mutta ei ole kovin käytettävä. -->
@@ -448,9 +514,6 @@
         <strong>Loading...</strong>
       </div>
   </div>
-  <br>
-  <br>
-  <br>
 </div>
 
 </b-row>
@@ -719,6 +782,23 @@
           this.fields = null;
 
         },
+        async showBorrowersByAgegroups() {
+          try {
+            const response = await axios.get(
+              `/api/v1/contrib/kohasuomi/okmstats/issues/`, { params: { branch: this.selectedBranch, lowdate: this.lowDate, maxdate: this.maxDate } }
+            );
+
+            this.fields = lainatfields;
+            this.myJson.data = response.data;
+
+            this.isBusy = false;
+
+          } catch (e) {
+            //console.log(e);
+            this.isBusy = false;
+          }
+          
+        },
 
         async showUusinnat() {
           this.myJson.data = null;
@@ -727,7 +807,7 @@
           this.isBusy = true;
           try {
             const response = await axios.get(
-              `/api/v1/contrib/kohasuomi/okmstats/issues/`, { params: { branch: this.selectedBranch, lowdate: this.lowDate, maxdate: this.maxDate } }
+              `/api/v1/contrib/kohasuomi/reportstool/okmstats/issues/`, { params: { branch: this.selectedBranch, lowdate: this.lowDate, maxdate: this.maxDate } }
             );
 
             this.fields = lainatfields;
@@ -797,7 +877,7 @@
           
           try {
             const response = await axios.get(
-              `/api/v1/contrib/kohasuomi/okmstats/reports/`
+              `/api/v1/contrib/kohasuomi/reportstool/okmstats/reports/`
             );
 
             this.okmlisting = response.data;
@@ -816,7 +896,7 @@
           this.isBusy = true;
           try {
             const response = await axios.get(
-              `/api/v1/contrib/kohasuomi/okmstats/removetool/`
+              `/api/v1/contrib/kohasuomi/reportstool/removetool/`
             );
 
             this.fields = removetoolfields;
@@ -875,7 +955,7 @@
 
           try {
             const response = await axios.get(
-              `/api/v1/contrib/kohasuomi/okmstats/reportsstats/`, { params: { okm_id: reportid } }
+              `/api/v1/contrib/kohasuomi/reportstool/okmstats/reportsstats/`, { params: { okm_id: reportid } }
             );
 
             //console.log("Fetched okm report data:");

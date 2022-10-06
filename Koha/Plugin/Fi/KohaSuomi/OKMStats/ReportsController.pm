@@ -97,7 +97,7 @@ LIMIT 100
     }
 }
 
-sub getokmdetails {
+sub getokmreportlist {
     
     my $c = shift->openapi->valid_input or return;
 
