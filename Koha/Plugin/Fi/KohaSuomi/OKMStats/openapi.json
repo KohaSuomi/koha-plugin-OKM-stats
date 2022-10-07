@@ -278,7 +278,7 @@
 	},
 	"/reportstool/borrowers/agegroups": {
 		"get": {
-			"x-mojo-to": "Fi::KohaSuomi::OKMStats::ReportsController#getokmreportdata",
+			"x-mojo-to": "Fi::KohaSuomi::OKMStats::ReportsController#getagegroups",
 			"operationId": "getAgeGroups",
 			"tags": [
 				"borrowerdata"

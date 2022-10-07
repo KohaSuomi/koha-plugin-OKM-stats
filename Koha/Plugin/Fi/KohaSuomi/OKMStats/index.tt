@@ -211,40 +211,20 @@
         
 <!-- ASIAKKAAT -->
 
-        <b-tab disabled title="Asiakkaat(users)" @click="showAsiakkaat">
+        <b-tab title="Asiakkaat(users)" @click="showAsiakkaat">
           <div>
             <b-tabs content-class="mt-3">
               <b-tab title="Asiakasmäärä ikäryhmittäin" active>
-                
-                <template>
-                  <div>
-                    Branchcode:
-                    <b-form-select v-model="selectedBranch" :options="branchcodelist" size="sm" class="mt-3"></b-form-select>
-                    <div class="mt-3">Selected: <strong>{{ selectedBranch }}</strong></div>
-                  </div>
-                </template>
-      
-                
                 <div>
                   <b-button type="button" class="btn btn-success" @click="showBorrowersByAgegroups">Hae</b-button>
                 </div>
-      
-                <!-- <b-row class="mb-6">
-                  <b-col lg="2" class="my-1">
-                    <b-form-datepicker id="example-datepicker" v-model="lowDate"></b-form-datepicker>
-                  </b-col>exportToCsv
-                  <b-col lg="2" class="my-1">
-                    <b-form-datepicker v-b-popover.hover="
-                          'Valitse loppupvm:ksi viimeiseksi raportoitavaa päivää seuraava päivä'
-                        " title="Ohje:" id="example-datepicker" v-model="maxDate"></b-form-datepicker>
-                  </b-col>
-                </b-row> -->
               </b-tab>
               
               
               </b-tab>
-              <b-tab title="Second"><p>I'm the second tab</p></b-tab>
-              <b-tab title="Disabled" disabled><p>I'm a disabled tab!</p></b-tab>
+              <b-tab title="Lainat postinumeroalueittain"><p>Ensilainat, uusinnat, ensilainat+uusinnat</p></b-tab>
+              <p></p>
+              <b-tab title="Toimipisteen lainat postinumeroittain"><p>Toimipisteiden lainat lajiteltuna lainanneiden asiakkaiden postinumeron mukaan.</p></b-tab>
             </b-tabs>
           </div>
 
@@ -780,21 +760,26 @@
         showAsiakkaat() {
           this.myJson.data = null;
           this.fields = null;
-
         },
+        
         async showBorrowersByAgegroups() {
+          
+          this.myJson.data = null;
+          this.fields = borrower_agegroup_fields;
+          this.isBusy = true;
+          
           try {
             const response = await axios.get(
-              `/api/v1/contrib/kohasuomi/okmstats/issues/`, { params: { branch: this.selectedBranch, lowdate: this.lowDate, maxdate: this.maxDate } }
-            );
-
-            this.fields = lainatfields;
+              `/api/v1/contrib/kohasuomi/reportstool/borrowers/agegroups/`
+              );
+            // `/api/v1/contrib/kohasuomi/reportstool/borrowers/agegroups/`, { params: { branch: this.selectedBranch, lowdate: this.lowDate, maxdate: this.maxDate } }
+            this.fields = borrower_agegroup_fields;
             this.myJson.data = response.data;
 
             this.isBusy = false;
 
           } catch (e) {
-            //console.log(e);
+            console.log(e);
             this.isBusy = false;
           }
           
@@ -991,6 +976,7 @@
   <script src="[% PLUGIN_PATH %]/fieldtemplates/okmreportlistfields.js"></script>
   <script src="[% PLUGIN_PATH %]/fieldtemplates/removetoolfields.js"></script>
   <script src="[% PLUGIN_PATH %]/fieldtemplates/lainatfields.js"></script>
+  <script src="[% PLUGIN_PATH %]/fieldtemplates/borrowersfields.js"></script>
 
   <script>
     fetch("[% PLUGIN_PATH %]/json/okmstatsmoddedjson.json")

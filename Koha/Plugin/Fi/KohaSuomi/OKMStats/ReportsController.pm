@@ -240,4 +240,112 @@ sub getlainat {
     }
 }
 
+sub getagegroups {
+    my $c = shift->openapi->valid_input or return;
+
+    return try {
+        
+        my $dbh = C4::Context->dbh();
+        my $sth;
+        my $okmdata;
+        my $ref;
+        
+        # my $branch = $c->validation->param('branch');
+        
+        $sth = $dbh->prepare(
+            q{
+                SELECT branchcode,
+
+                SUM( IF( dateofbirth > DATE_SUB(CURDATE(), INTERVAL 15 YEAR)  ,1,0)) AS '0-14-v.',
+                SUM( IF( dateofbirth BETWEEN DATE_SUB(CURDATE(), INTERVAL 20 YEAR) AND DATE_SUB(CURDATE(), INTERVAL 15 YEAR)  ,1,0)) AS '15-19-v.',
+                SUM( IF( dateofbirth BETWEEN DATE_SUB(CURDATE(), INTERVAL 30 YEAR) AND DATE_SUB(CURDATE(), INTERVAL 20 YEAR)  ,1,0)) AS '20-29-v.',
+                SUM( IF( dateofbirth BETWEEN DATE_SUB(CURDATE(), INTERVAL 40 YEAR) AND DATE_SUB(CURDATE(), INTERVAL 30 YEAR)  ,1,0)) AS '30-39-v.',
+                SUM( IF( dateofbirth BETWEEN DATE_SUB(CURDATE(), INTERVAL 50 YEAR) AND DATE_SUB(CURDATE(), INTERVAL 40 YEAR)  ,1,0)) AS '40-49-v.',
+                SUM( IF( dateofbirth BETWEEN DATE_SUB(CURDATE(), INTERVAL 60 YEAR) AND DATE_SUB(CURDATE(), INTERVAL 50 YEAR)  ,1,0)) AS '50-59-v.',
+                SUM( IF( dateofbirth BETWEEN DATE_SUB(CURDATE(), INTERVAL 70 YEAR) AND DATE_SUB(CURDATE(), INTERVAL 60 YEAR)  ,1,0)) AS '60-69-v.',
+                SUM( IF( dateofbirth BETWEEN DATE_SUB(CURDATE(), INTERVAL 80 YEAR) AND DATE_SUB(CURDATE(), INTERVAL 70 YEAR)  ,1,0)) AS '70-79-v.',
+                SUM( IF( dateofbirth BETWEEN DATE_SUB(CURDATE(), INTERVAL 90 YEAR) AND DATE_SUB(CURDATE(), INTERVAL 80 YEAR)  ,1,0)) AS '80-89-v.',
+                SUM( IF( dateofbirth BETWEEN DATE_SUB(CURDATE(), INTERVAL 100 YEAR) AND DATE_SUB(CURDATE(), INTERVAL 90 YEAR)  ,1,0)) AS '90-99-v.',
+                SUM( IF( dateofbirth BETWEEN DATE_SUB(CURDATE(), INTERVAL 200 YEAR) AND DATE_SUB(CURDATE(), INTERVAL 100 YEAR)  ,1,0)) AS '100-'  
+
+                FROM borrowers
+
+                where categorycode IN ('HENKILO', 'LAPSI')
+
+                group by branchcode
+                order BY branchcode, dateofbirth
+
+            }
+         );
+
+        $sth->execute();
+        # $sth->execute($branch);
+
+        $ref = $sth->fetchall_arrayref();
+        
+
+        #my $array_ref = \@array;
+        
+        unless ($ref) {
+            return $c->render( status  => 404,
+                            openapi => { error => "Data not found" } );
+        }
+
+        return $c->render( status => 200, openapi => $ref );
+    }
+    catch {
+        $c->unhandled_exception($_);
+    }
+    
+    
+}
+
+
+
+
+
+
+
+# Hae data tietokannasta sarakkeen nimen kera (select x AS 'xxxx' esim.) käytettäväksi ilman fieldtemplate-määrittelyn tarvetta. Järjestys menee sekaisin (perl-array)
+# , { Slice => {} }); 
+
+# sub getagegroups {
+#     my $c = shift->openapi->valid_input or return;
+
+#     return try {
+        
+#         my $dbh = C4::Context->dbh();
+#         my $sth;
+#         my $ref;
+
+        
+
+#         my $result = $dbh->selectall_arrayref( qq{
+#  SELECT branchcode,
+
+# SUM( IF( dateofbirth > DATE_SUB(CURDATE(), INTERVAL 15 YEAR)  ,1,0)) AS '0-14-v.'
+
+
+# FROM borrowers
+
+# where categorycode IN ('HENKILO', 'LAPSI')
+
+# group by branchcode
+# order BY branchcode, dateofbirth
+# }, { Slice => {} });
+
+        
+#         unless ($result) {
+#             return $c->render( status  => 404,
+#                             openapi => { error => "Data not found" } );
+#         }
+
+#         return $c->render( status => 200, openapi => $result );
+#     }
+#     catch {
+#         $c->unhandled_exception($_);
+#     }
+# }
+
+
 1;
