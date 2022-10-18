@@ -229,27 +229,25 @@ sub fetchIssues {
     my $query = "(
             SELECT s.branch, s.datetime, s.itemnumber, bde.itemtype, bde.biblioitemnumber,
             bde.primary_language, bde.fiction, bde.musical, bde.celia, i.biblionumber,
-            i.location, i.cn_sort, i.homebranch, b.borrowernumber
+            i.location, i.cn_sort, i.homebranch, s.borrowernumber
             FROM statistics s
             INNER JOIN items i ON(s.itemnumber = i.itemnumber)
             INNER JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(i.biblioitemnumber = bde.biblioitemnumber)
-            INNER JOIN borrowers b ON(s.borrowernumber = b.borrowernumber)
             WHERE s.datetime >= ? AND s.datetime <= ?
             AND (s.type='issue' or s.type='renew')
             AND s.branch IN(" . join(",", map {"'$_'"} @branches).")
-            AND b.categorycode IN(" . join(",", map {"'$_'"} @{$patronCategories}).")
+            AND s.categorycode IN(" . join(",", map {"'$_'"} @{$patronCategories}).")
         ) UNION (
             SELECT s.branch, s.datetime, s.itemnumber, bde.itemtype, bde.biblioitemnumber,
             bde.primary_language, bde.fiction, bde.musical, bde.celia, di.biblionumber,
-            di.location, di.cn_sort, di.homebranch, b.borrowernumber
+            di.location, di.cn_sort, di.homebranch, s.borrowernumber
             FROM statistics s
             INNER JOIN deleteditems di ON(s.itemnumber = di.itemnumber)
             INNER JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(di.biblioitemnumber = bde.biblioitemnumber)
-            INNER JOIN borrowers b ON(s.borrowernumber = b.borrowernumber)
             WHERE s.datetime >= ? AND s.datetime <= ?
             AND (s.type='issue' or s.type='renew')
             AND s.branch IN(" . join(",", map {"'$_'"} @branches).")
-            AND b.categorycode IN(" . join(",", map {"'$_'"} @{$patronCategories}).")
+            AND s.categorycode IN(" . join(",", map {"'$_'"} @{$patronCategories}).")
         )";
     if ($self->{limit}) {
         $query .= ' LIMIT '.$self->{limit};
