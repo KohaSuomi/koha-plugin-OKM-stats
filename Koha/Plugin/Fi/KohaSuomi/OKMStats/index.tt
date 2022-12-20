@@ -73,12 +73,13 @@
       
 <!-- LAINAT -->
 
-        <b-tab title="Lainat" disabled>
+        <b-tab title="Lainat">
           
           <div>
             <b-tabs content-class="mt-3">
+              
               <b-tab title="Lainaustilastot kirjastoittain
-               ja hyllypaikoittain aikaväliltä" active>
+               ja hyllypaikoittain aikaväliltä" disabled>
                 
                 <template>
                   <div>
@@ -134,8 +135,9 @@
               
               
               </b-tab>
-              <b-tab title="Second"><p>I'm the second tab</p></b-tab>
-              <b-tab title="Disabled" disabled><p>I'm a disabled tab!</p></b-tab>
+        
+              <b-tab title="Disabled" disabled><p>I'm a disabled tab!</p>
+              </b-tab>
             </b-tabs>
           </div>
           
@@ -214,7 +216,7 @@
         <b-tab title="Asiakkaat(users)" @click="showAsiakkaat">
           <div>
             <b-tabs content-class="mt-3">
-              <b-tab title="Asiakasmäärä ikäryhmittäin" active>
+              <b-tab title="Asiakasmäärä ikäryhmittäin" active @click="clearTable">
                 <div>
                   <b-button type="button" class="btn btn-success" @click="showBorrowersByAgegroups">Hae</b-button>
                 </div>
@@ -222,9 +224,45 @@
               
               
               </b-tab>
-              <b-tab title="Lainat postinumeroalueittain"><p>Ensilainat, uusinnat, ensilainat+uusinnat</p></b-tab>
+              <b-tab title="Lainat postinumeroalueittain" @click="clearTable"><p>Ensilainat, uusinnat, ensilainat+uusinnat</p></b-tab>
               <p></p>
-              <b-tab title="Toimipisteen lainat postinumeroittain"><p>Toimipisteiden lainat lajiteltuna lainanneiden asiakkaiden postinumeron mukaan.</p></b-tab>
+              
+              <b-tab title="Toimipisteiden lainat postinumeroittain" @click="clearTable"> <p>Toimipisteiden ensilainat aikavälillä ryhmiteltynä lainanneiden asiakkaiden postinumeroiden mukaan.</p>
+                <div>Valitse aikaväli:</div>
+                <div>
+                  <b-row class="mb-12">
+                    <!-- pvm-valinta-->
+                    <b-col lg="4" class="my-1">
+                      <b-input-group class="mb-3">
+                        <b-form-input id="datelow-input" v-model="lowDate" type="text" placeholder="YYYY-MM-DD"
+                          autocomplete="off"></b-form-input>
+                        <b-input-group-append>
+                          <b-form-datepicker v-model="lowDate" button-only right locale="fi-FI" aria-controls="example-input"
+                            @context="onContext"></b-form-datepicker> 
+                        </b-input-group-append>
+                      </b-input-group>
+                    </b-col>
+                    <b-col lg="4" class="my-1">
+                      <b-input-group class="mb-3">
+                        <b-form-input id="datemax-input" v-model="maxDate" type="text" placeholder="YYYY-MM-DD"
+                          autocomplete="off"></b-form-input>
+                        <b-input-group-append>
+                          <b-form-datepicker v-b-popover.hover="
+                            'Loppupvm lukeutuu tulosjoukkoon.'
+                          " title="Ohje:" id="example-datepicker" v-model="maxDate" v-model="maxDate" button-only right
+                            locale="fi-FI" aria-controls="example-input" @context="onContext"></b-form-datepicker>
+                        </b-input-group-append>
+                      </b-input-group>
+      
+                    </b-col>
+                  </b-row>
+                </div>
+                <div>
+                  <b-button type="button" class="btn btn-success" @click="getIssuesByZip">Hae</b-button>
+                </div>
+                
+                </b-tab>
+              
             </b-tabs>
           </div>
 
@@ -717,6 +755,13 @@
 
         },
         
+        clearTable() {
+
+this.fields = null;
+this.myJson.data = null;
+
+},
+        
         //table2excel export bootstrap table
         exportXls() {
           //console.log("export");
@@ -760,6 +805,29 @@
         showAsiakkaat() {
           this.myJson.data = null;
           this.fields = null;
+        },
+        async getIssuesByZip() {
+          
+          this.myJson.data = null;
+          this.fields = null;
+
+          this.isBusy = true;
+          try {
+            const response = await axios.get(
+              `/api/v1/contrib/kohasuomi/reportstool/issues/issuesbyzip/`, { params: { lowdate: this.lowDate, maxdate: this.maxDate } }
+            );
+
+            this.fields = borrower_issuesbyzip_fields;
+            this.myJson.data = response.data;
+
+            this.isBusy = false;
+
+          } catch (e) {
+            //console.log(e);
+            this.isBusy = false;
+          }
+          
+          
         },
         
         async showBorrowersByAgegroups() {

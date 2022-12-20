@@ -12,3 +12,11 @@ const borrower_agegroup_fields = [
     { label: "90-99-v.", key: "10", sortable: true },
     { label: "100-", key: "11", sortable: true }
 ]
+
+const borrower_issuesbyzip_fields = [
+    { label: "Kirjastotunnus", key: "0", sortable: true },
+    { label: "Kaupunki", key: "1" , sortable: true},
+    { label: "Postinumero", key: "2" , sortable: true},
+    { label: "Asiakkaiden lkm", key: "3", sortable: true },
+    { label: "Ensilainojen lkm", key: "4", sortable: true }
+]

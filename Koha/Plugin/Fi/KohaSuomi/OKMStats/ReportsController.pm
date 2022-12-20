@@ -300,6 +300,53 @@ sub getagegroups {
     
 }
 
+sub getissuesbyzip {
+    
+    my $c = shift->openapi->valid_input or return;
+
+    return try {
+        
+        my $dbh = C4::Context->dbh();
+        my $sth;
+        my $okmdata;
+        my $ref;
+        
+        # my $branch = $c->validation->param('branch');
+        my $lowdate = $c->validation->param('lowdate');
+        my $maxdate = $c->validation->param('maxdate');
+        
+        $sth = $dbh->prepare(
+            q{
+                select borrowers.branchcode, city AS 'Kaupunki', zipcode AS 'Postinro', COUNT(DISTINCT borrowers.borrowernumber) AS "Asiakkaiden lkm", count(statistics.type) AS "Ensilainojen määrä"
+                FROM borrowers LEFT JOIN statistics ON borrowers.borrowernumber = statistics.borrowernumber LEFT JOIN branches ON statistics.branch = branches.branchcode
+                WHERE statistics.type = "issue" AND statistics.datetime BETWEEN ? AND DATE_ADD(?, INTERVAL 1 DAY) AND NOT borrowers.categorycode = "EITILASTO" AND NOT borrowers.categorycode is null GROUP BY zipcode, branchcode ORDER BY branchcode
+            }
+         );
+
+        $sth->execute($lowdate, $maxdate);
+        # $sth->execute($branch);
+
+        $ref = $sth->fetchall_arrayref();
+        
+
+        #my $array_ref = \@array;
+        
+        unless ($ref) {
+            return $c->render( status  => 404,
+                            openapi => { error => "Data not found" } );
+        }
+
+        return $c->render( status => 200, openapi => $ref );
+    }
+    catch {
+        $c->unhandled_exception($_);
+    }
+    
+    
+    
+    
+}
+
 
 
 
