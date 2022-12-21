@@ -22,7 +22,7 @@ Custom theme for buttons    [aria-pressed='true'] {
       background-color: #116818 !important;
     }
     
-    .nav-link:enabled {
+    .nav-link: {
       color: #116818 !important;
 
     }
@@ -33,6 +33,11 @@ Custom theme for buttons    [aria-pressed='true'] {
     
     .nav-pills .nav-link.active, .nav-pills .show > .nav-link {
       background-color: #116818 !important;
+    }
+    
+    .form-control:focus  {
+      border-color: #116818 !important;
+      box-shadow: 0 0 3px green !important;
     }
   
 
