@@ -974,18 +974,11 @@ this.myJson.data = null;
         async showOkmAllModded() {
 
           //console.log(okmstatsmoddedjson);
-          this.isBusy = true;
+          //do not clear busy state to prevent spam action
           this.myJson.data = null;
           this.fields = null;
-
-          
-
           this.fields = okmfields;
-
           this.myJson.data = null;
-
-          this.isBusy = false;
-
         },
         
         async getOKMlisting(){
