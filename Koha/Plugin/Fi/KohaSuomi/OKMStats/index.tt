@@ -2,53 +2,6 @@
 [% USE To %]
 
 <html lang="en">
-  
-  <style>
-    .sr-only {
-      display: none;
-    }
-
-    
-Custom theme for buttons    [aria-pressed='true'] {
-      background-color: #428504 !important;
-    }
-    
-    .btn-primary {
-      background-color: #116818 !important;
-    }
-    
-    .nav-link.active {
-      color: #ffffff !important;
-      background-color: #116818 !important;
-    }
-    
-    .nav-link: {
-      color: #116818 !important;
-
-    }
-    
-    .nav-pills:disabled {
-      color: #116818 !important;
-    }
-    
-    .nav-pills .nav-link.active, .nav-pills .show > .nav-link {
-      background-color: #116818 !important;
-    }
-    
-    .form-control:focus  {
-      border-color: #116818 !important;
-      box-shadow: 0 0 3px green !important;
-    }
-  
-
-  
-    #datatable {
-      margin-left: 5 !important;
-      margin-right: 5 !important;
-      margin-bottom: 55 !important;
-    }
-  </style>
-
 <head>
   
   <!-- Required meta tags -->
@@ -60,10 +13,10 @@ Custom theme for buttons    [aria-pressed='true'] {
 
   <title>Koha-Suomi - Raportointityökalu</title>
 
-
   <!-- Load required Bootstrap and BootstrapVue CSS -->
   <link type="text/css" rel="stylesheet" href="[% PLUGIN_PATH %]/includes/bootstrap.min.css" />
   <link type="text/css" rel="stylesheet" href="[% PLUGIN_PATH %]/includes/bootstrap-vue.css" />
+  <link type="text/css" rel="stylesheet" href="[% PLUGIN_PATH %]/custom.css" />
 
   <!-- Load polyfills to support older browsers -->
   <script src="//polyfill.io/v3/polyfill.min.js?features=es2015%2CIntersectionObserver"
@@ -99,7 +52,7 @@ Custom theme for buttons    [aria-pressed='true'] {
       
 <!-- LAINAT -->
 
-        <b-tab title="Lainat">
+        <b-tab title="Lainat" disabled>
           
           <div>
             <b-tabs content-class="mt-3">
@@ -172,7 +125,7 @@ Custom theme for buttons    [aria-pressed='true'] {
 
 <!-- HANKINNAT -->
 
-        <b-tab disabled title="Hankinnat" @click="showHankinnat">
+        <b-tab title="Hankinnat" disabled @click="showHankinnat">
           <b-card-text>Tab contents 2</b-card-text>
           <b-button @click="toggleBusy">Toggle Busy State</b-button>
 
@@ -588,7 +541,7 @@ Custom theme for buttons    [aria-pressed='true'] {
                     <b-button @click="sortBy = null" lg="4">Tyhjennä järjestys</b-button>
                     <b-button id="button1" v-b-popover.hover.top="
                                 'Nähtävissä oleva data päätyy leikepöydälle. Käytä suodatusta tarvittaessa.'"
-                      onclick="CopyToClipboard('bsvue-datatable')">Kopioi leikepöydälle</b-button>
+                      onclick="CopyToClipboard('datatable')">Kopioi leikepöydälle</b-button>
                     <b-button type="button" class="btn btn-success" id="table-export" @click="exportXls" v-b-popover.hover.top="
                                 'Nähtävissä oleva data päätyy tiedostoon. Käytä suodatusta tarvittaessa.'" variant="primary">Vie XLS
                     </b-button>
@@ -1180,6 +1133,7 @@ this.myJson.data = null;
     
     
     function CopyToClipboard(containerid) {
+      document.getElementById(containerid).click();
   if (document.selection) {
     var range = document.body.createTextRange();
     range.moveToElementText(document.getElementById(containerid));
