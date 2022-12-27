@@ -341,10 +341,58 @@ sub getissuesbyzip {
     catch {
         $c->unhandled_exception($_);
     }
+}
+
+sub getissuesbypatronzip {
     
+    my $c = shift->openapi->valid_input or return;
+
+    return try {
+        
+        my $dbh = C4::Context->dbh();
+        my $sth;
+        my $okmdata;
+        my $ref;
+        
+        # my $branch = $c->validation->param('branch');
+        my $zipcode = $c->validation->param('zipcode');
+        my $lowdate = $c->validation->param('lowdate');
+        my $maxdate = $c->validation->param('maxdate');
+        
+        $sth = $dbh->prepare(
+            q{
+                SELECT 
+borrowers.zipcode AS "Asiakkaan postinumero", SUM(CASE WHEN statistics.type = "issue" THEN 1 ELSE 0 END) AS 'Ensilainat',
+SUM(CASE WHEN statistics.type = "renew" THEN 1 ELSE 0 END) AS 'Uusinnat',
+SUM(CASE WHEN (statistics.type = "issue" OR statistics.type = "renew") THEN 1 ELSE 0 END) AS 'Ensilainat+uusinnat'
+FROM borrowers 
+LEFT JOIN statistics ON borrowers.borrowernumber = statistics.borrowernumber
+WHERE borrowers.zipcode = <<Asiakkaan postinumero>> AND (statistics.type = 'issue' OR statistics.type = 'renew')
+AND statistics.datetime BETWEEN <<Alkupvm|date>> AND DATE_ADD(<<Loppupvm|date>>, INTERVAL 1 DAY)
+AND NOT borrowers.categorycode = "EITILASTO" AND NOT borrowers.categorycode is null GROUP BY borrowers.zipcode
+            }
+         );
+
+        $sth->execute($lowdate, $maxdate);
+        # $sth->execute($branch);
+
+        $ref = $sth->fetchall_arrayref();
+        
+
+        #my $array_ref = \@array;
+        
+        unless ($ref) {
+            return $c->render( status  => 404,
+                            openapi => { error => "Data not found" } );
+        }
+
+        return $c->render( status => 200, openapi => $ref );
+    }
+    catch {
+        $c->unhandled_exception($_);
+    }
     
-    
-    
+
 }
 
 

@@ -413,4 +413,83 @@
 			}
 		}
 	}
+	"/reportstool/issues/issuesbypatronzip": {
+		"get": {
+			"x-mojo-to": "Fi::KohaSuomi::OKMStats::ReportsController#getissuesbypatronzip",
+			"operationId": "getIssuesByPatronZip",
+			"tags": [
+				"borrowerdata"
+			],
+			"produces": [
+				"application/json"
+			],
+			"parameters": [
+				{
+					"name": "zipcode",
+					"in": "query",
+					"required": false,
+					"description": "zipcode to check issues for",
+					"type": "integer"					
+				},
+				{
+					"name": "lowdate",
+					"in": "query",
+					"required": false,
+					"description": "lowDate",
+					"type": "string"					
+				},
+				{
+					"name": "maxdate",
+					"in": "query",
+					"required": false,
+					"description": "maxDate",
+					"type": "string"					
+				}
+			],
+			"responses": {
+				"200": {
+					"description": "results",
+					"schema": {
+						"type": "array"
+					}
+				},
+				"403": {
+					"description": "Access forbidden",
+					"schema": {
+						"type": "object",
+						"properties": {
+							"error": {
+								"description": "Error message",
+								"type": "string"
+							}
+						}
+					}
+				},
+				"500": {
+					"description": "Internal error",
+					"schema": {
+						"type": "object",
+						"properties": {
+							"error": {
+								"description": "Error message",
+								"type": "string"
+							}
+						}
+					}
+				},
+				"503": {
+					"description": "Under maintenance",
+					"schema": {
+						"type": "object",
+						"properties": {
+							"error": {
+								"description": "Error message",
+								"type": "string"
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 }
