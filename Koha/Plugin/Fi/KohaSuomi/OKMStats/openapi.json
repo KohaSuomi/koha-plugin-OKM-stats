@@ -412,7 +412,7 @@
 				}
 			}
 		}
-	}
+	},
 	"/reportstool/issues/issuesbypatronzip": {
 		"get": {
 			"x-mojo-to": "Fi::KohaSuomi::OKMStats::ReportsController#getissuesbypatronzip",

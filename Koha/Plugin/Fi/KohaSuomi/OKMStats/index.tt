@@ -252,6 +252,9 @@
                  </b-row>
                </div>
                  <!--END pvm-valinta--> 
+                 <div>
+                  <b-button type="button" :disabled="getIssuesByZipButtonDisabled" class="btn btn-success" @click="getIssuesByPatronZip">{{ getIssuesByZipButtonText }}</b-button>
+                </div>
               
               
               
@@ -908,6 +911,7 @@ this.myJson.data = null;
           this.myJson.data = null;
           this.fields = null;
         },
+        
         async getIssuesByZip() {
           
           this.myJson.data = null;
@@ -932,6 +936,39 @@ this.myJson.data = null;
           } catch (e) {
             //console.log(e);
             this.isBusy = false;
+            this.getIssuesByZipButtonDisabled = false;
+            this.getIssuesByZipButtonText = 'Hae';
+          }
+          
+          
+        },
+        
+        async getIssuesByPatronZip() {
+          
+          this.myJson.data = null;
+          this.fields = null;
+
+          this.isBusy = true;
+          try {
+            //prevent spamming heavy queries, maybe use a global 'Hae' button?
+            this.getIssuesByZipButtonDisabled = true;
+            this.getIssuesByZipButtonText = 'Hakee...';
+            const response = await axios.get(
+              `/api/v1/contrib/kohasuomi/reportstool/issues/issuesbypatronzip/`, { params: { zipcode: this.zipCode, lowdate: this.lowDate, maxdate: this.maxDate } }
+            );
+            this.getIssuesByZipButtonDisabled = false;
+            this.getIssuesByZipButtonText = 'Hae';
+
+            this.fields = borrower_issuesbypatronzip_fields;
+            this.myJson.data = response.data;
+
+            this.isBusy = false;
+
+          } catch (e) {
+            //console.log(e);
+            this.isBusy = false;
+            this.getIssuesByZipButtonDisabled = false;
+            this.getIssuesByZipButtonText = 'Hae';
           }
           
           

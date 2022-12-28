@@ -20,3 +20,10 @@ const borrower_issuesbyzip_fields = [
     { label: "Asiakkaiden lkm", key: "3", sortable: true },
     { label: "Ensilainojen lkm", key: "4", sortable: true }
 ]
+
+const borrower_issuesbypatronzip_fields = [
+    { label: "Postinumero", key: "0", sortable: true },
+    { label: "Lainat", key: "1", sortable: true },
+    { label: "Uusinnat", key: "2" , sortable: true},
+    { label: "Lainat + uusinnat", key: "3" , sortable: true}
+]

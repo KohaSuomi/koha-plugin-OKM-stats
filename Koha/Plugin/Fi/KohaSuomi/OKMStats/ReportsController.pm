@@ -367,13 +367,13 @@ SUM(CASE WHEN statistics.type = "renew" THEN 1 ELSE 0 END) AS 'Uusinnat',
 SUM(CASE WHEN (statistics.type = "issue" OR statistics.type = "renew") THEN 1 ELSE 0 END) AS 'Ensilainat+uusinnat'
 FROM borrowers 
 LEFT JOIN statistics ON borrowers.borrowernumber = statistics.borrowernumber
-WHERE borrowers.zipcode = <<Asiakkaan postinumero>> AND (statistics.type = 'issue' OR statistics.type = 'renew')
-AND statistics.datetime BETWEEN <<Alkupvm|date>> AND DATE_ADD(<<Loppupvm|date>>, INTERVAL 1 DAY)
+WHERE borrowers.zipcode = ? AND (statistics.type = 'issue' OR statistics.type = 'renew')
+AND statistics.datetime BETWEEN ? AND DATE_ADD(?, INTERVAL 1 DAY)
 AND NOT borrowers.categorycode = "EITILASTO" AND NOT borrowers.categorycode is null GROUP BY borrowers.zipcode
             }
          );
 
-        $sth->execute($lowdate, $maxdate);
+        $sth->execute($zipcode, $lowdate, $maxdate);
         # $sth->execute($branch);
 
         $ref = $sth->fetchall_arrayref();
