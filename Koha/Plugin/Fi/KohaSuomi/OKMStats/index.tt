@@ -14,9 +14,11 @@
   <title>Koha-Suomi - Raportointityökalu</title>
 
   <!-- Load required Bootstrap and BootstrapVue CSS -->
+  <link type="text/css" rel="stylesheet" href="[% PLUGIN_PATH %]/custom.css" />
   <link type="text/css" rel="stylesheet" href="[% PLUGIN_PATH %]/includes/bootstrap.min.css" />
   <link type="text/css" rel="stylesheet" href="[% PLUGIN_PATH %]/includes/bootstrap-vue.css" />
-  <link type="text/css" rel="stylesheet" href="[% PLUGIN_PATH %]/custom.css" />
+
+  
 
   <!-- Load polyfills to support older browsers -->
   <script src="//polyfill.io/v3/polyfill.min.js?features=es2015%2CIntersectionObserver"
@@ -32,6 +34,7 @@
   <script src="[% PLUGIN_PATH %]/includes/axios.min.js"></script>
   <script src="[% PLUGIN_PATH %]/includes/jquery-3.6.0.min.js"></script>
   <script src="[% PLUGIN_PATH %]/includes/jquery.table2excel.min.js"></script>
+
 
 </head>
 
@@ -208,14 +211,15 @@
                 <div>
                   <b-form-input class="w-25" type="number" :state="zipState" v-model="zipCode" aria-describedby="input-zip-feedback" placeholder="Syötä postinumero"></b-form-input>
                   <!-- This will only be shown if the preceding input has an invalid state -->
-                  <b-form-invalid-feedback id="input-zip-feedback">
+                  <!-- <b-form-invalid-feedback id="input-zip-feedback">
                     5 numeroa
-                  </b-form-invalid-feedback>
+                  </b-form-invalid-feedback> -->
                 </div>
 
                <!-- pvm-valinta-->
-               <div>Valitse aikaväli:</div>
                <div>
+                <p></p>
+                <label for="example-input">Valitse aikaväli:</label>
                  <b-row class="mb-12">               
                <!--                  <div>
                      <b-form-select v-model="selectedMonth" :options="monthOptions"></b-form-select>
@@ -225,7 +229,7 @@
                -->
                    <b-col lg="4" class="my-1">
                      <b-input-group class="mb-3">
-                       <b-form-input id="datelow-input" v-model="lowDate" type="text" placeholder="YYYY-MM-DD"
+                       <b-form-input id="datelow-input" v-model="lowDate" type="text" placeholder="VVVV-KK-PP"
                          autocomplete="off"></b-form-input>
                        <b-input-group-append>
                          <b-form-datepicker v-model="lowDate" button-only right locale="fi-FI" aria-controls="example-input"
@@ -235,7 +239,7 @@
                    </b-col>
                    <b-col lg="4" class="my-1">
                      <b-input-group class="mb-3">
-                       <b-form-input id="datemax-input" v-model="maxDate" type="text" placeholder="YYYY-MM-DD"
+                       <b-form-input id="datemax-input" v-model="maxDate" type="text" placeholder="VVVV-KK-PP"
                          autocomplete="off"></b-form-input>
                        <b-input-group-append>
                          <b-form-datepicker v-b-popover.hover="
@@ -260,40 +264,41 @@
               
               <b-tab title="Toimipisteiden lainat postinumeroittain" @click="clearTable"> <p>Toimipisteiden ensilainat aikavälillä ryhmiteltynä lainanneiden asiakkaiden postinumeroiden mukaan.</p>
                 
-                 <!-- pvm-valinta-->
-                <div>Valitse aikaväli:</div>
-                <div>
-                  <b-row class="mb-12">               
-  <!--                  <div>
-                      <b-form-select v-model="selectedMonth" :options="monthOptions"></b-form-select>
-                      
-                      <div class="mt-3">Selected: <strong>{{ selectedMonth }}</strong></div>
-                    </div>
-  -->
-                    <b-col lg="4" class="my-1">
-                      <b-input-group class="mb-3">
-                        <b-form-input id="datelow-input" v-model="lowDate" type="text" placeholder="YYYY-MM-DD"
-                          autocomplete="off"></b-form-input>
-                        <b-input-group-append>
-                          <b-form-datepicker v-model="lowDate" button-only right locale="fi-FI" aria-controls="example-input"
-                            @context="onContext"></b-form-datepicker> 
-                        </b-input-group-append>
-                      </b-input-group>
-                    </b-col>
-                    <b-col lg="4" class="my-1">
-                      <b-input-group class="mb-3">
-                        <b-form-input id="datemax-input" v-model="maxDate" type="text" placeholder="YYYY-MM-DD"
-                          autocomplete="off"></b-form-input>
-                        <b-input-group-append>
-                          <b-form-datepicker v-b-popover.hover="
-                            'Loppupvm lukeutuu tulosjoukkoon.'
-                          " title="Ohje:" id="example-datepicker" v-model="maxDate" v-model="maxDate" button-only right
-                            locale="fi-FI" aria-controls="example-input" @context="onContext"></b-form-datepicker>
-                        </b-input-group-append>
-                      </b-input-group>
-                    </b-col>
-                  </b-row>
-                </div>
+               <!-- pvm-valinta-->
+               <div>
+                <p></p>
+                <label for="example-input">Valitse aikaväli:</label>
+                 <b-row class="mb-12">               
+               <!--                  <div>
+                     <b-form-select v-model="selectedMonth" :options="monthOptions"></b-form-select>
+                     
+                     <div class="mt-3">Selected: <strong>{{ selectedMonth }}</strong></div>
+                   </div>
+               -->
+                   <b-col lg="4" class="my-1">
+                     <b-input-group class="mb-3">
+                       <b-form-input id="datelow-input" v-model="lowDate" type="text" placeholder="VVVV-KK-PP"
+                         autocomplete="off"></b-form-input>
+                       <b-input-group-append>
+                         <b-form-datepicker v-model="lowDate" button-only right locale="fi-FI" aria-controls="example-input"
+                           @context="onContext"></b-form-datepicker> 
+                       </b-input-group-append>
+                     </b-input-group>
+                   </b-col>
+                   <b-col lg="4" class="my-1">
+                     <b-input-group class="mb-3">
+                       <b-form-input id="datemax-input" v-model="maxDate" type="text" placeholder="VVVV-KK-PP"
+                         autocomplete="off"></b-form-input>
+                       <b-input-group-append>
+                         <b-form-datepicker v-b-popover.hover="
+                           'Loppupvm lukeutuu tulosjoukkoon.'
+                         " title="Ohje:" id="example-datepicker" v-model="maxDate" v-model="maxDate" button-only right
+                           locale="fi-FI" aria-controls="example-input" @context="onContext"></b-form-datepicker>
+                       </b-input-group-append>
+                     </b-input-group>
+                   </b-col>
+                 </b-row>
+               </div>
                  <!--END pvm-valinta--> 
                 <div>
                   <b-button type="button" :disabled="getIssuesByZipButtonDisabled" class="btn btn-success" @click="getIssuesByZip">{{ getIssuesByZipButtonText }}</b-button>
