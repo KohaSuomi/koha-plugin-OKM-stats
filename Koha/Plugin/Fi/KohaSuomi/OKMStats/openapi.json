@@ -11,11 +11,11 @@
 			],
 			"parameters": [
 				{
-					"name": "city_id",
+					"name": "branch",
 					"in": "query",
 					"required": false,
-					"description": "Matching criteria",
-					"type": "integer"					
+					"description": "Branch",
+					"type": "string"					
 				}
 			],
 			"responses": {

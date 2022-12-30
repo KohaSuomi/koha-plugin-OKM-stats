@@ -397,15 +397,25 @@
         <b-tab disabled title="Poistot" disabled>
           <b-card-text>Tab contents 3</b-card-text>
         </b-tab>
-        <b-tab disabled title="Poistotyökalu" @click="myJson = [], fields = []">
+        
+<!-- POISTOTYÖKALU -->
+        
+        <b-tab title="Poistotyökalu" @click="myJson = [], fields = []">
           <b-card-text>Tab contents 3</b-card-text>
           <div class="col-md-12 bg-light float-left">
             <b-row>
               <b-col lg="4" class="pb-2">
+                
+                <div>
+                  Branchcode:
+                  <b-form-select v-model="selectedBranch" :options="branchcodelist" size="sm" class="mt-3"></b-form-select>
+                  <div class="mt-3">Selected: <strong>{{ selectedBranch }}</strong></div>
+                </div>
 
                   <b-button type="button" class="btn btn-success" id="table-export" variant="primary">Vie XLS</b-button>
 
-                <b-button type="button" class="btn btn-success" @click="showRemoveTool">Hae nidetiedot</b-button>
+                <b-button type="button" class="btn btn-success" @click="getRemoveToolData">Hae nidetiedot</b-button>
+                
               </b-col>
 
               <b-col lg="6" class="my-1">
@@ -1080,13 +1090,14 @@ this.myJson.data = null;
           }      
         },
 
-        async showRemoveTool() {
+        async getRemoveToolData() {
           this.myJson.data = null;
           this.fields = null;
           this.isBusy = true;
+
           try {
             const response = await axios.get(
-              `/api/v1/contrib/kohasuomi/reportstool/removetool/`
+              `/api/v1/contrib/kohasuomi/reportstool/removetool/` , { params: { branch: this.selectedBranch } }
             );
 
             this.fields = removetoolfields;

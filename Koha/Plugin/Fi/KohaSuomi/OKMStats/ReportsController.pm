@@ -67,39 +67,41 @@ sub getremovetooldata {
         my $sth;
         my $okmdata;
         my $ref;
+        
+        my $branch = $c->validation->param('branch');
 
         $sth = $dbh->prepare(
             q{
                 SELECT CONCAT( '<a href=\"/cgi-bin/koha/catalogue/detail.pl?biblionumber=', biblio.biblionumber,'\">', 
        items.barcode, '</a>' ) AS 'Viivakoodi',
-       items.cn_sort AS 'Signum',
-       items.itemcallnumber AS 'Luokka',
+       items.cn_sort AS 'Signum (cn_sort)',
+       items.itemcallnumber AS 'Luokka (itemcallnumber)',
        biblio.author AS 'Tekijä',
        biblio.title AS 'Nimeke',
        biblio.copyrightdate AS 'Julkaisuvuosi/julkaistu alkaen',
        items.dateaccessioned AS 'Vastaanotettu',
        items.itype AS 'Nidetyyppi', 
-        bda.itemtype AS 'Aineistotyyppi',
+        bde.itemtype AS 'Aineistotyyppi',
        items.issues AS 'Lainat',
        items.renewals AS 'Uusinnat',
        (IFNULL(items.issues, 0)+IFNULL(items.renewals, 0)) AS 'Lainat ja uusinnat yhteensä', 
        items.datelastborrowed AS 'Viimeksi lainattu',
        items.datelastseen AS 'Viimeksi havaittu',
        items.onloan AS 'Eräpäivä',
-       bda.primary_language AS 'Kieli'      
+       bde.primary_language AS 'Kieli'      
 
 FROM items
 LEFT JOIN biblioitems ON (items.biblioitemnumber=biblioitems.biblioitemnumber) 
 LEFT JOIN biblio ON (biblioitems.biblionumber=biblio.biblionumber)
-LEFT JOIN biblio_data_elements bda ON (biblioitems.biblioitemnumber=bda.biblioitemnumber)
+LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON (biblioitems.biblioitemnumber=bde.biblioitemnumber)
 
-WHERE items.holdingbranch = 'JOE_PYH'
-LIMIT 100
+WHERE items.holdingbranch = ?
+limit 1000
 
             }
          );
 
-        $sth->execute();
+        $sth->execute($branch);
         
         # my @array     = $sth->fetchall();
         # my $array_ref = \@array;
