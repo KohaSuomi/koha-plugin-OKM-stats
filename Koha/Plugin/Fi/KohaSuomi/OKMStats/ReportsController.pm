@@ -20,6 +20,21 @@ use Mojo::Base 'Mojolicious::Controller';
 use C4::Context;
 use Try::Tiny;
 
+my $dbh;
+
+my $module = 'C4::KohaSuomi::Tweaks';
+if (try_load($module)) {
+  warn "ReportsTool C4::KohaSuomi::Tweaks loaded\n";
+  $dbh = C4::KohaSuomi::Tweaks->dbh();
+  
+} else {
+  warn "ReportsTool C4::KohaSuomi::Tweaks not loaded\n";
+  $dbh = C4::Context->dbh();
+}
+
+
+
+
 # my $CONFPATH = dirname($ENV{'KOHA_CONF'});
 # my $KOHAPATH = C4::Context->config('intranetdir');
 
@@ -30,13 +45,25 @@ use Try::Tiny;
 
 #This gets called from REST api
 
+sub try_load {
+  my $mod = shift;
+
+  eval("use $mod");
+
+  if ($@) {
+    #print "\$@ = $@\n";
+    return(0);
+  } else {
+    return(1);
+  }
+}
+
 sub getremovetooldata {
     
     my $c = shift->openapi->valid_input or return;
 
     return try {
         
-        my $dbh = C4::Context->dbh();
         my $sth;
         my $okmdata;
         my $ref;
@@ -103,7 +130,6 @@ sub getokmreportlist {
 
     return try {
         
-        my $dbh = C4::Context->dbh();
         my $sth;
         my $okmdata;
         my $ref;
@@ -145,7 +171,6 @@ sub getokmreportdata {
 
     return try {
         
-        my $dbh = C4::Context->dbh();
         my $sth;
         my $okmdata;
         my $ref;
@@ -189,7 +214,6 @@ sub getlainat {
 
     return try {
         
-        my $dbh = C4::Context->dbh();
         my $sth;
         my $okmdata;
         my $ref;
@@ -245,7 +269,6 @@ sub getagegroups {
 
     return try {
         
-        my $dbh = C4::Context->dbh();
         my $sth;
         my $okmdata;
         my $ref;
@@ -306,7 +329,6 @@ sub getissuesbyzip {
 
     return try {
         
-        my $dbh = C4::Context->dbh();
         my $sth;
         my $okmdata;
         my $ref;
@@ -349,7 +371,6 @@ sub getissuesbypatronzip {
 
     return try {
         
-        my $dbh = C4::Context->dbh();
         my $sth;
         my $okmdata;
         my $ref;
