@@ -612,6 +612,10 @@
         <b-button size="sm" margin-right=10px @click="deleteItem(data.item.library)"></b-button>
         {{data.item.library}}
       </template>
+      
+      <template #cell(0)="data">
+        <span v-html="data.value"></span>
+      </template>
 
       <div slot="table-busy" class="text-center text-danger my-2">
         <b-spinner class="align-middle"></b-spinner>
@@ -855,13 +859,14 @@
           // The following will be an empty string until a valid date is entered
           this.selected = ctx.selectedYMD
         },
-
-        linkify(value, key, item) {
-          let toadd = "cat";
-          let modded = item[0];
-          modded = modded.concat(toadd);
-          return modded;
-        },
+        
+        // modify data on the fly, first element of data array
+        //linkify(value, key, item) {
+        //  let toadd = "cat";
+        //  let modded = item[0];
+        //  modded = modded.concat(toadd);
+        //  return modded;
+        //},
 
         showHankinnat() {
 

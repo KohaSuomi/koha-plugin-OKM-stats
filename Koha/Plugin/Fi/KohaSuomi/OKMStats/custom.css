@@ -57,4 +57,17 @@ border:2px solid red;
 
 #datatable {
   padding-bottom: 30px !important;
+  padding-right: 10px !important;
+}
+
+
+/* selected link */
+a:active {
+  color: rgb(113, 169, 2);
+}
+
+a:link {
+  color: rgb(59, 144, 2);
+  text-decoration: none;
+  font-weight: bold;
 }
