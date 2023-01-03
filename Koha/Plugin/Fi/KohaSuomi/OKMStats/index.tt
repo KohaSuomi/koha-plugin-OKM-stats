@@ -2,27 +2,6 @@
 [% USE To %]
 
 <html lang="en">
-  
-  <style>
-    .sr-only {
-      display: none;
-    }
-
-/* Custom theme for buttons    [aria-pressed='true'] {
-      background-color: #003e78 !important;
-    }
-  
-    .btn-primary:active {
-      background-color: #65b5ff !important;
-    } */
-  
-    #datatable {
-      margin-left: 5 !important;
-      margin-right: 5 !important;
-      margin-bottom: 55 !important;
-    }
-  </style>
-
 <head>
   
   <!-- Required meta tags -->
@@ -34,10 +13,12 @@
 
   <title>Koha-Suomi - Raportointityökalu</title>
 
-
   <!-- Load required Bootstrap and BootstrapVue CSS -->
+  <link type="text/css" rel="stylesheet" href="[% PLUGIN_PATH %]/custom.css" />
   <link type="text/css" rel="stylesheet" href="[% PLUGIN_PATH %]/includes/bootstrap.min.css" />
   <link type="text/css" rel="stylesheet" href="[% PLUGIN_PATH %]/includes/bootstrap-vue.css" />
+
+  
 
   <!-- Load polyfills to support older browsers -->
   <script src="//polyfill.io/v3/polyfill.min.js?features=es2015%2CIntersectionObserver"
@@ -53,6 +34,7 @@
   <script src="[% PLUGIN_PATH %]/includes/axios.min.js"></script>
   <script src="[% PLUGIN_PATH %]/includes/jquery-3.6.0.min.js"></script>
   <script src="[% PLUGIN_PATH %]/includes/jquery.table2excel.min.js"></script>
+
 
 </head>
 
@@ -77,8 +59,9 @@
           
           <div>
             <b-tabs content-class="mt-3">
+              
               <b-tab title="Lainaustilastot kirjastoittain
-               ja hyllypaikoittain aikaväliltä" active>
+               ja hyllypaikoittain aikaväliltä" disabled>
                 
                 <template>
                   <div>
@@ -134,8 +117,9 @@
               
               
               </b-tab>
-              <b-tab title="Second"><p>I'm the second tab</p></b-tab>
-              <b-tab title="Disabled" disabled><p>I'm a disabled tab!</p></b-tab>
+        
+              <b-tab title="Disabled" disabled><p>I'm a disabled tab!</p>
+              </b-tab>
             </b-tabs>
           </div>
           
@@ -144,7 +128,7 @@
 
 <!-- HANKINNAT -->
 
-        <b-tab disabled title="Hankinnat" @click="showHankinnat">
+        <b-tab title="Hankinnat" disabled @click="showHankinnat">
           <b-card-text>Tab contents 2</b-card-text>
           <b-button @click="toggleBusy">Toggle Busy State</b-button>
 
@@ -211,40 +195,150 @@
         
 <!-- ASIAKKAAT -->
 
-        <b-tab disabled title="Asiakkaat(users)" @click="showAsiakkaat">
+        <b-tab title="Asiakkaat(users)" @click="showAsiakkaat">
           <div>
             <b-tabs content-class="mt-3">
-              <b-tab title="Asiakasmäärä ikäryhmittäin" active>
-                
-                <template>
-                  <div>
-                    Branchcode:
-                    <b-form-select v-model="selectedBranch" :options="branchcodelist" size="sm" class="mt-3"></b-form-select>
-                    <div class="mt-3">Selected: <strong>{{ selectedBranch }}</strong></div>
-                  </div>
-                </template>
-      
-                
+              <b-tab title="Asiakasmäärä ikäryhmittäin" active @click="clearTable">
                 <div>
                   <b-button type="button" class="btn btn-success" @click="showBorrowersByAgegroups">Hae</b-button>
                 </div>
-      
-                <!-- <b-row class="mb-6">
-                  <b-col lg="2" class="my-1">
-                    <b-form-datepicker id="example-datepicker" v-model="lowDate"></b-form-datepicker>
-                  </b-col>exportToCsv
-                  <b-col lg="2" class="my-1">
-                    <b-form-datepicker v-b-popover.hover="
-                          'Valitse loppupvm:ksi viimeiseksi raportoitavaa päivää seuraava päivä'
-                        " title="Ohje:" id="example-datepicker" v-model="maxDate"></b-form-datepicker>
+              </b-tab>
+              
+              
+              </b-tab>
+              <b-tab title="Lainat postinumeroalueittain" @click="clearTable"><p>Lainanneiden asiakkaiden postinumeron mukaan aikavälillä. Ensilainat, uusinnat, ensilainat+uusinnat</p>
+                
+                <div>
+                  <b-form-input class="w-25" type="number" :state="zipState" v-model="zipCode" aria-describedby="input-zip-feedback" placeholder="Syötä postinumero"></b-form-input>
+                  <!-- This will only be shown if the preceding input has an invalid state -->
+                  <!-- <b-form-invalid-feedback id="input-zip-feedback">
+                    5 numeroa
+                  </b-form-invalid-feedback> -->
+                </div>
+
+               <!-- pvm-valinta-->
+               <div>
+                <p></p>
+                <label for="example-input">Valitse aikaväli:</label>
+                 <b-row class="mb-12">               
+               <!--                  <div>
+                     <b-form-select v-model="selectedMonth" :options="monthOptions"></b-form-select>
+                     
+                     <div class="mt-3">Selected: <strong>{{ selectedMonth }}</strong></div>
+                   </div>
+               -->
+                   <b-col lg="4" class="my-1">
+                     <b-input-group class="mb-3">
+                       <b-form-input id="datelow-input" v-model="lowDate" type="text" placeholder="VVVV-KK-PP"
+                         autocomplete="off"></b-form-input>
+                       <b-input-group-append>
+                         <b-form-datepicker v-model="lowDate" button-only right locale="fi-FI" aria-controls="example-input"
+                           @context="onContext"></b-form-datepicker> 
+                       </b-input-group-append>
+                     </b-input-group>
+                   </b-col>
+                   <b-col lg="4" class="my-1">
+                     <b-input-group class="mb-3">
+                       <b-form-input id="datemax-input" v-model="maxDate" type="text" placeholder="VVVV-KK-PP"
+                         autocomplete="off"></b-form-input>
+                       <b-input-group-append>
+                         <b-form-datepicker v-b-popover.hover="
+                           'Loppupvm lukeutuu tulosjoukkoon.'
+                         " title="Ohje:" id="example-datepicker" v-model="maxDate" v-model="maxDate" button-only right
+                           locale="fi-FI" aria-controls="example-input" @context="onContext"></b-form-datepicker>
+                       </b-input-group-append>
+                     </b-input-group>
+                   </b-col>
+                 </b-row>
+               </div>
+                 <!--END pvm-valinta--> 
+                 <div>
+                  <b-button type="button" :disabled="getIssuesByZipButtonDisabled" class="btn btn-success" @click="getIssuesByPatronZip">{{ getIssuesByZipButtonText }}</b-button>
+                </div>
+              
+              
+              
+              
+              
+              
+              </b-tab>
+              
+              <p></p>
+              
+              <b-tab title="Toimipisteiden lainat postinumeroittain" @click="clearTable"> <p>Toimipisteiden ensilainat aikavälillä ryhmiteltynä lainanneiden asiakkaiden postinumeroiden mukaan.</p>
+                
+               <!-- pvm-valinta-->
+               <div>
+                <p></p>
+                <label for="example-input">Valitse aikaväli:</label>
+                 <b-row class="mb-12">               
+               <!--                  <div>
+                     <b-form-select v-model="selectedMonth" :options="monthOptions"></b-form-select>
+                     
+                     <div class="mt-3">Selected: <strong>{{ selectedMonth }}</strong></div>
+                   </div>
+               -->
+                   <b-col lg="4" class="my-1">
+                     <b-input-group class="mb-3">
+                       <b-form-input id="datelow-input" v-model="lowDate" type="text" placeholder="VVVV-KK-PP"
+                         autocomplete="off"></b-form-input>
+                       <b-input-group-append>
+                         <b-form-datepicker v-model="lowDate" button-only right locale="fi-FI" aria-controls="example-input"
+                           @context="onContext"></b-form-datepicker> 
+                       </b-input-group-append>
+                     </b-input-group>
+                   </b-col>
+                   <b-col lg="4" class="my-1">
+                     <b-input-group class="mb-3">
+                       <b-form-input id="datemax-input" v-model="maxDate" type="text" placeholder="VVVV-KK-PP"
+                         autocomplete="off"></b-form-input>
+                       <b-input-group-append>
+                         <b-form-datepicker v-b-popover.hover="
+                           'Loppupvm lukeutuu tulosjoukkoon.'
+                         " title="Ohje:" id="example-datepicker" v-model="maxDate" v-model="maxDate" button-only right
+                           locale="fi-FI" aria-controls="example-input" @context="onContext"></b-form-datepicker>
+                       </b-input-group-append>
+                     </b-input-group>
+                   </b-col>
+                 </b-row>
+               </div>
+                 <!--END pvm-valinta--> 
+                <div>
+                  <b-button type="button" :disabled="getIssuesByZipButtonDisabled" class="btn btn-success" @click="getIssuesByZip">{{ getIssuesByZipButtonText }}</b-button>
+                </div>
+                
+                <b-row>
+                  <b-col lg="8" class="my-1">
+                    
+                   <!-- filter+export -->
+                    <b-row>
+                      <div>
+                        <b-input-group>
+                        <div class="w-25">
+                          <b-form-input id="filter-input" v-model="filter" v-b-popover.hover.bottom="'Käytä pilkkua erottimena jos haluat suodattaa useammalla merkkijonolla esim. joe,val. Kirjainkoolla ei ole merkitystä.'"
+                          type="search" placeholder="Suodata"></b-form-input>
+                        </div>
+                          <b-button :disabled="!filter" @click="filter = null" lg="4">Tyhjennä suodatin</b-button>
+                          <b-button @click="sortBy = null" lg="4">Tyhjennä järjestys</b-button>
+                          <b-button id="button1" v-b-popover.hover.top="'Nähtävissä oleva data päätyy leikepöydälle. Käytä suodatusta tarvittaessa.'" onclick="CopyToClipboard('bsvue-datatable')">Kopioi leikepöydälle</b-button>
+                          <b-button type="button" class="btn btn-success" id="table-export" @click="exportXls" v-b-popover.hover.top="'Nähtävissä oleva data päätyy tiedostoon. Käytä suodatusta tarvittaessa.'" variant="primary">Vie XLS</b-button>
+                        </b-input-group>
+                      </div>                    
+                    </b-row>
+                    <b-row align-v="end">
+                      <div>
+                        Lajiteltu: <b>{{ sortBy }}</b>, Sort Direction:
+                        <b>{{ sortDesc ? "Descending" : "Ascending" }}</b>
+                        <div class="mt-2">Suodatettu: {{ filter }}</div>
+                      </div>
+                    </b-row>
+                    </b-card>
                   </b-col>
-                </b-row> -->
-              </b-tab>
+                </b-row>
+                <!-- filter+export -->
+                
+                </b-tab>
               
-              
-              </b-tab>
-              <b-tab title="Second"><p>I'm the second tab</p></b-tab>
-              <b-tab title="Disabled" disabled><p>I'm a disabled tab!</p></b-tab>
             </b-tabs>
           </div>
 
@@ -303,15 +397,25 @@
         <b-tab disabled title="Poistot" disabled>
           <b-card-text>Tab contents 3</b-card-text>
         </b-tab>
-        <b-tab disabled title="Poistotyökalu" @click="myJson = [], fields = []">
+        
+<!-- POISTOTYÖKALU -->
+        
+        <b-tab title="Poistotyökalu" @click="myJson = [], fields = []">
           <b-card-text>Tab contents 3</b-card-text>
           <div class="col-md-12 bg-light float-left">
             <b-row>
               <b-col lg="4" class="pb-2">
+                
+                <div>
+                  Branchcode:
+                  <b-form-select v-model="selectedBranch" :options="branchcodelist" size="sm" class="mt-3"></b-form-select>
+                  <div class="mt-3">Selected: <strong>{{ selectedBranch }}</strong></div>
+                </div>
 
                   <b-button type="button" class="btn btn-success" id="table-export" variant="primary">Vie XLS</b-button>
 
-                <b-button type="button" class="btn btn-success" @click="showRemoveTool">Hae nidetiedot</b-button>
+                <b-button type="button" class="btn btn-success" @click="getRemoveToolData">Hae nidetiedot</b-button>
+                
               </b-col>
 
               <b-col lg="6" class="my-1">
@@ -389,10 +493,10 @@
                 <div>
                   <b-form-input v-model="okmListFilter" placeholder="Suodata"></b-form-input>
                   <div class="mt-2">Suodatettu: {{ okmListFilter }}</div>
-                </div>
+                </div id="datatableokm">
                 <!--- #The row-clicked event will pass 3 parameters to your function. The first being the item specific to the row that was clicked. The second will be the index of the row, and the third is a native click event.
                 This means you can use the arguments keyword to get the index and pass it to your function. -->
-                <b-table class="w-75" striped bordered sticky-column :filter-ignored-fields="['4']" :sort-by="2" :sort-desc="true" sticky-header="340px" hover selectable :filter="okmListFilter" :select-mode="okmSelectMode" :busy="isBusy"
+                <b-table class="w-75" id="bsvue-datatable-okmlist" striped bordered sticky-column :filter-ignored-fields="['4']" :sort-by="2" :sort-desc="true" sticky-header="340px" hover selectable :filter="okmListFilter" :select-mode="okmSelectMode" :busy="isBusy"
                 :fields="okmreportlistfields" :items="okmlisting" :sort-compare="dateCompare" @row-clicked="fetchOkm(arguments[0])">
                 <div slot="table-busy" class="text-center text-danger my-2">
                   <b-spinner class="align-middle"></b-spinner>
@@ -464,7 +568,7 @@
                     <b-button @click="sortBy = null" lg="4">Tyhjennä järjestys</b-button>
                     <b-button id="button1" v-b-popover.hover.top="
                                 'Nähtävissä oleva data päätyy leikepöydälle. Käytä suodatusta tarvittaessa.'"
-                      onclick="CopyToClipboard('bsvue-datatable')">Kopioi leikepöydälle</b-button>
+                      onclick="CopyToClipboard('datatable')">Kopioi leikepöydälle</b-button>
                     <b-button type="button" class="btn btn-success" id="table-export" @click="exportXls" v-b-popover.hover.top="
                                 'Nähtävissä oleva data päätyy tiedostoon. Käytä suodatusta tarvittaessa.'" variant="primary">Vie XLS
                     </b-button>
@@ -508,6 +612,10 @@
         <b-button size="sm" margin-right=10px @click="deleteItem(data.item.library)"></b-button>
         {{data.item.library}}
       </template>
+      
+      <template #cell(0)="data">
+        <span v-html="data.value"></span>
+      </template>
 
       <div slot="table-busy" class="text-center text-danger my-2">
         <b-spinner class="align-middle"></b-spinner>
@@ -533,7 +641,13 @@
         sortBy: "library",
         sortDesc: false,
         selected: null,
+        lowDateFormatted: '',
+        selected2: null,
+        maxDateFormatted: '',
+        context: null,
+        selectedMonth: null,
         selectedBranch: null,
+        zipCode: '',
         filtered: null,
         selectedMonth: null,
         lowDate: "",
@@ -542,6 +656,8 @@
         okmListFilter: "",
         filterOn: [],
         isBusy: false,
+        getIssuesByZipButtonDisabled: false,
+        getIssuesByZipButtonText: 'Hae',
         fields: null,
         myJson: [], //oletusdata
         lainpalselected: null,
@@ -562,11 +678,32 @@
           { value: 'Palautus', text: 'Palautus' },
           { value: { C: '3PO' }, text: 'This is an option with object value' },
           { value: 'd', text: 'This one is disabled', disabled: true }
+        ],
+        
+        monthOptions: [
+          { value: null, text: 'Valitse' },
+          { value: '01', text: 'Tammikuu' },
+          { value: '02', text: 'Helmikuu' },
+          { value: '03', text: 'Maaliskuu' },
+          { value: '04', text: 'Huhtikuu' },
+          { value: '05', text: 'Toukokuu' },
+          { value: '06', text: 'Kesäkuu' },
+          { value: '07', text: 'Heinäkuu' },
+          { value: '08', text: 'Elokuu' },
+          { value: '09', text: 'Syyskuu' },
+          { value: '10', text: 'Lokakuu' },
+          { value: '11', text: 'Marraskuu' },
+          { value: '12', text: 'Joulukuu' },
         ]
 
       },
 
       computed: {
+        
+        zipState() {
+          var testzip = this.zipCode;
+          return this.zipCode.length == 5 ? true : false
+        },
 
         sortOptions() {
           // Create an options list from our fields
@@ -722,13 +859,14 @@
           // The following will be an empty string until a valid date is entered
           this.selected = ctx.selectedYMD
         },
-
-        linkify(value, key, item) {
-          let toadd = "cat";
-          let modded = item[0];
-          modded = modded.concat(toadd);
-          return modded;
-        },
+        
+        // modify data on the fly, first element of data array
+        //linkify(value, key, item) {
+        //  let toadd = "cat";
+        //  let modded = item[0];
+        //  modded = modded.concat(toadd);
+        //  return modded;
+        //},
 
         showHankinnat() {
 
@@ -736,6 +874,13 @@
           this.myJson.data = null;
 
         },
+        
+        clearTable() {
+
+this.fields = null;
+this.myJson.data = null;
+
+},
         
         //table2excel export bootstrap table
         exportXls() {
@@ -780,21 +925,88 @@
         showAsiakkaat() {
           this.myJson.data = null;
           this.fields = null;
-
         },
-        async showBorrowersByAgegroups() {
-          try {
-            const response = await axios.get(
-              `/api/v1/contrib/kohasuomi/okmstats/issues/`, { params: { branch: this.selectedBranch, lowdate: this.lowDate, maxdate: this.maxDate } }
-            );
+        
+        async getIssuesByZip() {
+          
+          this.myJson.data = null;
+          this.fields = null;
 
-            this.fields = lainatfields;
+          this.isBusy = true;
+          try {
+            //prevent spamming heavy queries, maybe use a global 'Hae' button?
+            this.getIssuesByZipButtonDisabled = true;
+            this.getIssuesByZipButtonText = 'Hakee...';
+            const response = await axios.get(
+              `/api/v1/contrib/kohasuomi/reportstool/issues/issuesbyzip/`, { params: { lowdate: this.lowDate, maxdate: this.maxDate } }
+            );
+            this.getIssuesByZipButtonDisabled = false;
+            this.getIssuesByZipButtonText = 'Hae';
+
+            this.fields = borrower_issuesbyzip_fields;
             this.myJson.data = response.data;
 
             this.isBusy = false;
 
           } catch (e) {
             //console.log(e);
+            this.isBusy = false;
+            this.getIssuesByZipButtonDisabled = false;
+            this.getIssuesByZipButtonText = 'Hae';
+          }
+          
+          
+        },
+        
+        async getIssuesByPatronZip() {
+          
+          this.myJson.data = null;
+          this.fields = null;
+
+          this.isBusy = true;
+          try {
+            //prevent spamming heavy queries, maybe use a global 'Hae' button?
+            this.getIssuesByZipButtonDisabled = true;
+            this.getIssuesByZipButtonText = 'Hakee...';
+            const response = await axios.get(
+              `/api/v1/contrib/kohasuomi/reportstool/issues/issuesbypatronzip/`, { params: { zipcode: this.zipCode, lowdate: this.lowDate, maxdate: this.maxDate } }
+            );
+            this.getIssuesByZipButtonDisabled = false;
+            this.getIssuesByZipButtonText = 'Hae';
+
+            this.fields = borrower_issuesbypatronzip_fields;
+            this.myJson.data = response.data;
+
+            this.isBusy = false;
+
+          } catch (e) {
+            //console.log(e);
+            this.isBusy = false;
+            this.getIssuesByZipButtonDisabled = false;
+            this.getIssuesByZipButtonText = 'Hae';
+          }
+          
+          
+        },
+        
+        async showBorrowersByAgegroups() {
+          
+          this.myJson.data = null;
+          this.fields = borrower_agegroup_fields;
+          this.isBusy = true;
+          
+          try {
+            const response = await axios.get(
+              `/api/v1/contrib/kohasuomi/reportstool/borrowers/agegroups/`
+              );
+            // `/api/v1/contrib/kohasuomi/reportstool/borrowers/agegroups/`, { params: { branch: this.selectedBranch, lowdate: this.lowDate, maxdate: this.maxDate } }
+            this.fields = borrower_agegroup_fields;
+            this.myJson.data = response.data;
+
+            this.isBusy = false;
+
+          } catch (e) {
+            console.log(e);
             this.isBusy = false;
           }
           
@@ -859,18 +1071,11 @@
         async showOkmAllModded() {
 
           //console.log(okmstatsmoddedjson);
-          this.isBusy = true;
+          //do not clear busy state to prevent spam action
           this.myJson.data = null;
           this.fields = null;
-
-          
-
           this.fields = okmfields;
-
           this.myJson.data = null;
-
-          this.isBusy = false;
-
         },
         
         async getOKMlisting(){
@@ -890,13 +1095,14 @@
           }      
         },
 
-        async showRemoveTool() {
+        async getRemoveToolData() {
           this.myJson.data = null;
           this.fields = null;
           this.isBusy = true;
+
           try {
             const response = await axios.get(
-              `/api/v1/contrib/kohasuomi/reportstool/removetool/`
+              `/api/v1/contrib/kohasuomi/reportstool/removetool/` , { params: { branch: this.selectedBranch } }
             );
 
             this.fields = removetoolfields;
@@ -991,6 +1197,7 @@
   <script src="[% PLUGIN_PATH %]/fieldtemplates/okmreportlistfields.js"></script>
   <script src="[% PLUGIN_PATH %]/fieldtemplates/removetoolfields.js"></script>
   <script src="[% PLUGIN_PATH %]/fieldtemplates/lainatfields.js"></script>
+  <script src="[% PLUGIN_PATH %]/fieldtemplates/borrowersfields.js"></script>
 
   <script>
     fetch("[% PLUGIN_PATH %]/json/okmstatsmoddedjson.json")
@@ -1002,6 +1209,7 @@
     
     
     function CopyToClipboard(containerid) {
+      document.getElementById(containerid).click();
   if (document.selection) {
     var range = document.body.createTextRange();
     range.moveToElementText(document.getElementById(containerid));
@@ -1017,6 +1225,7 @@
   }
 }
 
+//for okm branch deletion
 function findIndexByProperty(array, name, value) {
   for (var i = 0; i < array.length; i++) {
     if (array[i][name] === value) { return i; }

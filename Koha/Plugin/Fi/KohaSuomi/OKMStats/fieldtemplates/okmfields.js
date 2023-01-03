@@ -5,11 +5,11 @@ let okmfields = [
         sortable: true,
         stickyColumn: true,
         isRowHeader: true,
-        variant: "primary",
+        variant: "success",
       },
         
         
-        { label: "Kokoelmat (sijainti): Yhteensä", key: "collection_by_holdingbranch.total", sortable: true, variant: 'info'},
+        { label: "Kokoelmat (sijainti): Yhteensä", key: "collection_by_holdingbranch.total", sortable: true, variant: 'success'},
         { label: "Kokoelmat (sijainti): Kirjat Yhteensä", key: "collection_by_holdingbranch.books_total" , sortable: true },
         { label: "Kokoelmat (sijainti): Kirjat Suomenkieliset ", key: "collection_by_holdingbranch.books_finnish" , sortable: true, },
         { label: "Kokoelmat (sijainti): Kirjat Ruotsinkieliset ", key: "collection_by_holdingbranch.books_swedish" , sortable: true, },
@@ -26,7 +26,7 @@ let okmfields = [
         { label: "Kokoelmat (sijainti): Celia", key: "collection_by_holdingbranch.celia" , sortable: true, },
         { label: "Kokoelmat (sijainti): Muut aineistot", key: "collection_by_holdingbranch.other" , sortable: true, },
         
-        { label: "Kokoelmat (koti): Yhteensä", key: "collection_by_homebranch.total", sortable: true, variant: 'info'},
+        { label: "Kokoelmat (koti): Yhteensä", key: "collection_by_homebranch.total", sortable: true, variant: 'success'},
         { label: "Kokoelmat (koti): Kirjat Yhteensä", key: "collection_by_homebranch.books_total" , sortable: true, },
         { label: "Kokoelmat (koti): Kirjat Suomenkieliset ", key: "collection_by_homebranch.books_finnish" , sortable: true, },
         { label: "Kokoelmat (koti): Kirjat Ruotsinkieliset ", key: "collection_by_homebranch.books_swedish" , sortable: true, },
@@ -43,7 +43,7 @@ let okmfields = [
         { label: "Kokoelmat (koti): Celia", key: "collection_by_homebranch.celia" , sortable: true, },
         { label: "Kokoelmat (koti): Muut aineistot", key: "collection_by_homebranch.other" , sortable: true, },
         
-        { label: "Hankinnat: Yhteensä", key: "acquisitions.total" , sortable: true, variant: 'info'},
+        { label: "Hankinnat: Yhteensä", key: "acquisitions.total" , sortable: true, variant: 'success'},
         { label: "Hankinnat: Kirjat Yhteensä", key: "acquisitions.books_total" , sortable: true,},
         { label: "Hankinnat: Kirjat Suomenkieliset", key: "acquisitions.books_finnish" , sortable: true,},
         { label: "Hankinnat: Kirjat Ruotsinkieliset", key: "acquisitions.books_swedish" , sortable: true,},
@@ -60,7 +60,7 @@ let okmfields = [
         { label: "Hankinnat: Videotallenteet", key: "acquisitions.videos" , sortable: true,},
         { label: "Hankinnat: Muut aineistot", key: "acquisitions.other" , sortable: true,},
         
-        { label: "Lainaus: Yhteensä", key: "issues.total" , sortable: true, variant: 'info'},
+        { label: "Lainaus: Yhteensä", key: "issues.total" , sortable: true, variant: 'success'},
         { label: "Lainaus: Kirjat Yhteensä", key: "issues.books_total" , sortable: true,},
         { label: "Lainaus: Kirjat Suomenkieliset", key: "issues.books_finnish" , sortable: true,},
         { label: "Lainaus: Kirjat Ruotsinkieliset", key: "issues.books_swedish" , sortable: true,},
@@ -80,12 +80,12 @@ let okmfields = [
         //{ label: "Sanomalehdet", key: "serials.newspaper" , sortable: true, variant: 'info'},
         //{ label: "Aikakauslehdet", key: "serials.serials" , sortable: true,},
         
-        { label: "Poistot", key: "deleted.total" , sortable: true, variant: 'info'},
+        { label: "Poistot", key: "deleted.total" , sortable: true, variant: 'success'},
         
-        { label: "Aktiiviset asiakkaat", key: "active_borrowers" , sortable: true, variant: 'info'},
+        { label: "Aktiiviset asiakkaat", key: "active_borrowers" , sortable: true, variant: 'success'},
         
-        { label: "Hankinta(kulut) yhteensä", key: "acquisitions.expenditures" , sortable: true, variant: 'info'},
-        { label: "Kirjojen hankinta(kulut)", key: "acquisitions.expenditures_books" , sortable: true, variant: 'info'},
+        { label: "Hankinta(kulut) yhteensä", key: "acquisitions.expenditures" , sortable: true, variant: 'success'},
+        { label: "Kirjojen hankinta(kulut)", key: "acquisitions.expenditures_books" , sortable: true, variant: 'success'},
         
         
         
