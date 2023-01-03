@@ -36,6 +36,12 @@ Custom theme for buttons    [aria-pressed='true'] {
   background-color: #116818 !important;
 }
 
+.card-header {
+  background: linear-gradient(0deg, #ffffff, #e6f0f2);
+}
+
+
+
 .form-control:focus  {
   border-color: #116818 !important;
   box-shadow: 0 0 3px green !important;
@@ -46,7 +52,26 @@ Custom theme for buttons    [aria-pressed='true'] {
 border:2px solid red;
 }
 
+.nav {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.button {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+#datatable {
+  font-family: Arial, Helvetica, sans-serif;
+  font: 14px/20px Arial, serif;
+}
+
+#bsvue-datatable-okmlist {
+  font-family: Arial, Helvetica, sans-serif;
+  font: 14px/20px Arial, serif;
+}
+
 :root{
+  
   /*--info: #17a2b8; original*/
   --info: #f00;
 }
