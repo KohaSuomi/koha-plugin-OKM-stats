@@ -10,6 +10,11 @@ Custom theme for buttons    [aria-pressed='true'] {
 .btn-primary {
   background-color: #116818 !important;
   border-color: #032f07 !important;
+  font-family: Arial, Helvetica, sans-serif !important;
+}
+
+.btn {
+  font-family: Arial, Helvetica, sans-serif !important;
 }
 
 .btn:active, .btn:focus, .btn:active:focus, .btn.active:focus .btn-success:focus .btn-primary:focus .btn {
@@ -73,7 +78,7 @@ border:2px solid red;
 :root{
   
   /*--info: #17a2b8; original*/
-  --info: #f00;
+  --info: #f00 !important;
 }
 .btn-info{background-color:var(--info)}
 
