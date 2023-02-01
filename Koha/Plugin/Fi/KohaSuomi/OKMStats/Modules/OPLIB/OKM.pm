@@ -898,7 +898,7 @@ sub _validateConfigurationAndPreconditions {
                      "  - AV \n";
     }
     
-    my @authorised_values_by_category = Koha::AuthorisedValues->search( { category => 'MTYPE' } );
+    my @authorised_values_by_category = Koha::AuthorisedValues->search( { category => 'MTYPE' } )->as_list;
 
     my @loop_data = ();
     # builds value list

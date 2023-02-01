@@ -31,7 +31,7 @@ sub new {
     my $self = {};
     bless($self, $class);
 
-    my @itemtypes = Koha::AuthorisedValues->search( { category => 'MTYPE' } );
+    my @itemtypes = Koha::AuthorisedValues->search( { category => 'MTYPE' } )->as_list;
     my %itemtypes = ();
     for my $av ( @itemtypes ) {
         $itemtypes{$av->authorised_value} = 0;
