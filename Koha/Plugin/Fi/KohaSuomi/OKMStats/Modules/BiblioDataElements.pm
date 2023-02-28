@@ -190,7 +190,7 @@ sub _getBiblioitemsNeedingUpdate {
 
     print '#'.DateTime->now(time_zone => C4::Context->tz())->iso8601().'# Fetching biblioitems  #'."\n" if $verbose > 0;
 
-    my $lastModTime = GetLatestDataElementUpdateTime($verbose) || Koha::Exceptions::Exception->throw($cc[3]."():> You must do a complete rebuilding since none of the biblios have been indexed yet.");
+    my $lastModTime = GetLatestDataElementUpdateTime($verbose) || Koha::Exceptions::Plugin->throw($cc[3]."():> You must do a complete rebuilding since none of the biblios have been indexed yet.");
     $lastModTime = $lastModTime->iso8601();
 
     my $dbh = C4::Context->dbh();
