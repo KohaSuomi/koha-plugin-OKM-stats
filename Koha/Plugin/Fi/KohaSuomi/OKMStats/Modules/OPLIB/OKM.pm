@@ -433,7 +433,7 @@ sub getBranchCategoriesAndBranches {
         my @iBranchcodes;
 
         if ($individualBranches eq 'ALL') {
-            my @branchcodes = Koha::Libraries->search();
+            my @branchcodes = Koha::Libraries->search()->as_list;
             foreach my $branchcode (@branchcodes){
                 push @iBranchcodes, $branchcode->branchcode;
             }
@@ -456,7 +456,7 @@ sub getBranchCategoriesAndBranches {
         $libraryGroups = $self->getOKMBranchCategories();
 
         foreach my $categoryCode (keys %{$libraryGroups}) {
-            my @branchcodes =  Koha::Library::Groups->find({title => $categoryCode})->libraries if $categoryCode;
+            my @branchcodes =  Koha::Library::Groups->find({title => $categoryCode})->libraries->as_list if $categoryCode;
             if (not(@branchcodes) || scalar(@branchcodes) <= 0) {
                 $self->log("Statistical library group $categoryCode has no libraries, removing it from OKM statistics");
                 delete $libraryGroups->{$categoryCode};
@@ -491,7 +491,7 @@ sub getOKMBranchCategories {
     my $self = shift;
     my $libraryGroups = {};
 
-    my @library_categories = Koha::Library::Groups->search({title => {-like => "%_OKM"}});
+    my @library_categories = Koha::Library::Groups->search({title => {-like => "%_OKM"}})->as_list;
 
     foreach my $library_category (@library_categories){
         my $code = $library_category->title;
