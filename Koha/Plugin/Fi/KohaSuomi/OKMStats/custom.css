@@ -3,6 +3,7 @@
 }
 
 
+
 Custom theme for buttons    [aria-pressed='true'] {
   background-color: #428504 !important;
 }
@@ -29,9 +30,6 @@ Custom theme for buttons    [aria-pressed='true'] {
   
 }
 
-.nav-link:active {
-  color: #116818 !important;
-}
 
 .nav-pills:disabled {
   color: #116818 !important;
@@ -42,7 +40,7 @@ Custom theme for buttons    [aria-pressed='true'] {
 }
 
 .card-header {
-  background: linear-gradient(0deg, #ffffff, #e6f0f2);
+  background: linear-gradient(0deg, #f3f4f4, #f3f4f4);
 }
 
 
