@@ -460,7 +460,7 @@
         
 <!-- POISTOTYÖKALU -->
         
-        <b-tab title="Poistotyökalu" @click="myJson = [], fields = []">
+        <b-tab disabled title="Poistotyökalu" @click="myJson = [], fields = []">
           <b-card-text>Tab contents 3</b-card-text>
           <div class="col-md-12 bg-light float-left">
             <b-row>
