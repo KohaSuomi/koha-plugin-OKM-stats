@@ -27,7 +27,7 @@ use C4::Biblio;
     BiblioChunker paginates database access to a large volume of marcxml from the DB.
 
 Loading a large amount of biblios (especially the marcxml-column) at once will have
-unexpected consequences. This object paginates a DB access to the biblioitems-table.
+unexpected consequences. This object paginates a DB access to the biblio-table.
 
 =cut
 
@@ -83,13 +83,11 @@ sub _getChunk {
     }
     my $dbh = C4::Context->dbh();
     my $query = "(
-        SELECT bi.*, b.frameworkcode, 0 as deleted FROM biblioitems bi
-        LEFT JOIN biblio b ON b.biblionumber = bi.biblionumber
-        WHERE bi.biblioitemnumber >= ? AND bi.biblioitemnumber < ?
+        SELECT b.biblionumber, b.timestamp, b.frameworkcode, 0 as deleted FROM biblio b
+        WHERE b.biblionumber >= ? AND b.biblionumber < ?
     ) UNION (
-        SELECT dbi.*, db.frameworkcode, 1 as deleted FROM deletedbiblioitems dbi
-        LEFT JOIN deletedbiblio db ON db.biblionumber = dbi.biblionumber
-        WHERE dbi.biblioitemnumber >= ? AND dbi.biblioitemnumber < ?
+        SELECT db.biblionumber, db.timestamp, db.frameworkcode, 1 as deleted FROM deletedbiblio db
+        WHERE db.biblionumber >= ? AND db.biblionumber < ?
     )";
     my $sth = $dbh->prepare($query);
     $sth->execute( $self->_getPosition(), $self->_getPosition() );
@@ -134,15 +132,15 @@ sub _getNextId {
     my ($self) = @_;
 
     my $dbh = C4::Context->dbh();
-    my $sth = $dbh->prepare("SELECT MIN(biblioitemnumber) FROM biblioitems WHERE biblioitemnumber > ?");
+    my $sth = $dbh->prepare("SELECT MIN(biblionumber) FROM biblio WHERE biblionumber > ?");
     my @pos = $self->_getPosition();
     $sth->execute( $pos[0] );
     if ($sth->err) {
         my @cc = caller(0);
         die $cc[3]."():> ".$sth->errstr;
     }
-    my ($biblioitemnumber) = $sth->fetchrow();
-    return $biblioitemnumber;
+    my ($biblionumber) = $sth->fetchrow();
+    return $biblionumber;
 }
 sub _isChunkWithinBounds {
     my ($self) = @_;

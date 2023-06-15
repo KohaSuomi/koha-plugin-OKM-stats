@@ -143,7 +143,7 @@ sub fetchItems {
     my $query = "SELECT i.itemnumber, i.biblionumber, i.location, i.cn_sort, i.homebranch,
         i.holdingbranch, bde.itemtype, bde.primary_language, bde.fiction, bde.musical, bde.celia
         FROM items i
-        LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(i.biblioitemnumber = bde.biblioitemnumber)
+        LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(i.biblionumber = bde.biblionumber)
         WHERE (i.homebranch IN (" . join(',', map {"'$_'"} @branches).")
         OR i.holdingbranch IN (" . join(',', map {"'$_'"} @branches)."))
         AND i.notforloan NOT IN (" . join(',', map {"'$_'"} @$notforloan).")
@@ -172,7 +172,7 @@ sub fetchDeletedItems {
     my $query = "SELECT di.itemnumber, di.biblionumber, di.location, di.cn_sort, di.homebranch,
         di.holdingbranch, bde.itemtype, bde.primary_language, bde.fiction, bde.musical, bde.celia
         FROM deleteditems di
-        LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(bde.biblioitemnumber = di.biblioitemnumber)
+        LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(bde.biblionumber = di.biblionumber)
         WHERE di.timestamp > ? AND di.timestamp < ?
         AND bde.itemtype NOT IN (" . join(',', map {"'$_'"} @$excluded_itemtypes).")
         AND di.notforloan not in (" . join(',', map {"'$_'"} @$notforloan).")
@@ -200,7 +200,7 @@ sub fetchAcquisitions {
     my $query = "select i.itemnumber, i.biblionumber, i.location, i.cn_sort, i.homebranch,
         i.holdingbranch, i.price, bde.itemtype, bde.primary_language, bde.fiction, bde.musical, bde.celia
         FROM items i
-        LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(i.biblioitemnumber = bde.biblioitemnumber)
+        LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(i.biblionumber = bde.biblionumber)
         WHERE dateaccessioned >= ? AND dateaccessioned <= ?
         AND bde.itemtype NOT IN (" . join(',', map {"'$_'"} @$excluded_itemtypes).")
         AND i.notforloan not in (" . join(',', map {"'$_'"} @$notforloan).")
@@ -227,23 +227,23 @@ sub fetchIssues {
     print '    #'.DateTime->now()->iso8601()."# Starting ".$cc[3]." #\n" if $self->{verbose};
     my $dbh = C4::Context->dbh();
     my $query = "(
-            SELECT s.branch, s.datetime, s.itemnumber, bde.itemtype, bde.biblioitemnumber,
+            SELECT s.branch, s.datetime, s.itemnumber, bde.itemtype, bde.biblionumber,
             bde.primary_language, bde.fiction, bde.musical, bde.celia, i.biblionumber,
             i.location, i.cn_sort, i.homebranch, s.borrowernumber
             FROM statistics s
             INNER JOIN items i ON(s.itemnumber = i.itemnumber)
-            INNER JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(i.biblioitemnumber = bde.biblioitemnumber)
+            INNER JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(i.biblionumber = bde.biblionumber)
             WHERE s.datetime >= ? AND s.datetime <= ?
             AND (s.type='issue' or s.type='renew')
             AND s.branch IN(" . join(",", map {"'$_'"} @branches).")
             AND s.categorycode IN(" . join(",", map {"'$_'"} @{$patronCategories}).")
         ) UNION (
-            SELECT s.branch, s.datetime, s.itemnumber, bde.itemtype, bde.biblioitemnumber,
+            SELECT s.branch, s.datetime, s.itemnumber, bde.itemtype, bde.biblionumber,
             bde.primary_language, bde.fiction, bde.musical, bde.celia, di.biblionumber,
             di.location, di.cn_sort, di.homebranch, s.borrowernumber
             FROM statistics s
             INNER JOIN deleteditems di ON(s.itemnumber = di.itemnumber)
-            INNER JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(di.biblioitemnumber = bde.biblioitemnumber)
+            INNER JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(di.biblionumber = bde.biblionumber)
             WHERE s.datetime >= ? AND s.datetime <= ?
             AND (s.type='issue' or s.type='renew')
             AND s.branch IN(" . join(",", map {"'$_'"} @branches).")

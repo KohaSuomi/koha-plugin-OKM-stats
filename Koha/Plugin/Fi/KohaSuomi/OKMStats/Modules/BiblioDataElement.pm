@@ -31,7 +31,7 @@ sub _type {
     return 'BiblioDataElement';
 }
 
-sub isBiblioitemFiction {
+sub isBiblioFiction {
     my ($self, $record) = @_;
     my $col = 'fiction';
 
@@ -74,10 +74,12 @@ sub isComponentPart {
 }
 
 sub setItemtype {
-    my ($self, $itemtype) = @_;
+    my ($self, $record) = @_;
     my $col = 'itemtype';
 
-    ($self->{dbi}) ? $self->{$col} = $itemtype : $self->set({$col => $itemtype});
+    my $val = $record->subfield('942', 'c');
+
+    ($self->{dbi}) ? $self->{$col} = $val : $self->set({$col => $val});
 }
 
 =head setLanguages
@@ -153,7 +155,7 @@ sub setCnClass {
 =cut
 
 sub DBI_new {
-    my ($class, $bdeHash, $biblioitemnumber) = @_;
+    my ($class, $bdeHash, $biblionumber) = @_;
     unless ($bdeHash && ref $bdeHash eq 'HASH') {
         $bdeHash = {};
     }
@@ -163,19 +165,19 @@ sub DBI_new {
 }
 
 sub DBI_getBiblioDataElement {
-    my ($biblioitemnumber) = @_;
+    my ($biblionumber) = @_;
     my $dbh = C4::Context->dbh();
     my $sth = $dbh->prepare("
         SELECT * FROM koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements
-        WHERE biblioitemnumber = ?;
+        WHERE biblionumber = ?;
     ");
-    $sth->execute( $biblioitemnumber );
+    $sth->execute( $biblionumber );
     if ($sth->err) {
         my @cc = caller(0);
         die $cc[3]."():> ".$sth->errstr;
     }
     my $bde = $sth->fetchrow_hashref();
-    return Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElement->DBI_new($bde, $biblioitemnumber);
+    return Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElement->DBI_new($bde, $biblionumber);
 }
 
 sub DBI_updateBiblioDataElement {
@@ -193,9 +195,9 @@ sub DBI_updateBiblioDataElement {
             celia = ?,
             itemtype = ?,
             host_record = ?
-        WHERE biblioitemnumber = ?;
+        WHERE biblionumber = ?;
     ");
-    $sth->execute( $bde->{deleted}, $bde->{deleted_on}, $bde->{primary_language}, $bde->{languages}, $bde->{fiction}, $bde->{cn_class}, $bde->{musical}, $bde->{celia}, $bde->{itemtype}, $bde->{host_record}, $bde->{biblioitemnumber} );
+    $sth->execute( $bde->{deleted}, $bde->{deleted_on}, $bde->{primary_language}, $bde->{languages}, $bde->{fiction}, $bde->{cn_class}, $bde->{musical}, $bde->{celia}, $bde->{itemtype}, $bde->{host_record}, $bde->{biblionumber} );
     if ($sth->err) {
         my @cc = caller(0);
         die $cc[3]."():> ".$sth->errstr;
@@ -203,15 +205,15 @@ sub DBI_updateBiblioDataElement {
 }
 
 sub DBI_insertBiblioDataElement {
-    my ($bde, $biblioitemnumber) = @_;
+    my ($bde, $biblionumber, $biblioitemnumber) = @_;
     my $dbh = C4::Context->dbh();
     my $sth = $dbh->prepare("
         INSERT INTO koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements
-            (biblioitemnumber, deleted, deleted_on, primary_language, languages, fiction, cn_class, musical, celia, itemtype, host_record)
+            (biblionumber, biblioitemnumber, deleted, deleted_on, primary_language, languages, fiction, cn_class, musical, celia, itemtype, host_record)
             VALUES
-            (?               , ?      , ?         , ?               , ?        , ?      , ?       , ?      , ?    , ?       , ?);
+            (?,            ?               , ?      , ?         , ?               , ?        , ?      , ?       , ?      , ?    , ?       , ?);
     ");
-    $sth->execute( $biblioitemnumber, $bde->{deleted}, $bde->{deleted_on}, $bde->{primary_language}, $bde->{languages}, $bde->{fiction}, $bde->{cn_class}, $bde->{musical}, $bde->{celia}, $bde->{itemtype}, $bde->{host_record} );
+    $sth->execute( $biblionumber, $biblioitemnumber, $bde->{deleted}, $bde->{deleted_on}, $bde->{primary_language}, $bde->{languages}, $bde->{fiction}, $bde->{cn_class}, $bde->{musical}, $bde->{celia}, $bde->{itemtype}, $bde->{host_record} );
     if ($sth->err) {
         my @cc = caller(0);
         die $cc[3]."():> ".$sth->errstr;

@@ -45,9 +45,9 @@ sub object_class {
 
     Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElements::UpdateBiblioDataElements([$limit]);
 
-Finds all biblioitems that have changed since the last time koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements has been updated.
+Finds all biblios that have changed since the last time koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements has been updated.
 Extracts koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements from those MARCXMLs'.
-@PARAM1, Boolean, should we UPDATE all biblioitems BiblioDataElements or simply increment changes?
+@PARAM1, Boolean, should we UPDATE all biblios BiblioDataElements or simply increment changes?
 @PARAM2, Int, the SQL LIMIT-clause, or undef.
 @PARAM3, Int, verbosity level. See update_biblio_data_elements.pl-cronjob
 =cut
@@ -62,13 +62,13 @@ sub UpdateBiblioDataElements {
     }
     else {
         try {
-            my $biblioitems = _getBiblioitemsNeedingUpdate($limit, $verbose);
+            my $biblios = _getBibliosNeedingUpdate($limit, $verbose);
 
-            if ($biblioitems && ref $biblioitems eq 'ARRAY') {
-                print "Found '".scalar(@$biblioitems)."' biblioitems-records to update.\n" if $verbose > 0;
-                foreach my $biblioitem (@$biblioitems) {
+            if ($biblios && ref $biblios eq 'ARRAY') {
+                print "Found '".scalar(@$biblios)."' biblio-records to update.\n" if $verbose > 0;
+                foreach my $biblio (@$biblios) {
                     eval {
-                        UpdateBiblioDataElement($biblioitem, $verbose, $oldDbi);
+                        UpdateBiblioDataElement($biblio, $verbose, $oldDbi);
                     };
                     warn $@ if $@;
                 }
@@ -94,12 +94,11 @@ sub forceRebuild {
     my ($limit, $verbose, $oldDbi) = @_;
 
     $verbose = 0 unless $verbose; #Prevent undefined comparison errors
-
     my $chunker = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::Chunker->new(undef, $limit, undef, $verbose);
-    while (my $biblioitems = $chunker->getChunk(undef, $limit)) {
-        foreach my $biblioitem (@$biblioitems) {
+    while (my $biblios = $chunker->getChunk(undef, $limit)) {
+        foreach my $biblio (@$biblios) {
             eval {
-                UpdateBiblioDataElement($biblioitem, $verbose, $oldDbi);
+                UpdateBiblioDataElement($biblio, $verbose, $oldDbi);
             };
             warn $@ if $@;
         }
@@ -107,45 +106,45 @@ sub forceRebuild {
 }
 =head UpdateBiblioDataElement
 
-    Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElements::UpdateBiblioDataElement($biblioitem, $verbose);
+    Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElements::UpdateBiblioDataElement($biblio, $verbose);
 
-Takes biblioitems and MARCXML and picks the needed data_elements to the koha.biblio_data_elements -table.
-@PARAM1, Koha::Biblioitem or a HASH of koha.biblioitems-row.
+Takes biblios and MARCXML and picks the needed data_elements to the koha.biblio_data_elements -table.
+@PARAM1, Koha::Biblio or a HASH of koha.biblios-row.
 @PARAM2, Int, verbosity level. See update_biblio_data_elements.pl-cronjob
 
 =cut
 
 sub UpdateBiblioDataElement {
-    my ($biblioitem, $verbose) = @_;
+    my ($biblio, $verbose) = @_;
     $verbose = 0 unless $verbose; #Prevent undef errors
 
-    my $deleted = $biblioitem->{deleted};
-    my $itemtype = $biblioitem->{itemtype};
-    my $biblioitemnumber = $biblioitem->{biblioitemnumber};
+    my $deleted = $biblio->{deleted};
+    my $biblionumber = $biblio->{biblionumber};
+    my $biblioitemnumber = $biblio->{biblioitemnumber};
 
-    my $bde = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElement::DBI_getBiblioDataElement($biblioitem->{biblioitemnumber});
-    $bde = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElement->new({biblioitemnumber => $biblioitemnumber}) if (not($bde));
+    my $bde = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElement::DBI_getBiblioDataElement($biblionumber);
+    $bde = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElement->new({biblionumber => $biblionumber}) if (not($bde));
 
     #Make a MARC::Record out of the XML.
-    my $marcxml = $deleted ? _getDeletedXmlBiblio( $biblioitem->{biblionumber} ) : C4::Biblio::GetXmlBiblio( $biblioitem->{biblionumber} );
+    my $marcxml = $deleted ? _getDeletedXmlBiblio( $biblionumber ) : C4::Biblio::GetXmlBiblio( $biblionumber );
     my $record = eval { MARC::Record::new_from_xml( $marcxml, "utf8", C4::Context->preference('marcflavour') ) };
     if ($@) {
         die $@;
     }
     #Start creating data_elements.
-    $bde->isBiblioitemFiction($record, $biblioitem->{cn_sort});
+    $bde->isBiblioFiction($record);
     $bde->isMusicalRecording($record);
     $bde->isCelia($record);
-    $bde->setDeleted($deleted, $biblioitem->{timestamp});
-    $bde->setItemtype($itemtype);
-    $bde->isComponentPart($biblioitem->{biblionumber});
+    $bde->setDeleted($deleted, $biblio->{timestamp});
+    $bde->setItemtype($record);
+    $bde->isComponentPart($biblionumber);
     $bde->setLanguages($record);
     $bde->setCnClass($record);
 
-    if($bde->{biblioitemnumber}){
+    if($bde->{biblionumber}){
         Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElement::DBI_updateBiblioDataElement($bde)
     } else {
-        Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElement::DBI_insertBiblioDataElement($bde, $biblioitemnumber);
+        Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElement::DBI_insertBiblioDataElement($bde, $biblionumber, $biblioitemnumber);
     }
 }
 
@@ -172,11 +171,11 @@ sub GetLatestDataElementUpdateTime {
     return $dt;
 }
 
-=head _getBiblioitemsNeedingUpdate
-Finds the biblioitems whose timestamp (time last modified) is bigger than the biggest last_mod_time in koha.biblio_data_elements
+=head _getBibliosNeedingUpdate
+Finds the biblios whose timestamp (time last modified) is bigger than the biggest last_mod_time in koha.biblio_data_elements
 =cut
 
-sub _getBiblioitemsNeedingUpdate {
+sub _getBibliosNeedingUpdate {
     my ($limit, $verbose) = @_;
     my @cc = caller(0);
 
@@ -188,20 +187,22 @@ sub _getBiblioitemsNeedingUpdate {
         $limit = '';
     }
 
-    print '#'.DateTime->now(time_zone => C4::Context->tz())->iso8601().'# Fetching biblioitems  #'."\n" if $verbose > 0;
+    print '#'.DateTime->now(time_zone => C4::Context->tz())->iso8601().'# Fetching biblios  #'."\n" if $verbose > 0;
 
     my $lastModTime = GetLatestDataElementUpdateTime($verbose) || Koha::Exceptions::Plugin->throw($cc[3]."():> You must do a complete rebuilding since none of the biblios have been indexed yet.");
     $lastModTime = $lastModTime->iso8601();
 
     my $dbh = C4::Context->dbh();
     my $sth = $dbh->prepare("
-            (SELECT bi.biblioitemnumber, bi.biblionumber, bi.itemtype, 0 AS deleted FROM biblioitems bi
-             LEFT JOIN biblio_metadata bmd ON(bi.biblionumber = bmd.biblionumber)
+            (SELECT b.biblionumber, bi.biblioitemnumber, 0 AS deleted FROM biblio b
+             LEFT JOIN biblioitems bi ON(bi.biblionumber = b.biblionumber)
+             LEFT JOIN biblio_metadata bmd ON(b.biblionumber = bmd.biblionumber)
              WHERE bi.timestamp >= '". $lastModTime ."'
              OR bmd.timestamp >= '". $lastModTime ."' $limit
             ) UNION (
-             SELECT dbi.biblioitemnumber, dbi.biblionumber, dbi.itemtype, 1 AS deleted FROM deletedbiblioitems dbi
-             LEFT JOIN deletedbiblio_metadata dbmd ON(dbi.biblionumber = dbmd.biblionumber)
+             SELECT db.biblionumber, dbi.biblioitemnumber, 1 AS deleted FROM deletedbiblio db
+             LEFT JOIN deletedbiblioitems dbi ON(dbi.biblionumber = db.biblionumber)
+             LEFT JOIN deletedbiblio_metadata dbmd ON(db.biblionumber = dbmd.biblionumber)
              WHERE dbi.timestamp >= '". $lastModTime ."'
              OR dbmd.timestamp >= '". $lastModTime ."' $limit
             )
@@ -210,11 +211,11 @@ sub _getBiblioitemsNeedingUpdate {
     if ($sth->err) {
         die $cc[3]."():> ".$sth->errstr;
     }
-    my $biblioitems = $sth->fetchall_arrayref({});
+    my $biblios = $sth->fetchall_arrayref({});
 
-    print '#'.DateTime->now(time_zone => C4::Context->tz())->iso8601().'# Biblioitems fetched #'."\n" if $verbose > 0;
+    print '#'.DateTime->now(time_zone => C4::Context->tz())->iso8601().'# Biblios fetched #'."\n" if $verbose > 0;
 
-    return $biblioitems;
+    return $biblios;
 }
 
 =head verifyFeatureIsInUse

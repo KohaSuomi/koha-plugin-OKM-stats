@@ -8,24 +8,25 @@ use base qw(Koha::Plugins::Base);
 
 ## We will also need to include any Koha libraries we want to access
 use C4::Context;
+use C4::Installer;
 use CGI qw ( -utf8 );
 
 use Koha::Plugins;
 use Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::OPLIB::OKM;
 
 ## Here we set our plugin version
-our $VERSION = "2.0.7";
+our $VERSION = "3.0.0";
 
 ## Here is our metadata, some keys are required, some are optional
 our $metadata = {
     name            => 'Raportointityökalu',
     author          => 'Emmi Takkinen, Lari Strand',
     date_authored   => '2021-09-01',
-    date_updated    => "2022-09-07",
+    date_updated    => "2023-06-15",
     minimum_version => '21.05.02.003',
     maximum_version => undef,
     version         => $VERSION,
-    description     => 'OKM-tilastot ja erilaisia raportteja/työkaluja/tilastoja kuntien ja kirjastojen tarpeisiin ',
+    description     => 'OKM-tilastot ja erilaisia raportteja/työkaluja/tilastoja kuntien ja kirjastojen tarpeisiin.',
 };
 
 ## This is the minimum code required for a plugin's 'new' method
@@ -88,6 +89,7 @@ sub install() {
     $dbh->do("
         CREATE TABLE IF NOT EXISTS $table (
         `id` int(12) NOT NULL AUTO_INCREMENT,
+        `biblionumber` int(11) NOT NULL,
         `biblioitemnumber` int(11) NOT NULL,
         `last_mod_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         `deleted` tinyint(1) DEFAULT NULL,
@@ -101,6 +103,7 @@ sub install() {
         `itemtype` varchar(10) DEFAULT NULL,
         `host_record` int(11) DEFAULT NULL,
         PRIMARY KEY (`id`),
+        UNIQUE KEY `bibnoidx` (`biblionumber`),
         UNIQUE KEY `bibitnoidx` (`biblioitemnumber`),
         KEY `last_mod_time` (`last_mod_time`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci
@@ -138,8 +141,33 @@ sub install() {
 sub upgrade {
     my ( $self, $args ) = @_;
 
-    my $dt = dt_from_string();
-    $self->store_data( { last_upgraded => $dt->ymd('-') . ' ' . $dt->hms(':') } );
+    if( $VERSION eq "3.0.0" ){
+        my $dbh = C4::Context->dbh;
+        my $table = $self->get_qualified_table_name('biblio_data_elements');
+
+        unless( column_exists( $table, 'biblionumber' ) ){
+            $dbh->do("ALTER TABLE $table ADD COLUMN `biblionumber` int(11) NOT NULL AFTER id");
+            print "Added column biblionumber to biblio_data_elements.\n";
+
+            $dbh->do("UPDATE $table bde LEFT JOIN biblioitems bi ON(bde.biblioitemnumber = bi.biblioitemnumber)
+            SET bde.biblionumber = bi.biblionumber
+            WHERE bde.biblioitemnumber = bi.biblioitemnumber");
+            print "Set biblionumber based on biblioitems.biblioitemnumber so we can add unique key.\n";
+
+            $dbh->do("UPDATE $table bde LEFT JOIN deletedbiblioitems dbi ON(bde.biblioitemnumber = dbi.biblioitemnumber)
+            SET bde.biblionumber = dbi.biblionumber
+            WHERE bde.biblioitemnumber = dbi.biblioitemnumber");
+            print "Do the same to deleted biblios.\n";
+
+            $dbh->do("DELETE FROM $table WHERE biblionumber = 0");
+            print "Deleted rows without biblionumber. If we can't find them anywhere, they're probably gone.\n"
+        }
+
+        unless( unique_key_exists( $table, 'bibnoidx' ) ){
+            $dbh->do("ALTER TABLE $table ADD UNIQUE KEY `bibnoidx` (biblionumber)");
+            print "Added unique key bibnoidx.\n";
+        }
+    }
 
     return 1;
 }
@@ -157,16 +185,15 @@ sub report {
     my ( $self, $args ) = @_;
     my $cgi = $self->{'cgi'};
     my $template = $self->get_template({ file => 'index.tt' });
-    
+
     my $dbh = C4::Context->dbh;
-    
+
     my $words = $dbh->selectcol_arrayref( "SELECT branchcode FROM branches" );
-    
+
      $template->param(
         branches => ($words)
     );
 
-    
     $self->output_html( $template->output() );
 }
 
@@ -214,7 +241,7 @@ sub api_routes {
 
 sub api_namespace {
     my ( $self ) = @_;
-    
+
     return 'kohasuomi';
 }
 

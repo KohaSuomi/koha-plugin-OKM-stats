@@ -25,7 +25,7 @@ my $usage = << 'ENDUSAGE';
 
 SYNOPSIS:
 
-This script checks all modified MARCXMLs from biblioitems-table and recalculates
+This script checks all modified MARCXMLs from biblio-table and recalculates
 the special data_elements to the koha.biblio_data_elements -table.
 
 These data_elements can be conveniently used for statistical purposes.
@@ -47,7 +47,7 @@ This script has the following parameters :
     -v --verbose      Level of verbosity desired, defaults to none.
                       Valid values 0, 1 or 2.
 
-    -f --forceRebuild Rebuild data_elements for all biblioitems.
+    -f --forceRebuild Rebuild data_elements for all biblios.
 
 ENDUSAGE
 
