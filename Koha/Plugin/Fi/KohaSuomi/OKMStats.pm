@@ -15,7 +15,7 @@ use Koha::Plugins;
 use Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::OPLIB::OKM;
 
 ## Here we set our plugin version
-our $VERSION = "3.0.0";
+our $VERSION = "3.0.1";
 
 ## Here is our metadata, some keys are required, some are optional
 our $metadata = {
@@ -90,7 +90,7 @@ sub install() {
         CREATE TABLE IF NOT EXISTS $table (
         `id` int(12) NOT NULL AUTO_INCREMENT,
         `biblionumber` int(11) NOT NULL,
-        `biblioitemnumber` int(11) NOT NULL,
+        `biblioitemnumber` int(11) DEFAULT NULL,
         `last_mod_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         `deleted` tinyint(1) DEFAULT NULL,
         `deleted_on` timestamp NULL DEFAULT NULL,
@@ -104,7 +104,6 @@ sub install() {
         `host_record` int(11) DEFAULT NULL,
         PRIMARY KEY (`id`),
         UNIQUE KEY `bibnoidx` (`biblionumber`),
-        UNIQUE KEY `bibitnoidx` (`biblioitemnumber`),
         KEY `last_mod_time` (`last_mod_time`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci
     ");
@@ -141,7 +140,7 @@ sub install() {
 sub upgrade {
     my ( $self, $args ) = @_;
 
-    if( $VERSION eq "3.0.0" ){
+    if( $VERSION le "3.0.0" ){
         my $dbh = C4::Context->dbh;
         my $table = $self->get_qualified_table_name('biblio_data_elements');
 
@@ -166,6 +165,18 @@ sub upgrade {
         unless( unique_key_exists( $table, 'bibnoidx' ) ){
             $dbh->do("ALTER TABLE $table ADD UNIQUE KEY `bibnoidx` (biblionumber)");
             print "Added unique key bibnoidx.\n";
+        }
+    }
+
+    if( $VERSION le "3.0.1" ) {
+        my $dbh = C4::Context->dbh;
+        my $table = $self->get_qualified_table_name('biblio_data_elements');
+
+        if( unique_key_exists($table, 'bibitnoidx') ){
+            $dbh->do("ALTER TABLE $table MODIFY COLUMN `biblioitemnumber` int(11) DEFAULT NULL");
+            print "Altered column biblioitemnumber to allow NULL values.\n";
+            $dbh->do("ALTER TABLE $table DROP KEY `bibitnoidx`");
+            print "Dropped unique key bibitnoidx.\n";
         }
     }
 
