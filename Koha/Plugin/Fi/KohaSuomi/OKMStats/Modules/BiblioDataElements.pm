@@ -62,7 +62,7 @@ sub UpdateBiblioDataElements {
     }
     else {
         try {
-            my $biblios = _getBibliosNeedingUpdate($limit, $verbose);
+            my $biblios = _get_biblios_needing_update($limit, $verbose);
 
             if ($biblios && ref $biblios eq 'ARRAY') {
                 print "Found '".scalar(@$biblios)."' biblio-records to update.\n" if $verbose > 0;
@@ -171,11 +171,13 @@ sub GetLatestDataElementUpdateTime {
     return $dt;
 }
 
-=head _getBibliosNeedingUpdate
-Finds the biblios whose timestamp (time last modified) is bigger than the biggest last_mod_time in koha.biblio_data_elements
+=head _get_biblios_needing_update
+Finds the biblios whose timestamp (time last modified) is bigger than the biggest last_mod_time
+in koha.koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements or which we can't find from
+koha.koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements
 =cut
 
-sub _getBibliosNeedingUpdate {
+sub _get_biblios_needing_update {
     my ($limit, $verbose) = @_;
     my @cc = caller(0);
 
@@ -197,14 +199,16 @@ sub _getBibliosNeedingUpdate {
             (SELECT b.biblionumber, bi.biblioitemnumber, 0 AS deleted FROM biblio b
              LEFT JOIN biblioitems bi ON(bi.biblionumber = b.biblionumber)
              LEFT JOIN biblio_metadata bmd ON(b.biblionumber = bmd.biblionumber)
-             WHERE bi.timestamp >= '". $lastModTime ."'
-             OR bmd.timestamp >= '". $lastModTime ."' $limit
+             WHERE b.timestamp >= '". $lastModTime ."'
+             OR bmd.timestamp >= '". $lastModTime ."'
+             OR b.biblionumber NOT IN(SELECT biblionumber FROM koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements) $limit
             ) UNION (
              SELECT db.biblionumber, dbi.biblioitemnumber, 1 AS deleted FROM deletedbiblio db
              LEFT JOIN deletedbiblioitems dbi ON(dbi.biblionumber = db.biblionumber)
              LEFT JOIN deletedbiblio_metadata dbmd ON(db.biblionumber = dbmd.biblionumber)
-             WHERE dbi.timestamp >= '". $lastModTime ."'
-             OR dbmd.timestamp >= '". $lastModTime ."' $limit
+             WHERE db.timestamp >= '". $lastModTime ."'
+             OR dbmd.timestamp >= '". $lastModTime ."'
+             OR db.biblionumber NOT IN(SELECT biblionumber FROM koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements) $limit
             )
     ");
     $sth->execute();
