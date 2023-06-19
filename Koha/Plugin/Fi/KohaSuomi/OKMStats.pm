@@ -140,7 +140,7 @@ sub install() {
 sub upgrade {
     my ( $self, $args ) = @_;
 
-    if( $VERSION le "3.0.0" ){
+    if( $VERSION le "3.0.1" ){
         my $dbh = C4::Context->dbh;
         my $table = $self->get_qualified_table_name('biblio_data_elements');
 
@@ -166,11 +166,6 @@ sub upgrade {
             $dbh->do("ALTER TABLE $table ADD UNIQUE KEY `bibnoidx` (biblionumber)");
             print "Added unique key bibnoidx.\n";
         }
-    }
-
-    if( $VERSION le "3.0.1" ) {
-        my $dbh = C4::Context->dbh;
-        my $table = $self->get_qualified_table_name('biblio_data_elements');
 
         if( unique_key_exists($table, 'bibitnoidx') ){
             $dbh->do("ALTER TABLE $table MODIFY COLUMN `biblioitemnumber` int(11) DEFAULT NULL");
