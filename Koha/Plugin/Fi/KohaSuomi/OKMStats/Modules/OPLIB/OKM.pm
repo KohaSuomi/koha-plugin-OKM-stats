@@ -173,7 +173,8 @@ sub fetchDeletedItems {
         di.holdingbranch, bde.itemtype, bde.primary_language, bde.fiction, bde.musical, bde.celia
         FROM deleteditems di
         LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(bde.biblionumber = di.biblionumber)
-        WHERE di.timestamp > ? AND di.timestamp < ?
+        WHERE (( di.deleted_on IS NOT NULL AND di.deleted_on > ? AND di.deleted_on < ?)
+        OR (di.timestamp > ? AND di.timestamp < ?))
         AND bde.itemtype NOT IN (" . join(',', map {"'$_'"} @$excluded_itemtypes).")
         AND di.notforloan not in (" . join(',', map {"'$_'"} @$notforloan).")
         AND di.homebranch in (" . join(',', map {"'$_'"} @branches).")
@@ -182,7 +183,7 @@ sub fetchDeletedItems {
         $query .= ' LIMIT '.$self->{limit};
     }
     my $sth = $dbh->prepare($query);
-    $sth->execute($self->{startDateISO}, $self->{endDateISO});
+    $sth->execute($self->{startDateISO}, $self->{endDateISO}, $self->{startDateISO}, $self->{endDateISO});
     if ($sth->err) {
         my @cc = caller(0);
         die $cc[3]."():> ".$sth->errstr;
