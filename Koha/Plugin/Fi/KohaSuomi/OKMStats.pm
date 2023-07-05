@@ -15,14 +15,14 @@ use Koha::Plugins;
 use Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::OPLIB::OKM;
 
 ## Here we set our plugin version
-our $VERSION = "3.0.1";
+our $VERSION = "3.0.2";
 
 ## Here is our metadata, some keys are required, some are optional
 our $metadata = {
     name            => 'Raportointityökalu',
     author          => 'Emmi Takkinen, Lari Strand',
     date_authored   => '2021-09-01',
-    date_updated    => "2023-06-15",
+    date_updated    => "2023-07-05",
     minimum_version => '21.05.02.003',
     maximum_version => undef,
     version         => $VERSION,
@@ -100,6 +100,7 @@ sub install() {
         `cn_class` varchar(10) DEFAULT NULL,
         `musical` tinyint(1) DEFAULT NULL,
         `celia` tinyint(1) DEFAULT NULL,
+        `publication_year` varchar(10) DEFAULT NULL,
         `itemtype` varchar(10) DEFAULT NULL,
         `host_record` int(11) DEFAULT NULL,
         PRIMARY KEY (`id`),
@@ -172,6 +173,26 @@ sub upgrade {
             print "Altered column biblioitemnumber to allow NULL values.\n";
             $dbh->do("ALTER TABLE $table DROP KEY `bibitnoidx`");
             print "Dropped unique key bibitnoidx.\n";
+        }
+    }
+
+    if( $VERSION le "3.0.2" ){
+        my $dbh = C4::Context->dbh;
+        my $table = $self->get_qualified_table_name('biblio_data_elements');
+
+        unless( column_exists( $table, 'publication_year' ) ){
+           $dbh->do("ALTER TABLE $table ADD COLUMN `publication_year` varchar(10) DEFAULT NULL AFTER celia");
+           print "Added new column publication_year.\n";
+
+           $dbh->do("UPDATE $table bde LEFT JOIN biblio_metadata bm ON(bde.biblionumber = bm.biblionumber)
+           SET bde.publication_year = SUBSTR(ExtractValue(bm.metadata,'//controlfield[\@tag=008]'),8,4)
+           WHERE bde.biblionumber = bm.biblionumber");
+           print "Set publication year from field 008";
+
+           $dbh->do("UPDATE $table bde LEFT JOIN deletedbiblio_metadata dbm ON(bde.biblionumber = dbm.biblionumber)
+           SET bde.publication_year = SUBSTR(ExtractValue(dbm.metadata,'//controlfield[\@tag=008]'),8,4)
+           WHERE bde.biblionumber = dbm.biblionumber");
+           print "Do same to deleted biblios";
         }
     }
 

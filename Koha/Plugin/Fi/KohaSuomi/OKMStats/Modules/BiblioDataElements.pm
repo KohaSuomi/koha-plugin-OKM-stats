@@ -140,6 +140,7 @@ sub UpdateBiblioDataElement {
     $bde->isComponentPart($biblionumber);
     $bde->setLanguages($record);
     $bde->setCnClass($record);
+    $bde->set_publication_year($record);
 
     if($bde->{biblionumber}){
         Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElement::DBI_updateBiblioDataElement($bde)
