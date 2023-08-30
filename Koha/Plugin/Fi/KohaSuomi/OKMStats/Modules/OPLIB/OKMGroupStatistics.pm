@@ -70,6 +70,7 @@ sub new {
     $self->{acquisitions}->{expenditures} = 0;
     $self->{acquisitions}->{expenditures_books} = 0;
     $self->{active_borrowers} = 0;
+    $self->{celia_borrowers} = 0;
 
     return $self;
 }

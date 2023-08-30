@@ -125,12 +125,23 @@ sub createStatistics {
 
         my $issues = $self->fetchIssues($patronCategories, @branches);
         my @borrowernumbers;
+        my @celia_borrowers;
         foreach my $itemnumber (sort {$a <=> $b} keys %$issues) {
             foreach my $datetime (keys %{$issues->{$itemnumber}} ){
                 $self->_processItemsDataRow( $stats->{issues}, $issues->{$itemnumber}->{$datetime}, "issues" );
+
+                if($issues->{$itemnumber}->{$datetime}->{celia}){
+                    push @celia_borrowers, $issues->{$itemnumber}->{$datetime}->{borrowernumber};
+                }
+
                 push @borrowernumbers, $issues->{$itemnumber}->{$datetime}->{borrowernumber};
             }
         }
+
+        if(@celia_borrowers){
+            $self->_processBorrowers( $stats, \@celia_borrowers, 1 );
+        }
+
         $self->_processBorrowers( $stats, \@borrowernumbers );
     }
 }
@@ -300,12 +311,17 @@ sub fetchIssues_newway {
 =cut
 
 sub _processBorrowers {
-    my ($self, $stats, $borrowernumbers) = @_;
+    my ($self, $stats, $borrowernumbers, $celia) = @_;
     my %seen;
     foreach my $borrowernumber (@$borrowernumbers){
         if($borrowernumber){
             next if $seen{ $borrowernumber }++;
-            $stats->{active_borrowers}++;
+
+            if($celia){
+                $stats->{celia_borrowers}++;
+            } else {
+                $stats->{active_borrowers}++;
+            }
         }
     }
 }

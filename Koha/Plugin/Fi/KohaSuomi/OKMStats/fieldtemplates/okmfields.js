@@ -83,6 +83,7 @@ let okmfields = [
         { label: "Poistot", key: "deleted.total" , sortable: true, variant: 'success'},
         
         { label: "Aktiiviset asiakkaat", key: "active_borrowers" , sortable: true, variant: 'success'},
+        { label: "Celia-lainaajat", key: "celia_borrowers", sortable: true, variant: 'success'},
         
         { label: "Hankinta(kulut) yhteensä", key: "acquisitions.expenditures" , sortable: true, variant: 'success'},
         { label: "Kirjojen hankinta(kulut)", key: "acquisitions.expenditures_books" , sortable: true, variant: 'success'},
