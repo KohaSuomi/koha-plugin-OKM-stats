@@ -65,7 +65,7 @@ sub isCelia {
 sub isComponentPart {
     my ($self, $biblionumber) = @_;
     my $col = 'host_record';
-    
+
     my $biblio = Koha::Biblios->find($biblionumber);
     my $host_record = $biblio ? $biblio->get_marc_host() : undef;
     my $val = $host_record ? $host_record->unblessed->{biblionumber} : undef;

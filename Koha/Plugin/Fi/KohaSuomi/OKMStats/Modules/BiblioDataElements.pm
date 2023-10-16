@@ -53,12 +53,18 @@ Extracts koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements from those MARCX
 =cut
 
 sub UpdateBiblioDataElements {
-    my ($forceRebuild, $limit, $verbose, $oldDbi) = @_;
+    my ($forceRebuild, $limit, $verbose, $biblionumber) = @_;
 
     $verbose = 0 unless $verbose; #Prevent undefined comparison errors
 
     if ($forceRebuild) {
-        forceRebuild($limit, $verbose, $oldDbi);
+        forceRebuild($limit, $verbose);
+    } elsif ($biblionumber) {
+        my $biblio = get_single_biblio($biblionumber, $verbose);
+        eval {
+            UpdateBiblioDataElement($biblio, $verbose);
+        };
+        warn $@ if $@;
     }
     else {
         try {
@@ -68,7 +74,7 @@ sub UpdateBiblioDataElements {
                 print "Found '".scalar(@$biblios)."' biblio-records to update.\n" if $verbose > 0;
                 foreach my $biblio (@$biblios) {
                     eval {
-                        UpdateBiblioDataElement($biblio, $verbose, $oldDbi);
+                        UpdateBiblioDataElement($biblio, $verbose);
                     };
                     warn $@ if $@;
                 }
@@ -78,7 +84,7 @@ sub UpdateBiblioDataElements {
             }
         } catch {
             if (blessed($_) && $_->isa('Koha::Exceptions::Exception')) {
-                forceRebuild($limit, $verbose, $oldDbi);
+                forceRebuild($limit, $verbose);
             }
             elsif (blessed($_)) {
                 $_->rethrow();
@@ -91,14 +97,14 @@ sub UpdateBiblioDataElements {
 }
 
 sub forceRebuild {
-    my ($limit, $verbose, $oldDbi) = @_;
+    my ($limit, $verbose) = @_;
 
     $verbose = 0 unless $verbose; #Prevent undefined comparison errors
     my $chunker = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::Chunker->new(undef, $limit, undef, $verbose);
     while (my $biblios = $chunker->getChunk(undef, $limit)) {
         foreach my $biblio (@$biblios) {
             eval {
-                UpdateBiblioDataElement($biblio, $verbose, $oldDbi);
+                UpdateBiblioDataElement($biblio, $verbose);
             };
             warn $@ if $@;
         }
@@ -221,6 +227,30 @@ sub _get_biblios_needing_update {
     print '#'.DateTime->now(time_zone => C4::Context->tz())->iso8601().'# Biblios fetched #'."\n" if $verbose > 0;
 
     return $biblios;
+}
+
+sub get_single_biblio {
+    my ($biblionumber, $verbose) = @_;
+    my @cc = caller(0);
+
+    my $dbh = C4::Context->dbh();
+    my $sth = $dbh->prepare("
+            (SELECT b.biblionumber, bi.biblioitemnumber, 0 AS deleted FROM biblio b
+             LEFT JOIN biblioitems bi ON(bi.biblionumber = b.biblionumber)
+             WHERE b.biblionumber = $biblionumber
+            ) UNION (
+             SELECT b.biblionumber, bi.biblioitemnumber, 1 AS deleted FROM deletedbiblio b
+             LEFT JOIN deletedbiblioitems bi ON(bi.biblionumber = b.biblionumber)
+             WHERE b.biblionumber = $biblionumber
+            )
+    ");
+    $sth->execute();
+    if ($sth->err) {
+        die $cc[3]."():> ".$sth->errstr;
+    }
+    my $biblio = $sth->fetchrow_hashref;
+
+    return $biblio;
 }
 
 =head verifyFeatureIsInUse
