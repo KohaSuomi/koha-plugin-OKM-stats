@@ -63,11 +63,10 @@ sub isCelia {
 }
 
 sub isComponentPart {
-    my ($self, $biblionumber) = @_;
+    my ($self, $record) = @_;
     my $col = 'host_record';
 
-    my $biblio = Koha::Biblios->find($biblionumber);
-    my $host_record = $biblio ? $biblio->get_marc_host() : undef;
+    my $host_record = $record ? get_host_record($record) : undef;
     my $val = $host_record ? $host_record->unblessed->{biblionumber} : undef;
 
     ($self->{dbi}) ? $self->{$col} = $val : $self->set({$col => $val});
@@ -155,6 +154,42 @@ sub set_publication_year {
     my $val = substr($record->field('008')->data(), 7, 4);
 
     ($self->{dbi}) ? $self->{$col} = $val : $self->set({$col => $val});
+}
+
+sub get_host_record {
+    my ($record) = @_;
+
+    my $f773w = $record->subfield('773', 'w');
+    my $f003;
+    if ($f773w =~ /\((.*)\)/ ) {
+        $f003 = $1;
+        $f773w =~ s/\D//g;
+    }
+    my $cn = $f773w;
+    my $cni = $record->field('003')->data();
+
+    return undef unless $cn && $cni;
+
+    my $query = "Control-number,ext:\"$cn\" AND cni,ext:\"$cni\"";
+    require Koha::SearchEngine::Search;
+
+    my $searcher = Koha::SearchEngine::Search->new({index => $Koha::SearchEngine::BIBLIOS_INDEX});
+
+    my ( $error, $results, $total_hits ) = $searcher->simple_search_compat( $query, 0, 10 );
+    if ($error) {
+        die "get_host_record():> Searching ($query):> Returned an error:\n$error";
+    }
+
+    my $marcflavour = C4::Context->preference('marcflavour');
+
+    if ($total_hits == 1) {
+        my $record = $results->[0];
+        return ref($record) ne 'MARC::Record' ? MARC::Record::new_from_xml($record, 'UTF-8', $marcflavour) : $record;
+    }
+    elsif ($total_hits > 1) {
+        die "get_host_record():> Searching ($query):> Returned more than one record?";
+    }
+    return undef;
 }
 
 =head PERFORMANCE IMPROVEMENT TESTS USING DBI

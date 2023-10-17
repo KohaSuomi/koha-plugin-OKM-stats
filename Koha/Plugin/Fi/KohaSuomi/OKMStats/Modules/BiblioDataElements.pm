@@ -143,7 +143,7 @@ sub UpdateBiblioDataElement {
     $bde->isCelia($record);
     $bde->setDeleted($deleted, $biblio->{timestamp});
     $bde->setItemtype($record);
-    $bde->isComponentPart($biblionumber);
+    $bde->isComponentPart($record);
     $bde->setLanguages($record);
     $bde->setCnClass($record);
     $bde->set_publication_year($record);
