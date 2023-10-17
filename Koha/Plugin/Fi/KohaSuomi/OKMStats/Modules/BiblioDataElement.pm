@@ -67,7 +67,7 @@ sub isComponentPart {
     my $col = 'host_record';
 
     my $host_record = $record ? get_host_record($record) : undef;
-    my $val = $host_record ? $host_record->unblessed->{biblionumber} : undef;
+    my $val = $host_record ? $host_record->subfield('999', 'c') : undef;
 
     ($self->{dbi}) ? $self->{$col} = $val : $self->set({$col => $val});
 }
