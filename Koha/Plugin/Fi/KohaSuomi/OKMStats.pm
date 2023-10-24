@@ -13,16 +13,18 @@ use CGI qw ( -utf8 );
 
 use Koha::Plugins;
 use Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::OPLIB::OKM;
+use Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::Chunker;
+use Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElement;
 
 ## Here we set our plugin version
-our $VERSION = "3.0.2";
+our $VERSION = "3.0.3";
 
 ## Here is our metadata, some keys are required, some are optional
 our $metadata = {
     name            => 'Raportointityökalu',
     author          => 'Emmi Takkinen, Lari Strand',
     date_authored   => '2021-09-01',
-    date_updated    => "2023-07-05",
+    date_updated    => "2023-10-23",
     minimum_version => '21.05.02.003',
     maximum_version => undef,
     version         => $VERSION,
@@ -98,6 +100,7 @@ sub install() {
         `languages` varchar(40) DEFAULT NULL,
         `fiction` tinyint(1) DEFAULT NULL,
         `cn_class` varchar(10) DEFAULT NULL,
+        `genres` longtext DEFAULT NULL,
         `musical` tinyint(1) DEFAULT NULL,
         `celia` tinyint(1) DEFAULT NULL,
         `publication_year` varchar(10) DEFAULT NULL,
@@ -193,6 +196,29 @@ sub upgrade {
            SET bde.publication_year = SUBSTR(ExtractValue(dbm.metadata,'//controlfield[\@tag=008]'),8,4)
            WHERE bde.biblionumber = dbm.biblionumber");
            print "Do same to deleted biblios";
+        }
+    }
+
+    if( $VERSION le "3.0.3" ){
+        my $dbh = C4::Context->dbh;
+        my $table = $self->get_qualified_table_name('biblio_data_elements');
+
+        unless( column_exists( $table, 'genres' ) ){
+            $dbh->do("ALTER TABLE $table ADD COLUMN `genres` longtext DEFAULT NULL AFTER cn_class");
+            print "Added new column genres.\n";
+
+            my $chunker = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::Chunker->new(undef, undef, undef, 1);
+            while (my $records = $chunker->getChunkAsMARCRecord(undef, undef)) {
+                foreach my $record (@$records) {
+                    eval {
+                        my $biblionumber = $record->{biblionumber};
+                        my $bde = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElement::DBI_getBiblioDataElement($biblionumber);
+                        $bde->setGenres($record);
+                        Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElement::dbi_update_single_column($biblionumber, 'genres', $bde->{genres});
+                    };
+                    warn $@ if $@;
+                }
+            }
         }
     }
 

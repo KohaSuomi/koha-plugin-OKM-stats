@@ -146,6 +146,7 @@ sub UpdateBiblioDataElement {
     $bde->isComponentPart($record);
     $bde->setLanguages($record);
     $bde->setCnClass($record);
+    $bde->setGenres($record);
     $bde->set_publication_year($record);
 
     if($bde->{biblionumber}){
