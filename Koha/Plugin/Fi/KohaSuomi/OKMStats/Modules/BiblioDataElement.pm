@@ -265,4 +265,21 @@ sub DBI_insertBiblioDataElement {
     }
 }
 
+sub dbi_update_single_column {
+    my ($biblionumber, $column, $value) = @_;
+    if( $value ){
+        my $dbh = C4::Context->dbh();
+        my $sth = $dbh->prepare("
+            UPDATE koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements
+                SET $column = '".$value."'
+            WHERE biblionumber = $biblionumber
+        ");
+        $sth->execute();
+        if ($sth->err) {
+            my @cc = caller(0);
+            die $cc[3]."():> ".$sth->errstr;
+        }
+    }
+}
+
 1;

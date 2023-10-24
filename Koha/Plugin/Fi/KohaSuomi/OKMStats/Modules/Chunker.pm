@@ -22,6 +22,8 @@ use Modern::Perl;
 use C4::Record;
 use C4::Biblio;
 
+use Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElements;
+
 =head SYNOPSIS
 
     BiblioChunker paginates database access to a large volume of marcxml from the DB.
@@ -55,6 +57,7 @@ sub getChunkAsMARCRecord {
     for (my $i=0 ; $i<scalar(@$chunk) ; $i++) {
         my $bi = $chunk->[$i];
         my $marcxml = C4::Biblio::GetXmlBiblio($bi->{biblionumber});
+        $marcxml = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElements::_getDeletedXmlBiblio($bi->{biblionumber}) unless $marcxml;
         my $error = "";
         ($error, $chunk->[$i]) = C4::Record::marcxml2marc($marcxml);
         die "Couldn't get MARC::Record for biblio $bi->{biblionumber}" if $error;
