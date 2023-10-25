@@ -53,16 +53,16 @@ Extracts koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements from those MARCX
 =cut
 
 sub UpdateBiblioDataElements {
-    my ($forceRebuild, $limit, $verbose, $biblionumber) = @_;
+    my ($forceRebuild, $limit, $verbose, $biblionumber, $column) = @_;
 
     $verbose = 0 unless $verbose; #Prevent undefined comparison errors
 
     if ($forceRebuild) {
-        forceRebuild($limit, $verbose);
+        forceRebuild($limit, $verbose, $column);
     } elsif ($biblionumber) {
         my $biblio = get_single_biblio($biblionumber, $verbose);
         eval {
-            UpdateBiblioDataElement($biblio, $verbose);
+            UpdateBiblioDataElement($biblio, $verbose, $column);
         };
         warn $@ if $@;
     }
@@ -97,14 +97,14 @@ sub UpdateBiblioDataElements {
 }
 
 sub forceRebuild {
-    my ($limit, $verbose) = @_;
+    my ($limit, $verbose, $column) = @_;
 
     $verbose = 0 unless $verbose; #Prevent undefined comparison errors
     my $chunker = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::Chunker->new(undef, $limit, undef, $verbose);
     while (my $biblios = $chunker->getChunk(undef, $limit)) {
         foreach my $biblio (@$biblios) {
             eval {
-                UpdateBiblioDataElement($biblio, $verbose);
+                UpdateBiblioDataElement($biblio, $verbose, $column);
             };
             warn $@ if $@;
         }
@@ -121,9 +121,9 @@ Takes biblios and MARCXML and picks the needed data_elements to the koha.biblio_
 =cut
 
 sub UpdateBiblioDataElement {
-    my ($biblio, $verbose) = @_;
+    my ($biblio, $verbose, $column) = @_;
     $verbose = 0 unless $verbose; #Prevent undef errors
-
+    my $update_all = $column ? 0 : 1;
     my $deleted = $biblio->{deleted};
     my $biblionumber = $biblio->{biblionumber};
     my $biblioitemnumber = $biblio->{biblioitemnumber};
@@ -138,19 +138,24 @@ sub UpdateBiblioDataElement {
         die $@;
     }
     #Start creating data_elements.
-    $bde->isBiblioFiction($record);
-    $bde->isMusicalRecording($record);
-    $bde->isCelia($record);
-    $bde->setDeleted($deleted, $biblio->{timestamp});
-    $bde->setItemtype($record);
-    $bde->isComponentPart($record);
-    $bde->setLanguages($record);
-    $bde->setCnClass($record);
-    $bde->setGenres($record);
-    $bde->set_publication_year($record);
+    #Update all or only one column
+    $bde->isBiblioFiction($record)             if $update_all || $column eq "fiction";
+    $bde->isMusicalRecording($record)          if $update_all || $column eq "musical";
+    $bde->isCelia($record)                     if $update_all || $column eq "celia";
+    $bde->set_deleted($deleted)                if $update_all || $column eq "deleted";
+    $bde->set_deleted_on($biblio->{timestamp}) if ($update_all || $column eq "deleted_on") && $deleted;
+    $bde->setItemtype($record)                 if $update_all || $column eq "itemtype";
+    $bde->isComponentPart($record)             if $update_all || $column eq "host_record";
+    $bde->set_primary_language($record)        if $update_all || $column eq "primary_language";
+    $bde->set_languages($record)               if $update_all || $column eq "languages";
+    $bde->setCnClass($record)                  if $update_all || $column eq "cn_class";
+    $bde->setGenres($record)                   if $update_all || $column eq "genres";
+    $bde->set_publication_year($record)        if $update_all || $column eq "publication_year";
 
-    if($bde->{biblionumber}){
-        Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElement::DBI_updateBiblioDataElement($bde)
+    if ($column){
+        Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElement::dbi_update_single_column($biblionumber, $column, $bde->{$column});
+    } elsif($bde->{biblionumber}){
+        Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElement::DBI_updateBiblioDataElement($bde);
     } else {
         Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElement::DBI_insertBiblioDataElement($bde, $biblionumber, $biblioitemnumber);
     }

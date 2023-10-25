@@ -81,11 +81,11 @@ sub setItemtype {
     ($self->{dbi}) ? $self->{$col} = $val : $self->set({$col => $val});
 }
 
-=head setLanguages
+=head set_primary_language
 
-    $bde->setLanguage($record);
+    $bde->set_primary_language($record);
 
-Sets the languages- and primary_language-columns.
+Sets the primary_language column.
 Defaults to "OTH" if fields 008 or 041 do not contain acceptable
 string (3 character long, contains only alphabets).
 
@@ -93,7 +93,7 @@ string (3 character long, contains only alphabets).
 
 =cut
 
-sub setLanguages {
+sub set_primary_language {
     my ($self, $record) = @_;
     my $f008 = $record->field('008');
     my $primaryLanguage = 'OTH';
@@ -105,6 +105,23 @@ sub setLanguages {
     } elsif ( $record->subfield('041', 'd') && ( $record->subfield('041', 'd') =~ /(.*[a-zA-Z]){3}/ ) ) {
         $primaryLanguage = $record->subfield('041', 'd');
     }
+
+    ($self->{dbi}) ? $self->{'primary_language'} = $primaryLanguage : $self->set({'primary_language' => $primaryLanguage});
+}
+
+=head set_languages
+
+    $bde->set_language($record);
+
+Sets the languages column.
+Collects all 041 fields.
+
+@PARAM1, MARC::Record
+
+=cut
+
+sub set_languages {
+    my ($self, $record) = @_;
 
     my $languages = '';
     my @sb; #StrinBuilder to efficiently collect language Strings and concatenate them
@@ -124,18 +141,20 @@ sub setLanguages {
     }
 
     ($self->{dbi}) ? $self->{'languages'} = $languages : $self->set({'languages' => $languages});
-    ($self->{dbi}) ? $self->{'primary_language'} = $primaryLanguage : $self->set({'primary_language' => $primaryLanguage});
 }
 
-sub setDeleted {
-    my ($self, $deleted, $timestamp) = @_;
+sub set_deleted {
+    my ($self, $deleted) = @_;
     my $col = 'deleted';
-    my $col2 = 'deleted_on';
 
     ($self->{dbi}) ? $self->{$col} = $deleted : $self->set({$col => $deleted});
-    if($deleted){
-        ($self->{dbi}) ? $self->{$col2} = $timestamp : $self->set({$col2 => $timestamp});
-    }
+}
+
+sub set_deleted_on {
+    my ($self, $deleted, $timestamp) = @_;
+    my $col = 'deleted_on';
+
+    ($self->{dbi}) ? $self->{$col} = $timestamp : $self->set({$col => $timestamp});
 }
 
 sub setCnClass {

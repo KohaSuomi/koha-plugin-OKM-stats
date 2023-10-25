@@ -14,13 +14,15 @@ my $limit = '';
 my $verbose = 0;
 my $forceRebuild;
 my $biblionumber = "";
+my $column = "";
 
 GetOptions(
     'h|help'             => \$help,
     'l|limit:i'          => \$limit,
     'v|verbose:i'        => \$verbose,
     'f|forceRebuild'     => \$forceRebuild,
-    'b|biblio:i'           => \$biblionumber,
+    'b|biblio:i'         => \$biblionumber,
+    'c|column:s'         => \$column,
 );
 
 my $usage = << 'ENDUSAGE';
@@ -51,7 +53,7 @@ This script has the following parameters :
 
     -f --forceRebuild Rebuild data_elements for all biblios.
 
-    -b --biblionumber       insert or update only one biblio
+    -b --biblio       insert or update only one biblio
 
 ENDUSAGE
 
@@ -64,4 +66,4 @@ if ($limit) {
     $limit =~ s/;//g; #Evade SQL injection :)
 }
 
-Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElements::UpdateBiblioDataElements($forceRebuild, $limit, $verbose, $biblionumber);
+Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElements::UpdateBiblioDataElements($forceRebuild, $limit, $verbose, $biblionumber, $column);
