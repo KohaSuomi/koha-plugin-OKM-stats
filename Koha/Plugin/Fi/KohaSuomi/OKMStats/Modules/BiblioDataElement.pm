@@ -297,7 +297,7 @@ sub DBI_insertBiblioDataElement {
     my $dbh = C4::Context->dbh();
     my $sth = $dbh->prepare("
         INSERT INTO koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements
-            (biblionumber, biblioitemnumber, deleted, deleted_on, primary_language, languages, fiction, cn_class, genre, musical, celia, publication_year, itemtype, host_record)
+            (biblionumber, biblioitemnumber, deleted, deleted_on, primary_language, languages, fiction, cn_class, genres, musical, celia, publication_year, itemtype, host_record)
             VALUES
             (?,            ?               , ?      , ?         , ?               , ?        , ?      , ?       , ?    , ?      , ?    , ?               , ?       , ?);
     ");
