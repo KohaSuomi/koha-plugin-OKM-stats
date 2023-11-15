@@ -193,7 +193,8 @@ sub set_publication_year {
     my ($self, $record) = @_;
     my $col = 'publication_year';
 
-    my $val = substr($record->field('008')->data(), 7, 4);
+    my $f008 = $record->field('008');
+    my $val = substr($f008->data(), 7, 4) if $f008;
 
     ($self->{dbi}) ? $self->{$col} = $val : $self->set({$col => $val});
 }
@@ -203,7 +204,7 @@ sub get_host_record {
 
     my $f773w = $record->subfield('773', 'w');
     my $f003;
-    if ($f773w =~ /\((.*)\)/ ) {
+    if ($f773w && $f773w =~ /\((.*)\)/ ) {
         $f003 = $1;
         $f773w =~ s/\D//g;
     }
