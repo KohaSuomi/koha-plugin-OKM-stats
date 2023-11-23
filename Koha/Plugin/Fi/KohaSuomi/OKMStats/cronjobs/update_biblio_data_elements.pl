@@ -55,6 +55,8 @@ This script has the following parameters :
 
     -b --biblio       insert or update only one biblio
 
+    -c --column       update only one column
+
 ENDUSAGE
 
 if ($help) {
