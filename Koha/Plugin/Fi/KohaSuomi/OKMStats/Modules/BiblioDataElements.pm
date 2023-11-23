@@ -209,14 +209,14 @@ sub _get_biblios_needing_update {
 
     my $dbh = C4::Context->dbh();
     my $sth = $dbh->prepare("
-            (SELECT b.biblionumber, bi.biblioitemnumber, 0 AS deleted FROM biblio b
+            (SELECT b.biblionumber, bi.biblioitemnumber, b.timestamp, 0 AS deleted FROM biblio b
              LEFT JOIN biblioitems bi ON(bi.biblionumber = b.biblionumber)
              LEFT JOIN biblio_metadata bmd ON(b.biblionumber = bmd.biblionumber)
              WHERE b.timestamp >= '". $lastModTime ."'
              OR bmd.timestamp >= '". $lastModTime ."'
              OR b.biblionumber NOT IN(SELECT biblionumber FROM koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements) $limit
             ) UNION (
-             SELECT db.biblionumber, dbi.biblioitemnumber, 1 AS deleted FROM deletedbiblio db
+             SELECT db.biblionumber, dbi.biblioitemnumber, db.timestamp, 1 AS deleted FROM deletedbiblio db
              LEFT JOIN deletedbiblioitems dbi ON(dbi.biblionumber = db.biblionumber)
              LEFT JOIN deletedbiblio_metadata dbmd ON(db.biblionumber = dbmd.biblionumber)
              WHERE db.timestamp >= '". $lastModTime ."'
@@ -241,13 +241,13 @@ sub get_single_biblio {
 
     my $dbh = C4::Context->dbh();
     my $sth = $dbh->prepare("
-            (SELECT b.biblionumber, bi.biblioitemnumber, 0 AS deleted FROM biblio b
+            (SELECT b.biblionumber, bi.biblioitemnumber, b.timestamp, 0 AS deleted FROM biblio b
              LEFT JOIN biblioitems bi ON(bi.biblionumber = b.biblionumber)
              WHERE b.biblionumber = $biblionumber
             ) UNION (
-             SELECT b.biblionumber, bi.biblioitemnumber, 1 AS deleted FROM deletedbiblio b
-             LEFT JOIN deletedbiblioitems bi ON(bi.biblionumber = b.biblionumber)
-             WHERE b.biblionumber = $biblionumber
+             SELECT db.biblionumber, dbi.biblioitemnumber, db.timestamp, 1 AS deleted FROM deletedbiblio db
+             LEFT JOIN deletedbiblioitems dbi ON(dbi.biblionumber = db.biblionumber)
+             WHERE db.biblionumber = $biblionumber
             )
     ");
     $sth->execute();

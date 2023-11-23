@@ -151,7 +151,7 @@ sub set_deleted {
 }
 
 sub set_deleted_on {
-    my ($self, $deleted, $timestamp) = @_;
+    my ($self, $timestamp) = @_;
     my $col = 'deleted_on';
 
     ($self->{dbi}) ? $self->{$col} = $timestamp : $self->set({$col => $timestamp});
