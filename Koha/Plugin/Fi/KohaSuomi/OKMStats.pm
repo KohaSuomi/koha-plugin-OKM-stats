@@ -69,9 +69,10 @@ sub configure {
         $self->output_html( $template->output() );
     }
     else {
+        my $okm_syspref = $cgi->param('okm_syspref');
         $self->store_data(
             {
-                okm_syspref => $cgi->param('okm_syspref'),
+                okm_syspref => $okm_syspref,
                 last_configured_by => C4::Context->userenv->{'number'},
             }
         );
