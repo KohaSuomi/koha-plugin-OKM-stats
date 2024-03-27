@@ -127,7 +127,15 @@ sub createStatistics {
         my @borrowernumbers;
         my @celia_borrowers;
         foreach my $itemnumber (sort {$a <=> $b} keys %$issues) {
+            #Find rest of items info
+            my $item = $self->_findItem( $itemnumber );
             foreach my $datetime (keys %{$issues->{$itemnumber}} ){
+                # Add item info to hash
+                if($items){
+                    foreach my $item_key (keys %$item){
+                        $issues->{$itemnumber}->{$datetime}{$item_key} = %$item{$item_key};
+                    }
+                }
                 $self->_processItemsDataRow( $stats->{issues}, $issues->{$itemnumber}->{$datetime}, "issues" );
 
                 if($issues->{$itemnumber}->{$datetime}->{celia}){
@@ -233,7 +241,7 @@ sub fetchAcquisitions {
 }
 
 #Keep this around until we decide about using pseudonymized_transactions
-sub fetchIssues {
+sub fetchIssues_oldway {
     my ($self, $patronCategories, @branches) = @_;
     my @cc = caller(0);
     print '    #'.DateTime->now()->iso8601()."# Starting ".$cc[3]." #\n" if $self->{verbose};
@@ -276,14 +284,13 @@ sub fetchIssues {
     return $issues;
 }
 
-#USE if we use pseudonymized_transactions (rename this as fetchIssues and delete function above)
-sub fetchIssues_newway {
+sub fetchIssues {
     my ($self, $patronCategories, @branches) = @_;
     my @cc = caller(0);
     print '    #'.DateTime->now()->iso8601()."# Starting ".$cc[3]." #\n" if $self->{verbose};
     my $dbh = C4::Context->dbh();
-    my $query = "SELECT id, branchcode, holdingbranch, homebranch, categorycode, location, itemnumber,
-        datetime, itemtype, hashed_borrowernumber, transaction_type
+    my $query = "SELECT branchcode, holdingbranch, homebranch, categorycode,
+        location, itemnumber, datetime, transaction_type
         FROM pseudonymized_transactions
         WHERE ( transaction_type = 'issue' OR transaction_type = 'renew' )
         AND categorycode in (" . join(",", map {"'$_'"} @{$patronCategories}).")
@@ -300,8 +307,42 @@ sub fetchIssues_newway {
         die $cc[3]."():> ".$sth->errstr;
     }
 
-    my $issues = $sth->fetchall_hashref('id');
+    my $issues = $sth->fetchall_hashref([ qw( itemnumber datetime ) ]);
     return $issues;
+}
+
+sub _findItem {
+    my ($self, $itemnumber) = @_;
+    my $dbh = C4::Context->dbh();
+    my $item_query = "SELECT i.biblionumber, i.location, i.cn_sort, bde.itemtype,
+        bde.primary_language, bde.fiction, bde.musical, bde.celia
+        FROM items i
+        LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(i.biblionumber = bde.biblionumber)
+        WHERE i.itemnumber = ?";
+    my $sth = $dbh->prepare($item_query);
+    $sth->execute($itemnumber);
+    if ($sth->err) {
+        my @cc = caller(0);
+        die $cc[3]."():> ".$sth->errstr;
+    }
+
+    my $item = $sth->fetchrow_hashref;
+    unless($item){
+        my $deleted_item_query = "SELECT di.biblionumber, di.location, di.cn_sort, bde.itemtype,
+        bde.primary_language, bde.fiction, bde.musical, bde.celia
+        FROM deleteditems di
+        LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(di.biblionumber = bde.biblionumber)
+        WHERE di.itemnumber = ?";
+        my $sth = $dbh->prepare($deleted_item_query);
+        $sth->execute($itemnumber);
+        if ($sth->err) {
+            my @cc = caller(0);
+            die $cc[3]."():> ".$sth->errstr;
+        }
+        $item = $sth->fetchrow_hashref;
+    }
+
+    return $item;
 }
 
 =head _processBorrowers
