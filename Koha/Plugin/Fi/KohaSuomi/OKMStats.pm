@@ -145,6 +145,12 @@ sub install() {
 sub upgrade {
     my ( $self, $args ) = @_;
 
+    my $dbh = C4::Context->dbh;
+    my $version_query = q{SELECT plugin_value FROM plugin_data WHERE plugin_class = "Koha::Plugin::Fi::KohaSuomi::OKMStats" AND plugin_key = "__INSTALLED_VERSION__"};
+    my ($v) = $dbh->selectrow_array($version_query);
+
+    $VERSION = $v ? $v : $VERSION;
+
     if( $VERSION le "3.0.1" ){
         my $dbh = C4::Context->dbh;
         my $table = $self->get_qualified_table_name('biblio_data_elements');
@@ -191,12 +197,12 @@ sub upgrade {
            $dbh->do("UPDATE $table bde LEFT JOIN biblio_metadata bm ON(bde.biblionumber = bm.biblionumber)
            SET bde.publication_year = SUBSTR(ExtractValue(bm.metadata,'//controlfield[\@tag=008]'),8,4)
            WHERE bde.biblionumber = bm.biblionumber");
-           print "Set publication year from field 008";
+           print "Set publication year from field 008.\n";
 
            $dbh->do("UPDATE $table bde LEFT JOIN deletedbiblio_metadata dbm ON(bde.biblionumber = dbm.biblionumber)
            SET bde.publication_year = SUBSTR(ExtractValue(dbm.metadata,'//controlfield[\@tag=008]'),8,4)
            WHERE bde.biblionumber = dbm.biblionumber");
-           print "Do same to deleted biblios";
+           print "Do same to deleted biblios.\n";
         }
     }
 
