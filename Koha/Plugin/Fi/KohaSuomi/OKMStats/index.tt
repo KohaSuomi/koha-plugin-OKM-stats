@@ -18,12 +18,6 @@
   <link type="text/css" rel="stylesheet" href="[% PLUGIN_PATH %]/includes/bootstrap.min.css" />
   <link type="text/css" rel="stylesheet" href="[% PLUGIN_PATH %]/includes/bootstrap-vue.css" />
 
-  
-
-  <!-- Load polyfills to support older browsers -->
-  <script src="//polyfill.io/v3/polyfill.min.js?features=es2015%2CIntersectionObserver"
-    crossorigin="anonymous"></script>
-
   <!-- Load Vue followed by BootstrapVue -->
   <script src="[% PLUGIN_PATH %]/includes/vue.min.js"></script>
   <script src="[% PLUGIN_PATH %]/includes/bootstrap-vue.js"></script>
