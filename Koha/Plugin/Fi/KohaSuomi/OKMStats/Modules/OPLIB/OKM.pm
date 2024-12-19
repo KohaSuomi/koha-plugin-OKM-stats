@@ -240,50 +240,6 @@ sub fetchAcquisitions {
     return $acquiredItems;
 }
 
-#Keep this around until we decide about using pseudonymized_transactions
-sub fetchIssues_oldway {
-    my ($self, $patronCategories, @branches) = @_;
-    my @cc = caller(0);
-    print '    #'.DateTime->now()->iso8601()."# Starting ".$cc[3]." #\n" if $self->{verbose};
-    my $dbh = C4::Context->dbh();
-    my $query = "(
-            SELECT s.branch, s.datetime, s.itemnumber, bde.itemtype, bde.biblionumber,
-            bde.primary_language, bde.fiction, bde.musical, bde.celia, i.biblionumber,
-            i.location, i.cn_sort, i.homebranch, s.borrowernumber
-            FROM statistics s
-            INNER JOIN items i ON(s.itemnumber = i.itemnumber)
-            INNER JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(i.biblionumber = bde.biblionumber)
-            WHERE s.datetime >= ? AND s.datetime <= ?
-            AND (s.type='issue' or s.type='renew')
-            AND s.branch IN(" . join(",", map {"'$_'"} @branches).")
-            AND s.categorycode IN(" . join(",", map {"'$_'"} @{$patronCategories}).")
-        ) UNION (
-            SELECT s.branch, s.datetime, s.itemnumber, bde.itemtype, bde.biblionumber,
-            bde.primary_language, bde.fiction, bde.musical, bde.celia, di.biblionumber,
-            di.location, di.cn_sort, di.homebranch, s.borrowernumber
-            FROM statistics s
-            INNER JOIN deleteditems di ON(s.itemnumber = di.itemnumber)
-            INNER JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(di.biblionumber = bde.biblionumber)
-            WHERE s.datetime >= ? AND s.datetime <= ?
-            AND (s.type='issue' or s.type='renew')
-            AND s.branch IN(" . join(",", map {"'$_'"} @branches).")
-            AND s.categorycode IN(" . join(",", map {"'$_'"} @{$patronCategories}).")
-        )";
-    if ($self->{limit}) {
-        $query .= ' LIMIT '.$self->{limit};
-    }
-    my $sth = $dbh->prepare($query);
-    $sth->execute($self->{startDate}, $self->{endDate}, $self->{startDate}, $self->{endDate});
-    if ($sth->err) {
-        my @cc = caller(0);
-        die $cc[3]."():> ".$sth->errstr;
-    }
-    #since any table used here has no unique value to use as hash key
-    #we need to use itemnumber and datetime to take all issues into account
-    my $issues = $sth->fetchall_hashref([ qw( itemnumber datetime ) ]);
-    return $issues;
-}
-
 sub fetchIssues {
     my ($self, $patronCategories, @branches) = @_;
     my @cc = caller(0);
