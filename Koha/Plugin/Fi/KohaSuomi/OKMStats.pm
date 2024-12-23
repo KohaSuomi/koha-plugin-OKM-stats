@@ -21,14 +21,14 @@ our $VERSION = "3.0.3";
 
 ## Here is our metadata, some keys are required, some are optional
 our $metadata = {
-    name            => 'Raportointityökalu',
+    name            => 'OKM-raportointityökalu',
     author          => 'Emmi Takkinen, Lari Strand',
     date_authored   => '2021-09-01',
-    date_updated    => "2023-10-23",
+    date_updated    => "2024-12-27",
     minimum_version => '21.05.02.003',
     maximum_version => undef,
     version         => $VERSION,
-    description     => 'OKM-tilastot ja erilaisia raportteja/työkaluja/tilastoja kuntien ja kirjastojen tarpeisiin.',
+    description     => 'OKM-tilastojen luomiseen ja tarkasteluun tarkoitettu työkalu.',
 };
 
 ## This is the minimum code required for a plugin's 'new' method

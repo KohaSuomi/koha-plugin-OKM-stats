@@ -3,7 +3,6 @@
 
 <html lang="en">
 <head>
-  
   <!-- Required meta tags -->
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
@@ -46,493 +45,7 @@
   <div>
     <b-card no-body>
       <b-tabs pills card>
-      
-<!-- LAINAT -->
-
-        <b-tab title="Lainat" disabled>
-          
-          <div>
-            <b-tabs content-class="mt-3">
-              
-              <b-tab title="Lainaustilastot kirjastoittain
-               ja hyllypaikoittain aikaväliltä" disabled>
-                
-                <template>
-                  <div>
-                    Branchcode:
-                    <b-form-select v-model="selectedBranch" :options="branchcodelist" size="sm" class="mt-3"></b-form-select>
-                    <div class="mt-3">Selected: <strong>{{ selectedBranch }}</strong></div>
-                  </div>
-                </template>
-      
-                <div>
-                  <b-row class="mb-12">
-                    <!-- pvm-valinta-->
-                    <b-col lg="4" class="my-1">
-                      <b-input-group class="mb-3">
-                        <b-form-input id="example-input" v-model="lowDate" type="text" placeholder="YYYY-MM-DD"
-                          autocomplete="off"></b-form-input>
-                        <b-input-group-append>
-                          <b-form-datepicker v-model="lowDate" button-only right locale="fi-FI" aria-controls="example-input"
-                            @context="onContext"></b-form-datepicker>
-                        </b-input-group-append>
-                      </b-input-group>
-                    </b-col>
-                    <b-col lg="4" class="my-1">
-                      <b-input-group class="mb-3">
-                        <b-form-input id="example-input" v-model="maxDate" type="text" placeholder="YYYY-MM-DD"
-                          autocomplete="off"></b-form-input>
-                        <b-input-group-append>
-                          <b-form-datepicker v-b-popover.hover="
-                            'Valitse loppupvm:ksi viimeiseksi raportoitavaa päivää seuraava päivä'
-                          " title="Ohje:" id="example-datepicker" v-model="maxDate" v-model="maxDate" button-only right
-                            locale="fi-FI" aria-controls="example-input" @context="onContext"></b-form-datepicker>
-                        </b-input-group-append>
-                      </b-input-group>
-      
-                    </b-col>
-                  </b-row>
-                </div>
-                <div>
-                  <b-button type="button" class="btn btn-success" @click="showLainat">Hae</b-button>
-                </div>
-      
-                <!-- <b-row class="mb-6">
-                  <b-col lg="2" class="my-1">
-                    <b-form-datepicker id="example-datepicker" v-model="lowDate"></b-form-datepicker>
-                  </b-col>exportToCsv
-                  <b-col lg="2" class="my-1">
-                    <b-form-datepicker v-b-popover.hover="
-                          'Valitse loppupvm:ksi viimeiseksi raportoitavaa päivää seuraava päivä'
-                        " title="Ohje:" id="example-datepicker" v-model="maxDate"></b-form-datepicker>
-                  </b-col>
-                </b-row> -->
-              </b-tab>
-              
-              
-              </b-tab>
-        
-              <b-tab title="Disabled" disabled><p>I'm a disabled tab!</p>
-              </b-tab>
-            </b-tabs>
-          </div>
-          
-        </b-tab>
-          
-
-<!-- HANKINNAT -->
-
-        <b-tab title="Hankinnat" disabled @click="showHankinnat">
-          <b-card-text>Tab contents 2</b-card-text>
-          <b-button @click="toggleBusy">Toggle Busy State</b-button>
-
-          <b-col lg="4" class="pb-2">
-            <b-button type="button" class="btn btn-success" id="table-export" variant="primary">Vie XLS</b-button>
-          </b-col>
-
-          <b-dropdown id="dropdown-divider" text="Kuukausi" class="m-2">
-            <b-dropdown-item-button>Tammikuu</b-dropdown-item-button>
-            <b-dropdown-item-button>Helmikuu</b-dropdown-item-button>
-            <b-dropdown-divider></b-dropdown-divider>
-            <b-dropdown-item-button>Koko vuosi</b-dropdown-item-button>
-          </b-dropdown>
-
-          <b-dropdown id="dropdown-divider" text="Vuosi" class="m-2">
-            <b-dropdown-item-button>2021</b-dropdown-item-button>
-            <b-dropdown-item-button>2020</b-dropdown-item-button>
-            <b-dropdown-item-button>2019</b-dropdown-item-button>
-          </b-dropdown>
-
-          <div>
-            Branchcode:
-            <b-form-select v-model="selectedBranch" :options="branchcodelist" size="sm" class="mt-3"></b-form-select>
-            <div class="mt-3">
-              Selected: <strong>{{ selectedBranch }}</strong>
-            </div>
-          </div>
-
-          <div>
-            <b-row class="mb-12">
-              <!-- pvm-valinta-->
-              <b-col lg="4" class="my-1">
-                <b-input-group class="mb-3">
-                  <b-form-input id="example-input" v-model="lowDate" type="text" placeholder="YYYY-MM-DD"
-                    autocomplete="off"></b-form-input>
-                  <b-input-group-append>
-                    <b-form-datepicker v-model="lowDate" button-only right locale="fi-FI" aria-controls="example-input"
-                      @context="onContext"></b-form-datepicker>
-                  </b-input-group-append>
-                </b-input-group>
-              </b-col>
-              <b-col lg="4" class="my-1">
-                <b-input-group class="mb-3">
-                  <b-form-input id="example-input" v-model="maxDate" type="text" placeholder="YYYY-MM-DD"
-                    autocomplete="off"></b-form-input>
-                  <b-input-group-append>
-                    <b-form-datepicker v-b-popover.hover="
-                      'Valitse loppupvm:ksi viimeiseksi raportoitavaa päivää seuraava päivä'
-                    " title="Ohje:" id="example-datepicker" v-model="maxDate" v-model="maxDate" button-only right
-                      locale="fi-FI" aria-controls="example-input" @context="onContext"></b-form-datepicker>
-                  </b-input-group-append>
-                </b-input-group>
-              </b-col>
-            </b-row>
-          </div>
-
-        </b-tab>
-        
-<!-- KOKOELMAT -->
-
-        <b-tab disabled title="Kokoelmat(collection)">
-          <b-card-text>Tab contents 3</b-card-text>
-        </b-tab>
-        
-<!-- ASIAKKAAT -->
-
-        <b-tab title="Asiakkaat(users)" disabled @click="showAsiakkaat">
-          <div>
-            <b-tabs content-class="mt-3">
-              <b-tab title="Asiakasmäärä ikäryhmittäin" active @click="clearTable">
-                <b-card>
-                  <b-button type="button" class="btn btn-success" @click="showBorrowersByAgegroups">Hae tiedot</b-button>
-                </b-card>
-                  <b-row>
-                    <div>
-                      <b-input-group>
-                        <div class="w-25">
-                          <b-form-input id="filter-input" v-model="filter"
-                            v-b-popover.hover.bottom="'Käytä pilkkua erottimena jos haluat suodattaa useammalla merkkijonolla esim. joe,val. Kirjainkoolla ei ole merkitystä. Yksittäisen rivin voi poistaa kirjastotunnuksen edessä olevalla napilla. Lataa raportti uudelleen palauttaaksesi poistetut rivit.'"
-                            type="search" placeholder="Suodata"></b-form-input>
-                        </div>
-                
-                        <b-button :disabled="!filter" @click="filter = null" lg="4">Tyhjennä suodatin</b-button>
-                        <b-button @click="sortBy = null" lg="4">Tyhjennä järjestys</b-button>
-                        <b-button id="button1" v-b-popover.hover.top="
-                                                'Nähtävissä oleva data päätyy leikepöydälle. Käytä suodatusta tarvittaessa.'"
-                          onclick="CopyToClipboard('datatable')">Kopioi leikepöydälle</b-button>
-                        <b-button type="button" class="btn btn-success" id="table-export" @click="exportXls" v-b-popover.hover.top="
-                                                'Nähtävissä oleva data päätyy tiedostoon. Käytä suodatusta tarvittaessa.'"
-                          variant="primary">Vie XLS
-                        </b-button>
-                      </b-input-group>
-                    </div>
-                
-                  </b-row>
-                  <b-row align-v="end">
-                    <div>
-                      Lajiteltu: <b>{{ sortBy }}</b>, Sort Direction:
-                      <b>{{ sortDesc ? "Descending" : "Ascending" }}</b>
-                      <div class="mt-2">Suodatettu: {{ filter }}</div>
-                    </div>
-                  </b-row>
-                
-              </b-tab>
-              
-              
-              </b-tab>
-              <b-tab title="Lainat postinumeroalueittain" @click="clearTable"><p>Lainanneiden asiakkaiden postinumeron mukaan aikavälillä. Ensilainat, uusinnat, ensilainat+uusinnat</p>
-                
-                <div>
-                  <b-form-input class="w-25" type="number" :state="zipState" v-model="zipCode" aria-describedby="input-zip-feedback" placeholder="Syötä postinumero"></b-form-input>
-                  <!-- This will only be shown if the preceding input has an invalid state -->
-                  <!-- <b-form-invalid-feedback id="input-zip-feedback">
-                    5 numeroa
-                  </b-form-invalid-feedback> -->
-                </div>
-
-               <!-- pvm-valinta-->
-               <div>
-                <p></p>
-                <label for="example-input">Valitse aikaväli:</label>
-                 <b-row class="mb-12">               
-               <!--                  <div>
-                     <b-form-select v-model="selectedMonth" :options="monthOptions"></b-form-select>
-                     
-                     <div class="mt-3">Selected: <strong>{{ selectedMonth }}</strong></div>
-                   </div>
-               -->
-                   <b-col lg="4" class="my-1">
-                     <b-input-group class="mb-3">
-                       <b-form-input id="datelow-input" v-model="lowDate" type="text" placeholder="VVVV-KK-PP"
-                         autocomplete="off"></b-form-input>
-                       <b-input-group-append>
-                         <b-form-datepicker v-model="lowDate" button-only right locale="fi-FI" aria-controls="example-input"
-                           @context="onContext"></b-form-datepicker> 
-                       </b-input-group-append>
-                     </b-input-group>
-                   </b-col>
-                   <b-col lg="4" class="my-1">
-                     <b-input-group class="mb-3">
-                       <b-form-input id="datemax-input" v-model="maxDate" type="text" placeholder="VVVV-KK-PP"
-                         autocomplete="off"></b-form-input>
-                       <b-input-group-append>
-                         <b-form-datepicker v-b-popover.hover="
-                           'Loppupvm lukeutuu tulosjoukkoon.'
-                         " title="Ohje:" id="example-datepicker" v-model="maxDate" v-model="maxDate" button-only right
-                           locale="fi-FI" aria-controls="example-input" @context="onContext"></b-form-datepicker>
-                       </b-input-group-append>
-                     </b-input-group>
-                   </b-col>
-                 </b-row>
-               </div>
-                 <!--END pvm-valinta-->
-                 <b-card>
-                  <b-button type="button" :disabled="getIssuesByZipButtonDisabled" class="btn btn-success" @click="getIssuesByPatronZip">{{ getIssuesByZipButtonText }}</b-button>
-                 </b-card>
-                
-                <b-row>
-                  <div>
-                    <b-input-group>
-                      <div class="w-25">
-                        <b-form-input id="filter-input" v-model="filter"
-                          v-b-popover.hover.bottom="'Käytä pilkkua erottimena jos haluat suodattaa useammalla merkkijonolla esim. joe,val. Kirjainkoolla ei ole merkitystä. Yksittäisen rivin voi poistaa kirjastotunnuksen edessä olevalla napilla. Lataa raportti uudelleen palauttaaksesi poistetut rivit.'"
-                          type="search" placeholder="Suodata"></b-form-input>
-                      </div>
-              
-                      <b-button :disabled="!filter" @click="filter = null" lg="4">Tyhjennä suodatin</b-button>
-                      <b-button @click="sortBy = null" lg="4">Tyhjennä järjestys</b-button>
-                      <b-button id="button1" v-b-popover.hover.top="
-                                              'Nähtävissä oleva data päätyy leikepöydälle. Käytä suodatusta tarvittaessa.'"
-                        onclick="CopyToClipboard('datatable')">Kopioi leikepöydälle</b-button>
-                      <b-button type="button" class="btn btn-success" id="table-export" @click="exportXls" v-b-popover.hover.top="
-                                              'Nähtävissä oleva data päätyy tiedostoon. Käytä suodatusta tarvittaessa.'"
-                        variant="primary">Vie XLS
-                      </b-button>
-                    </b-input-group>
-                  </div>
-              
-                </b-row>
-                <b-row align-v="end">
-                  <div>
-                    Lajiteltu: <b>{{ sortBy }}</b>, Sort Direction:
-                    <b>{{ sortDesc ? "Descending" : "Ascending" }}</b>
-                    <div class="mt-2">Suodatettu: {{ filter }}</div>
-                  </div>
-                </b-row>
-              
-              
-              
-              
-              
-              
-              </b-tab>
-              
-              <p></p>
-              
-              <b-tab title="Toimipisteiden lainat postinumeroittain" @click="clearTable"> <p>Toimipisteiden ensilainat aikavälillä ryhmiteltynä lainanneiden asiakkaiden postinumeroiden mukaan.</p>
-                
-               <!-- pvm-valinta-->
-               <div>
-                <p></p>
-                <label for="example-input">Valitse aikaväli:</label>
-                 <b-row class="mb-12">               
-               <!--                  <div>
-                     <b-form-select v-model="selectedMonth" :options="monthOptions"></b-form-select>
-                     
-                     <div class="mt-3">Selected: <strong>{{ selectedMonth }}</strong></div>
-                   </div>
-               -->
-                   <b-col lg="4" class="my-1">
-                     <b-input-group class="mb-3">
-                       <b-form-input id="datelow-input" v-model="lowDate" type="text" placeholder="VVVV-KK-PP"
-                         autocomplete="off"></b-form-input>
-                       <b-input-group-append>
-                         <b-form-datepicker v-model="lowDate" button-only right locale="fi-FI" aria-controls="example-input"
-                           @context="onContext"></b-form-datepicker> 
-                       </b-input-group-append>
-                     </b-input-group>
-                   </b-col>
-                   <b-col lg="4" class="my-1">
-                     <b-input-group class="mb-3">
-                       <b-form-input id="datemax-input" v-model="maxDate" type="text" placeholder="VVVV-KK-PP"
-                         autocomplete="off"></b-form-input>
-                       <b-input-group-append>
-                         <b-form-datepicker v-b-popover.hover="
-                           'Loppupvm lukeutuu tulosjoukkoon.'
-                         " title="Ohje:" id="example-datepicker" v-model="maxDate" v-model="maxDate" button-only right
-                           locale="fi-FI" aria-controls="example-input" @context="onContext"></b-form-datepicker>
-                       </b-input-group-append>
-                     </b-input-group>
-                   </b-col>
-                 </b-row>
-               </div>
-                 <!--END pvm-valinta--> 
-                <b-card>
-                  <b-button type="button" :disabled="getIssuesByZipButtonDisabled" class="btn btn-success" @click="getIssuesByZip">{{ getIssuesByZipButtonText }}</b-button>
-                </b-card>
-                
-                <b-row>
-                  <b-col lg="8" class="my-1">
-                    
-                   <!-- filter+export -->
-                    <b-row>
-                      <div>
-                        <b-input-group>
-                        <div class="w-25">
-                          <b-form-input id="filter-input" v-model="filter" v-b-popover.hover.bottom="'Käytä pilkkua erottimena jos haluat suodattaa useammalla merkkijonolla esim. joe,val. Kirjainkoolla ei ole merkitystä.'"
-                          type="search" placeholder="Suodata"></b-form-input>
-                        </div>
-                          <b-button :disabled="!filter" @click="filter = null" lg="4">Tyhjennä suodatin</b-button>
-                          <b-button @click="sortBy = null" lg="4">Tyhjennä järjestys</b-button>
-                          <b-button id="button1" v-b-popover.hover.top="'Nähtävissä oleva data päätyy leikepöydälle. Käytä suodatusta tarvittaessa.'" onclick="CopyToClipboard('bsvue-datatable')">Kopioi leikepöydälle</b-button>
-                          <b-button type="button" class="btn btn-success" id="table-export" @click="exportXls" v-b-popover.hover.top="'Nähtävissä oleva data päätyy tiedostoon. Käytä suodatusta tarvittaessa.'" variant="primary">Vie XLS</b-button>
-                        </b-input-group>
-                      </div>                    
-                    </b-row>
-                    <b-row align-v="end">
-                      <div>
-                        Lajiteltu: <b>{{ sortBy }}</b>, Sort Direction:
-                        <b>{{ sortDesc ? "Descending" : "Ascending" }}</b>
-                        <div class="mt-2">Suodatettu: {{ filter }}</div>
-                      </div>
-                    </b-row>
-                    </b-card>
-                  </b-col>
-                </b-row>
-                <!-- filter+export -->
-                
-                </b-tab>
-              
-            </b-tabs>
-          </div>
-
-        </b-tab>
-
-
-<!-- UUSINNAT -->
-
-        <b-tab disabled title="Uusinnat">
-          <b-card-text>Uusinnat hyllypaikoittain aikaväliltä</b-card-text>
-
-          <template>
-            <div>
-              Branchcode:
-              <b-form-select v-model="selectedBranch" :options="branchcodelist" size="sm" class="mt-3"></b-form-select>
-              <div class="mt-3">Selected: <strong>{{ selectedBranch }}</strong></div>
-            </div>
-          </template>
-
-          <div>
-            <b-row class="mb-12">
-              <!-- pvm-valinta-->
-              <b-col lg="4" class="my-1">
-                <b-input-group class="mb-3">
-                  <b-form-input id="example-input" v-model="lowDate" type="text" placeholder="YYYY-MM-DD"
-                    autocomplete="off"></b-form-input>
-                  <b-input-group-append>
-                    <b-form-datepicker v-model="lowDate" button-only right locale="fi-FI" aria-controls="example-input"
-                      @context="onContext"></b-form-datepicker>
-                  </b-input-group-append>
-                </b-input-group>
-              </b-col>
-              <b-col lg="4" class="my-1">
-                <b-input-group class="mb-3">
-                  <b-form-input id="example-input" v-model="maxDate" type="text" placeholder="YYYY-MM-DD"
-                    autocomplete="off"></b-form-input>
-                  <b-input-group-append>
-                    <b-form-datepicker v-b-popover.hover="
-                      'Valitse loppupvm:ksi viimeiseksi raportoitavaa päivää seuraava päivä'
-                    " title="Ohje:" id="example-datepicker" v-model="maxDate" v-model="maxDate" button-only right
-                      locale="fi-FI" aria-controls="example-input" @context="onContext"></b-form-datepicker>
-                  </b-input-group-append>
-                </b-input-group>
-
-              </b-col>
-            </b-row>
-          </div>
-          <div>
-            <b-button type="button" class="btn btn-success" @click="showUusinnat">Hae</b-button>
-          </div>
-
-        </b-tab>
-        
-<!-- POISTOT -->
-
-        <b-tab disabled title="Poistot" disabled>
-          <b-card-text>Tab contents 3</b-card-text>
-        </b-tab>
-        
-<!-- POISTOTYÖKALU -->
-        
-        <b-tab disabled title="Poistotyökalu" @click="myJson = [], fields = []">
-          <b-card-text>Tab contents 3</b-card-text>
-          <div class="col-md-12 bg-light float-left">
-            <b-row>
-              <b-col lg="4" class="pb-2">
-                
-                <div>
-                  Branchcode:
-                  <b-form-select v-model="selectedBranch" :options="branchcodelist" size="sm" class="mt-3"></b-form-select>
-                  <div class="mt-3">Selected: <strong>{{ selectedBranch }}</strong></div>
-                </div>
-
-                  <b-button type="button" class="btn btn-success" id="table-export" variant="primary">Vie XLS</b-button>
-
-                <b-button type="button" class="btn btn-success" @click="getRemoveToolData">Hae nidetiedot</b-button>
-                
-              </b-col>
-
-              <b-col lg="6" class="my-1">
-                <b-form-group label="Filter" label-for="filter-input" label-cols-sm="3" label-align-sm="right"
-                  label-size="sm" class="mb-0">
-                  <b-input-group size="sm">
-                    <b-form-input id="filter-input" v-model="filter" type="search" placeholder="Type to Search">
-                    </b-form-input>
-
-                    <b-input-group-append>
-                      <b-button :disabled="!filter" @click="filter = ''">Clear</b-button>
-                    </b-input-group-append>
-                  </b-input-group>
-                </b-form-group>
-              </b-col>
-
-              <b-col lg="6" class="my-1">
-                <b-form-group label="Suodatettavat kentät:" description="Jätä tyhjäksi suodattaaksesi kaikista kentistä"
-                  label-cols-sm="3" label-align-sm="right" label-size="sm" class="mb-0">
-                  <b-form-checkbox-group v-model="filterOn" class="mt-1">
-                    <b-form-checkbox value="1"> Signum</b-form-checkbox>
-                    <b-form-checkbox value="2"> Luokka</b-form-checkbox>
-                    <b-form-checkbox value="7"> Nidetyyppi</b-form-checkbox>
-                  </b-form-checkbox-group>
-                </b-form-group>
-              </b-col>
-
-            </b-row>
-          </div>
-
-          <b-row>
-            <b-col lg="8" class="my-1">
-              <b-form-group label="Suodata" label-for="filter-input" label-cols-sm="3" label-align-sm="right"
-                label-size="sm" class="mb-0">
-                <b-input-group size="sm">
-                  <b-row align-v="end">
-                    <div>
-                      Sorting By: <b>{{ sortBy }}</b>, Sort Direction:
-                      <b>{{ sortDesc ? "Descending" : "Ascending" }}</b>
-                    </div>
-                  </b-row>
-
-                  <b-input-group class="mt-3">
-                    <b-button :disabled="!filter" @click="filter = null" lg="4">Tyhjennä suodatin</b-button>
-                    <b-button @click="sortBy = null" lg="4">Tyhjennä järjestys</b-button>
-                  </b-input-group>
-                </b-input-group>
-              </b-form-group>
-            </b-col>
-          </b-row>
-
-
-
-        </b-tab>
-        
-<!-- KAUKOPALVELU -->
-
-        <b-tab disabled title="Kaukopalvelu" disabled>
-          <b-card-text>Tab contents 3</b-card-text>
-        </b-tab>
-
-<!-- OKM-TILASTOT -->
-
+        <!-- OKM-TILASTOT -->
         <b-tab title="OKM-Tilastot" @click="showOkmAllModded">
           <div>
             <b-button v-b-toggle.collapse-1 variant="primary" @click="getOKMlisting"> Näytä/Piilota raporttilistaus
@@ -543,7 +56,6 @@
             <b-collapse id="collapse-1" class="mt-2">
               <b-card>
                 <p class="card-text">Valitse näytettävä raportti klikkaamalla riviä. Luotu-sarake ei ole suodatettavissa.</p>
-                
                 <div>
                   <b-form-input v-model="okmListFilter" placeholder="Suodata"></b-form-input>
                   <div class="mt-2">Suodatettu: {{ okmListFilter }}</div>
@@ -557,14 +69,12 @@
                   <strong>Loading...</strong>
                 </div>
                   </template>
-                
               </b-card>
             </b-collapse>
           </div>
           <div>
             <br>
             <b-col lg="4" class="pb-2">
-              
             </b-col>
           </div>
 
@@ -591,13 +101,9 @@
             </b-row> -->
 
             <b-col lg="6" class="my-1">
-              
                 <b-input-group size="sm">
                   <div>
-                    
-                    
                   </div>
-                  
 
                   <b-input-group-append>
                     <!--<b-button :disabled="!filter" @click="filter = ''">Clear</b-button> -->
@@ -609,9 +115,6 @@
 
           <b-row>
             <b-col lg="8" class="my-1">
-              
-          
-             
               <b-row>
                 <div>
                   <b-input-group>
@@ -619,7 +122,6 @@
                     <b-form-input id="filter-input" v-model="filter" v-b-popover.hover.bottom="'Käytä pilkkua erottimena jos haluat suodattaa useammalla merkkijonolla esim. joe,val. Kirjainkoolla ei ole merkitystä. Yksittäisen rivin voi poistaa kirjastotunnuksen edessä olevalla napilla. Lataa raportti uudelleen palauttaaksesi poistetut rivit.'"
                     type="search" placeholder="Suodata"></b-form-input>
                   </div>
-                    
                     <b-button :disabled="!filter" @click="filter = null" lg="4">Tyhjennä suodatin</b-button>
                     <b-button @click="sortBy = null" lg="4">Tyhjennä järjestys</b-button>
                     <b-button id="button1" v-b-popover.hover.top="
@@ -630,7 +132,6 @@
                     </b-button>
                   </b-input-group>
                 </div>
-              
               </b-row>
               <b-row align-v="end">
                 <div>
@@ -640,9 +141,6 @@
                 </div>
               </b-row>
               </b-card>
-          
-          
-          
             </b-col>
           </b-row>
 
@@ -663,12 +161,12 @@
       selectable bordered outlined small sort-icon-left no-border-collapse :sort-by.sync="sortBy"
       :filter-included-fields="filterOn" :sort-desc.sync="sortDesc" :items="myJson.data" :fields="fields" :busy="isBusy"
       :filter="filter" label-sort-asc="" label-sort-desc="" label-sort-clear="" :filter-function="filterFn">
-      
+
       <template v-slot:cell(library)="data">
         <b-button size="sm" margin-right=10px @click="deleteItem(data.item.library)"></b-button>
         {{data.item.library}}
       </template>
-      
+
       <template #cell(0)="data">
         <span v-html="data.value"></span>
       </template>
@@ -754,7 +252,6 @@
         ]
 
       },
-
       computed: {
         zipState() {
           var testzip = this.zipCode;
@@ -772,7 +269,6 @@
           return this.buttons.map(btn => btn.state)
         }
       },
-
       mounted: function () {
         // `this` points to the vm instance
         let branchcodes = ([% To.json(branches) %]);
@@ -783,7 +279,6 @@
 
         this.branchcodelist = branchcodes;
       },
-
       // define methods under the `methods` object
       methods: {
         //https://gist.github.com/TheDiligentDev/a2a2a256dee23818ef2bd7ffa9a896b1
@@ -822,43 +317,43 @@
         },
         //for comma separated filtering
         normalizeString(s) {
-      return `${s}`.trim().toLowerCase();
-    },
-    //comma separated filering
-    filterFn(row) {
-      return this.filter.split(',')
-        .map(this.normalizeString)
-        .some(
-          term => Object.values(row)
+          return `${s}`.trim().toLowerCase();
+        },
+        //comma separated filering
+        filterFn(row) {
+          return this.filter.split(',')
             .map(this.normalizeString)
             .some(
-              val => val.indexOf(term) > -1
-            )
-        );
-    },
+              term => Object.values(row)
+                .map(this.normalizeString)
+                .some(
+                  val => val.indexOf(term) > -1
+                )
+            );
+        },
         toggleBusy() {
           this.isBusy = !this.isBusy;
         },
         //for euro date sorting
         dateCompare(itemA, itemB, key) {
-      if (key !== '2' && key !=='3') {
-        // If field is not `date` we let b-table handle the sorting
-        return false
-      } else {
-        // Convert the string formatted date to a number that can be compared
-        // Get the values being compared from the items
-        let a = itemA[key]
-        let b = itemB[key]
-        // Split them into an array of parts (dd, mm, and yyyy)
-        a = a.split('.')
-        b = b.split('.')
-        // convert string parts to numbers
-        a = (parseInt(a[2], 10) * 10000) + (parseInt(a[1], 10) * 100) + parseInt(a[0])
-        b = (parseInt(b[2], 10) * 10000) + (parseInt(b[1], 10) * 100) + parseInt(b[0])
-        // Return the comparison result
-        return a - b
-      }
-    },
+          if (key !== '2' && key !=='3') {
+            // If field is not `date` we let b-table handle the sorting
+            return false
+          } else {
+            // Convert the string formatted date to a number that can be compared
+            // Get the values being compared from the items
+            let a = itemA[key]
+            let b = itemB[key]
+            // Split them into an array of parts (dd, mm, and yyyy)
+            a = a.split('.')
+            b = b.split('.')
+            // convert string parts to numbers
+            a = (parseInt(a[2], 10) * 10000) + (parseInt(a[1], 10) * 100) + parseInt(a[0])
+            b = (parseInt(b[2], 10) * 10000) + (parseInt(b[1], 10) * 100) + parseInt(b[0])
+            // Return the comparison result
+            return a - b
+          }
+        },
         toggleOkmFields() {
           //console.log("Toggled okmfields");
           // If we want to copy a primitive value, we can use assignment operator (=), but for objects we cannot use the assignment operator.  
@@ -902,7 +397,6 @@
 
           this.fields = okmfieldsfiltered;
         },
-
         onContext(ctx) {
           // Päivämäärälle: The date formatted in the locale, or the `label-no-date-selected` string
           this.formatted = ctx.selectedFormatted
