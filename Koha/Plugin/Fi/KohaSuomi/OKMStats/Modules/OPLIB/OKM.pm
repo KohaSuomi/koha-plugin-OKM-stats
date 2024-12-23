@@ -402,6 +402,12 @@ sub _processItemsDataRow {
             $stats->{expenditures_books} += sprintf("%.1f", $row->{price});
         }
     }
+
+    if($type && $type eq "issues"){
+        if($row->{transaction_type} eq "renew"){
+            $stats->{renews}++;
+        }
+    }
 }
 
 sub getLibraryGroups {

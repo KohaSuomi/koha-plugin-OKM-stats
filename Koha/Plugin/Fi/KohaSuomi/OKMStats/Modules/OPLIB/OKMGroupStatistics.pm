@@ -63,6 +63,7 @@ sub new {
     $self->{collection_by_holdingbranch}->{itemtypes} = { %itemtypes };
     $self->{issues} = { %data_hash };
     $self->{issues}->{itemtypes} = { %itemtypes };
+    $self->{issues}->{renews} = 0;
     $self->{deleted} = { %data_hash };
     $self->{deleted}->{itemtypes} = { %itemtypes };
     $self->{acquisitions} = { %data_hash };

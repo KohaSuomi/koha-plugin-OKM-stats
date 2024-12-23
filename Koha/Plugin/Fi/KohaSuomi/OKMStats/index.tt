@@ -575,10 +575,12 @@
                 (sijaintikirj.)</b-button>
               <b-button type="button" :pressed.sync="hideOkmCollectionHomeBranch" @click="toggleOkmFields" :variant="[hideOkmCollectionHomeBranch ? 'dark' : 'primary']">{{hideOkmCollectionHomeBranch ? 'Näytä kokoelmat' : 'Piilota kokoelmat'}}
                   (koti)</b-button>
-              <b-button type="button" :pressed.sync="hideOkmAcquisitions" @click="toggleOkmFields" :variant="[hideOkmAcquisitions ? 'dark' : 'primary']">{{hideOkmAcquisitions ? 'Näytä hankinnat' : 'Piilota hankinnat'}}</b-button>  
+              <b-button type="button" :pressed.sync="hideOkmAcquisitions" @click="toggleOkmFields" :variant="[hideOkmAcquisitions ? 'dark' : 'primary']">{{hideOkmAcquisitions ? 'Näytä hankinnat' : 'Piilota hankinnat'}}</b-button>
+              <b-button type="button" :pressed.sync="hideOkmAcquisitionsExpenditures" @click="toggleOkmFields" :variant="[hideOkmAcquisitionsExpenditures ? 'dark' : 'primary']">{{hideOkmAcquisitionsExpenditures ? 'Näytä hankintakulut' : 'Piilota hankintakulut'}}</b-button>
               <b-button type="button" :pressed.sync="hideOkmIssues" @click="toggleOkmFields" :variant="[hideOkmIssues ? 'dark' : 'primary']">{{hideOkmIssues ? 'Näytä lainaus' : 'Piilota lainaus'}}</b-button>
               <b-button type="button" :pressed.sync="hideOkmDeleted" @click="toggleOkmFields" :variant="[hideOkmDeleted ? 'dark' : 'primary']">{{hideOkmDeleted ? 'Näytä poistot' : 'Piilota poistot'}}</b-button>
               <b-button type="button" :pressed.sync="hideOkmActiveBorrowers" @click="toggleOkmFields" :variant="[hideOkmActiveBorrowers ? 'dark' : 'primary']">{{hideOkmActiveBorrowers ? 'Näytä akt.asiakkaat' : 'Piilota akt.asiakkaat'}}</b-button>
+              <b-button type="button" :pressed.sync="hideOkmCeliaBorrowers" @click="toggleOkmFields" :variant="[hideOkmCeliaBorrowers ? 'dark' : 'primary']">{{hideOkmCeliaBorrowers ? 'Näytä Celia-lainaajat' : 'Piilota Celia-lainaajat'}}</b-button>
             </b-input-group>
 
             <!-- <b-row>
@@ -722,9 +724,11 @@
         hideOkmCollectionHoldingBranch: false,
         hideOkmCollectionHomeBranch: false,
         hideOkmAcquisitions: false,
+        hideOkmAcquisitionsExpenditures: false,
         hideOkmIssues: false,
         hideOkmDeleted: false,
         hideOkmActiveBorrowers: false,
+        hideOkmCeliaBorrowers: false,
 
         options: [
           { value: null, text: 'Please select an option' },
@@ -733,7 +737,6 @@
           { value: { C: '3PO' }, text: 'This is an option with object value' },
           { value: 'd', text: 'This one is disabled', disabled: true }
         ],
-        
         monthOptions: [
           { value: null, text: 'Valitse' },
           { value: '01', text: 'Tammikuu' },
@@ -753,12 +756,10 @@
       },
 
       computed: {
-        
         zipState() {
           var testzip = this.zipCode;
           return this.zipCode.length == 5 ? true : false
         },
-
         sortOptions() {
           // Create an options list from our fields
           return this.fields
@@ -770,8 +771,6 @@
         btnStates() {
           return this.buttons.map(btn => btn.state)
         }
-
-
       },
 
       mounted: function () {
@@ -790,11 +789,9 @@
         //https://gist.github.com/TheDiligentDev/a2a2a256dee23818ef2bd7ffa9a896b1
         deleteItem(library) {
           //console.log("deleteItem:");
-          
           //console.log(library);
           //console.log(this.myJson.data);
-          
-          
+
           var arr = [...this.myJson.data];
           var toDelete = library;
           //console.log("todelete:");
@@ -802,19 +799,19 @@
           //var index = arr.indexOf(toDelete);
           //var index = arr.findIndex( s => s.value == 'SII_VU' );
           //var index = arr.findIndex(o=>o.value === library);
-          
+
           var index = findIndexByProperty(arr,"library",library);
-          
+
           //console.log("index: ");
           //console.log(index);
-          
+
           if (index > -1) {
             arr.splice(index, 1);
           }
-           
+
           //console.log("after");
           //console.log(arr);
-          
+
           this.myJson.data = arr;
           this.sortBy = "collection_by_holdingbranch.total";
           this.sortBy = "library";
@@ -822,9 +819,7 @@
           //if (index !== -1) {
           //  this.myJson.data.splice(index, 1);
           //}
-          
         },
-      
         //for comma separated filtering
         normalizeString(s) {
       return `${s}`.trim().toLowerCase();
@@ -844,7 +839,6 @@
         toggleBusy() {
           this.isBusy = !this.isBusy;
         },
-        
         //for euro date sorting
         dateCompare(itemA, itemB, key) {
       if (key !== '2' && key !=='3') {
@@ -865,11 +859,8 @@
         return a - b
       }
     },
-        
         toggleOkmFields() {
-          
           //console.log("Toggled okmfields");
-          
           // If we want to copy a primitive value, we can use assignment operator (=), but for objects we cannot use the assignment operator.  
           var okmfieldsfiltered = [...okmfields];
 
@@ -888,22 +879,27 @@
             for (let i = 33; i < 49; i++) {
               delete okmfieldsfiltered[i];
             }
-            delete okmfieldsfiltered[67];
-            delete okmfieldsfiltered[68];
           }
-          if (this.hideOkmIssues === true) {
-            for (let i = 49; i < 65; i++) {
+          if (this.hideOkmAcquisitionsExpenditures === true) {
+            for (let i = 49; i < 51; i++) {
               delete okmfieldsfiltered[i];
             }
           }
-          if (this.hideOkmDeleted === true) {       
-              delete okmfieldsfiltered[65];
+          if (this.hideOkmIssues === true) {
+            for (let i = 51; i < 68; i++) {
+              delete okmfieldsfiltered[i];
+            }
           }
-          if (this.hideOkmActiveBorrowers === true) {         
-              delete okmfieldsfiltered[66];
+          if (this.hideOkmDeleted === true) {
+              delete okmfieldsfiltered[68];
           }
-          
-          
+          if (this.hideOkmActiveBorrowers === true) {
+              delete okmfieldsfiltered[69];
+          }
+          if (this.hideOkmCeliaBorrowers === true) {
+              delete okmfieldsfiltered[70];
+          }
+
           this.fields = okmfieldsfiltered;
         },
 
@@ -913,7 +909,6 @@
           // The following will be an empty string until a valid date is entered
           this.selected = ctx.selectedYMD
         },
-        
         // modify data on the fly, first element of data array
         //linkify(value, key, item) {
         //  let toadd = "cat";
@@ -921,21 +916,14 @@
         //  modded = modded.concat(toadd);
         //  return modded;
         //},
-
         showHankinnat() {
-
           this.fields = null;
           this.myJson.data = null;
-
         },
-        
         clearTable() {
-
-this.fields = null;
-this.myJson.data = null;
-
-},
-        
+          this.fields = null;
+          this.myJson.data = null;
+        },
         //table2excel export bootstrap table
         exportXls() {
           //console.log("export");
@@ -953,7 +941,6 @@ this.myJson.data = null;
               });
             }
         },
-
         async showLainat() {
           this.myJson.data = null;
           this.fields = null;
@@ -975,14 +962,11 @@ this.myJson.data = null;
           }
 
         },
-
         showAsiakkaat() {
           this.myJson.data = null;
           this.fields = null;
         },
-        
         async getIssuesByZip() {
-          
           this.myJson.data = null;
           this.fields = null;
 
@@ -1008,15 +992,10 @@ this.myJson.data = null;
             this.getIssuesByZipButtonDisabled = false;
             this.getIssuesByZipButtonText = 'Hae tiedot';
           }
-          
-          
         },
-        
         async getIssuesByPatronZip() {
-          
           this.myJson.data = null;
           this.fields = null;
-
           this.isBusy = true;
           try {
             //prevent spamming heavy queries, maybe use a global 'Hae' button?
@@ -1039,16 +1018,11 @@ this.myJson.data = null;
             this.getIssuesByZipButtonDisabled = false;
             this.getIssuesByZipButtonText = 'Hae';
           }
-          
-          
         },
-        
         async showBorrowersByAgegroups() {
-          
           this.myJson.data = null;
           this.fields = borrower_agegroup_fields;
           this.isBusy = true;
-          
           try {
             const response = await axios.get(
               `/api/v1/contrib/kohasuomi/reportstool/borrowers/agegroups/`
@@ -1063,9 +1037,7 @@ this.myJson.data = null;
             console.log(e);
             this.isBusy = false;
           }
-          
         },
-
         async showUusinnat() {
           this.myJson.data = null;
           this.fields = null;
@@ -1087,15 +1059,11 @@ this.myJson.data = null;
           }
 
         },
-
         showAsiakkaat() {
           this.myJson.data = null;
           this.fields = null;
 
         },
-
-
-
         showIssues() {
           this.myJson.data = null;
           this.fields = null;
@@ -1108,7 +1076,6 @@ this.myJson.data = null;
           this.filter = "";
           this.isBusy = false;
         },
-
         showIssues2() {
           this.myJson.data = null;
           this.fields = null;
@@ -1121,9 +1088,7 @@ this.myJson.data = null;
           this.filter = "";
           this.isBusy = false;
         },
-
         async showOkmAllModded() {
-
           //console.log(okmstatsmoddedjson);
           //do not clear busy state to prevent spam action
           this.myJson.data = null;
@@ -1131,9 +1096,7 @@ this.myJson.data = null;
           this.fields = okmfields;
           this.myJson.data = null;
         },
-        
         async getOKMlisting(){
-          
           try {
             const response = await axios.get(
               `/api/v1/contrib/kohasuomi/reportstool/okmstats/reports/`
@@ -1146,9 +1109,8 @@ this.myJson.data = null;
           } catch (e) {
             //console.log(e);
             this.isBusy = false;
-          }      
+          }
         },
-
         async getRemoveToolData() {
           this.myJson.data = null;
           this.fields = null;
@@ -1169,7 +1131,6 @@ this.myJson.data = null;
             this.isBusy = false;
           }
         },
-
         async fetchOkm(item) {
           //console.log("fetchOkm started");
           let reportid = item[0];
@@ -1204,10 +1165,10 @@ this.myJson.data = null;
               delete okmfieldsfiltered[i];
             }
           }
-          if (this.hideOkmDeleted === true) {       
+          if (this.hideOkmDeleted === true) {
               delete okmfieldsfiltered[65];
           }
-          if (this.hideOkmActiveBorrowers === true) {         
+          if (this.hideOkmActiveBorrowers === true) {
               delete okmfieldsfiltered[66];
           }
 
@@ -1258,38 +1219,29 @@ this.myJson.data = null;
       .then(response => response.json());
     // .then(jsonObject => console.log(jsonObject));
 
-    
-    
-    
-    
     function CopyToClipboard(containerid) {
       document.getElementById(containerid).click();
-  if (document.selection) {
-    var range = document.body.createTextRange();
-    range.moveToElementText(document.getElementById(containerid));
-    range.select().createTextRange();
-    document.execCommand("copy");
-  } else if (window.getSelection) {
-    var range = document.createRange();
-    range.selectNode(document.getElementById(containerid));
-    window.getSelection().addRange(range);
-    document.execCommand("copy");
-    window.getSelection().removeAllRanges();// to deselect
-    alert("Taulukko kopioitu leikepöydälle.")
-  }
-}
+      if (document.selection) {
+        var range = document.body.createTextRange();
+        range.moveToElementText(document.getElementById(containerid));
+        range.select().createTextRange();
+        document.execCommand("copy");
+      } else if (window.getSelection) {
+        var range = document.createRange();
+        range.selectNode(document.getElementById(containerid));
+        window.getSelection().addRange(range);
+        document.execCommand("copy");
+        window.getSelection().removeAllRanges();// to deselect
+        alert("Taulukko kopioitu leikepöydälle.")
+      }
+    }
 
-//for okm branch deletion
-function findIndexByProperty(array, name, value) {
-  for (var i = 0; i < array.length; i++) {
-    if (array[i][name] === value) { return i; }
-  }
-  return -1;
-}
-
-    
-    
+    //for okm branch deletion
+    function findIndexByProperty(array, name, value) {
+      for (var i = 0; i < array.length; i++) {
+        if (array[i][name] === value) { return i; }
+      }
+      return -1;
+    }
   </script>
-
-
 </html>

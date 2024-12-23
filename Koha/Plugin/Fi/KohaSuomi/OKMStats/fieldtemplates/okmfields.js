@@ -7,8 +7,8 @@ let okmfields = [
         isRowHeader: true,
         variant: "success",
       },
-        
-        
+
+
         { label: "Kokoelmat (sijainti): Yhteensä", key: "collection_by_holdingbranch.total", sortable: true, variant: 'success'},
         { label: "Kokoelmat (sijainti): Kirjat Yhteensä", key: "collection_by_holdingbranch.books_total" , sortable: true },
         { label: "Kokoelmat (sijainti): Kirjat Suomenkieliset ", key: "collection_by_holdingbranch.books_finnish" , sortable: true, },
@@ -25,7 +25,7 @@ let okmfields = [
         { label: "Kokoelmat (sijainti): Videotallenteet", key: "collection_by_holdingbranch.videos" , sortable: true, },
         { label: "Kokoelmat (sijainti): Celia", key: "collection_by_holdingbranch.celia" , sortable: true, },
         { label: "Kokoelmat (sijainti): Muut aineistot", key: "collection_by_holdingbranch.other" , sortable: true, },
-        
+
         { label: "Kokoelmat (koti): Yhteensä", key: "collection_by_homebranch.total", sortable: true, variant: 'success'},
         { label: "Kokoelmat (koti): Kirjat Yhteensä", key: "collection_by_homebranch.books_total" , sortable: true, },
         { label: "Kokoelmat (koti): Kirjat Suomenkieliset ", key: "collection_by_homebranch.books_finnish" , sortable: true, },
@@ -42,7 +42,7 @@ let okmfields = [
         { label: "Kokoelmat (koti): Videotallenteet", key: "collection_by_homebranch.videos" , sortable: true, },
         { label: "Kokoelmat (koti): Celia", key: "collection_by_homebranch.celia" , sortable: true, },
         { label: "Kokoelmat (koti): Muut aineistot", key: "collection_by_homebranch.other" , sortable: true, },
-        
+
         { label: "Hankinnat: Yhteensä", key: "acquisitions.total" , sortable: true, variant: 'success'},
         { label: "Hankinnat: Kirjat Yhteensä", key: "acquisitions.books_total" , sortable: true,},
         { label: "Hankinnat: Kirjat Suomenkieliset", key: "acquisitions.books_finnish" , sortable: true,},
@@ -59,7 +59,10 @@ let okmfields = [
         { label: "Hankinnat: Muut äänitteet", key: "acquisitions.other_recordings" , sortable: true,},
         { label: "Hankinnat: Videotallenteet", key: "acquisitions.videos" , sortable: true,},
         { label: "Hankinnat: Muut aineistot", key: "acquisitions.other" , sortable: true,},
-        
+
+        { label: "Hankintakulut: Yhteensä", key: "acquisitions.expenditures" , sortable: true, variant: 'success'},
+        { label: "Hankintakulut: Kirjat", key: "acquisitions.expenditures_books" , sortable: true, variant: 'success'},
+
         { label: "Lainaus: Yhteensä", key: "issues.total" , sortable: true, variant: 'success'},
         { label: "Lainaus: Kirjat Yhteensä", key: "issues.books_total" , sortable: true,},
         { label: "Lainaus: Kirjat Suomenkieliset", key: "issues.books_finnish" , sortable: true,},
@@ -76,31 +79,19 @@ let okmfields = [
         { label: "Lainaus: Muut äänitteet", key: "issues.other_recordings" , sortable: true,},
         { label: "Lainaus: Videotallenteet", key: "issues.videos" , sortable: true,},
         { label: "Lainaus: Muut aineistot", key: "issues.other" , sortable: true,},
-        
+        { label: "Lainaus: Uusinnat", key: "issues.renews", sortable: true},
+
         //{ label: "Sanomalehdet", key: "serials.newspaper" , sortable: true, variant: 'info'},
         //{ label: "Aikakauslehdet", key: "serials.serials" , sortable: true,},
-        
+
         { label: "Poistot", key: "deleted.total" , sortable: true, variant: 'success'},
-        
+
         { label: "Aktiiviset asiakkaat", key: "active_borrowers" , sortable: true, variant: 'success'},
         { label: "Celia-lainaajat", key: "celia_borrowers", sortable: true, variant: 'success'},
-        
-        { label: "Hankinta(kulut) yhteensä", key: "acquisitions.expenditures" , sortable: true, variant: 'success'},
-        { label: "Kirjojen hankinta(kulut)", key: "acquisitions.expenditures_books" , sortable: true, variant: 'success'},
-        
-        
-        
-        
-        
-        
   ];
-  
 
-  
-  
   //uusokmtest.json
-  
-  
+
   //näitä ei käytetä
 
 //   "acquisitions": {
@@ -139,7 +130,7 @@ let okmfields = [
 //},
 
 // "issues": {
-  
+
 // },
 
 // "serials": {
@@ -150,4 +141,4 @@ let okmfields = [
 // },
 
 
-//  	 	 	
+//
