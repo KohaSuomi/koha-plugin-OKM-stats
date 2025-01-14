@@ -209,7 +209,8 @@ sub get_host_record {
         $f773w =~ s/\D//g;
     }
     my $cn = $f773w;
-    my $cni = $record->field('003')->data();
+    $f003 = $record->field('003');
+    my $cni = $f003->data() if $f003;
 
     return undef unless $cn && $cni;
 
