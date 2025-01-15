@@ -245,12 +245,12 @@ sub fetchIssues {
     my @cc = caller(0);
     print '    #'.DateTime->now()->iso8601()."# Starting ".$cc[3]." #\n" if $self->{verbose};
     my $dbh = C4::Context->dbh();
-    my $query = "SELECT branchcode, holdingbranch, homebranch, categorycode,
+    my $query = "SELECT transaction_branchcode, branchcode, holdingbranch, homebranch, categorycode,
         location, itemnumber, datetime, transaction_type, hashed_borrowernumber as borrowernumber
         FROM pseudonymized_transactions
         WHERE ( transaction_type = 'issue' OR transaction_type = 'renew' )
         AND categorycode in (" . join(",", map {"'$_'"} @{$patronCategories}).")
-        AND holdingbranch in (" . join(',', map {"'$_'"} @branches).")
+        AND transaction_branchcode in (" . join(',', map {"'$_'"} @branches).")
         AND datetime >= ?
         AND datetime <= ?";
     if ($self->{limit}) {
