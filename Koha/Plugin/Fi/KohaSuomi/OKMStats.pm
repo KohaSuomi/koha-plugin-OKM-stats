@@ -28,7 +28,7 @@ our $metadata = {
     minimum_version => '21.05.02.003',
     maximum_version => undef,
     version         => $VERSION,
-    description     => 'OKM-tilastojen luomiseen ja tarkasteluun tarkoitettu työkalu.',
+    description     => 'OKM-tilastojen luomiseen ja tarkasteluun tarkoitettu työkalu. (Paikalliskannat)',
 };
 
 ## This is the minimum code required for a plugin's 'new' method
