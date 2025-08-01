@@ -10,7 +10,7 @@
 
   <link rel="icon" type="image/x-icon" href="[% PLUGIN_PATH %]/favicon.ico">
 
-  <title>Koha-Suomi - Raportointityökalu</title>
+  <title>Koha-Suomi - OKM-raportointityökalu</title>
 
   <!-- Load required Bootstrap and BootstrapVue CSS -->
   <link type="text/css" rel="stylesheet" href="[% PLUGIN_PATH %]/custom.css" />
@@ -37,120 +37,110 @@
             <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="/cgi-bin/koha/mainpage.pl">Etusivu</a></li>
             <li class="breadcrumb-item"><a href="/cgi-bin/koha/plugins/plugins-home.pl">Liitännäiset</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Raportointityökalu</li>
+            <li class="breadcrumb-item active" aria-current="page">OKM-raportointityökalu</li>
             </ol>
         </nav>
         <!-- /Breadcrumb -->
 
   <div>
-    <b-card no-body>
-      <b-tabs pills card>
-        <!-- OKM-TILASTOT -->
-        <b-tab title="OKM-Tilastot" @click="showOkmAllModded">
-          <div>
-            <b-button v-b-toggle.collapse-1 variant="primary" @click="getOKMlisting"> Näytä/Piilota raporttilistaus
-            </b-button>
-            <b-row>
+    <div>
+      <b-button v-b-toggle.collapse-1 variant="primary" @click="getOKMlisting"> Näytä/Piilota raporttilistaus
+      </b-button>
+      <b-row>
 
-            </b-row>
-            <b-collapse id="collapse-1" class="mt-2">
-              <b-card>
-                <p class="card-text">Valitse näytettävä raportti klikkaamalla riviä. Luotu-sarake ei ole suodatettavissa.</p>
-                <div>
-                  <b-form-input v-model="okmListFilter" placeholder="Suodata"></b-form-input>
-                  <div class="mt-2">Suodatettu: {{ okmListFilter }}</div>
-                </div id="datatableokm">
-                <!--- #The row-clicked event will pass 3 parameters to your function. The first being the item specific to the row that was clicked. The second will be the index of the row, and the third is a native click event.
-                This means you can use the arguments keyword to get the index and pass it to your function. -->
-                <b-table class="w-75" id="bsvue-datatable-okmlist" striped bordered sticky-column :filter-ignored-fields="['4']" :sort-by="2" :sort-desc="true" sticky-header="340px" hover selectable :filter="okmListFilter" :select-mode="okmSelectMode" :busy="isBusy"
-                :fields="okmreportlistfields" :items="okmlisting" :sort-compare="dateCompare" @row-clicked="fetchOkm(arguments[0])">
-                <div slot="table-busy" class="text-center text-danger my-2">
-                  <b-spinner class="align-middle"></b-spinner>
-                  <strong>Loading...</strong>
-                </div>
-                  </template>
-              </b-card>
-            </b-collapse>
-          </div>
+      </b-row>
+      <b-collapse id="collapse-1" class="mt-2">
+        <b-card>
+          <p class="card-text">Valitse näytettävä raportti klikkaamalla riviä. Luotu-sarake ei ole suodatettavissa.</p>
           <div>
-            <br>
-            <b-col lg="4" class="pb-2">
-            </b-col>
+            <b-form-input v-model="okmListFilter" placeholder="Suodata"></b-form-input>
+            <div class="mt-2">Suodatettu: {{ okmListFilter }}</div>
+          </div id="datatableokm">
+          <!--- #The row-clicked event will pass 3 parameters to your function. The first being the item specific to the row that was clicked. The second will be the index of the row, and the third is a native click event.
+          This means you can use the arguments keyword to get the index and pass it to your function. -->
+          <b-table class="w-75" id="bsvue-datatable-okmlist" striped bordered sticky-column :filter-ignored-fields="['4']" :sort-by="2" :sort-desc="true" sticky-header="340px" hover selectable :filter="okmListFilter" :select-mode="okmSelectMode" :busy="isBusy"
+          :fields="okmreportlistfields" :items="okmlisting" :sort-compare="dateCompare" @row-clicked="fetchOkm(arguments[0])">
+          <div slot="table-busy" class="text-center text-danger my-2">
+            <b-spinner class="align-middle"></b-spinner>
+            <strong>Loading...</strong>
           </div>
+            </template>
+        </b-card>
+      </b-collapse>
+    </div>
+    <div>
+      <br>
+      <b-col lg="4" class="pb-2">
+      </b-col>
+    </div>
 
-          <b-card>
-          <div>
-            <b-input-group lg="2">
-              <b-button type="button" :pressed.sync="hideOkmCollectionHoldingBranch" @click="toggleOkmFields" :variant="[hideOkmCollectionHoldingBranch ? 'dark' : 'primary']">{{hideOkmCollectionHoldingBranch ? 'Näytä kokoelmat' : 'Piilota kokoelmat'}}
-                (sijaintikirj.)</b-button>
-              <b-button type="button" :pressed.sync="hideOkmCollectionHomeBranch" @click="toggleOkmFields" :variant="[hideOkmCollectionHomeBranch ? 'dark' : 'primary']">{{hideOkmCollectionHomeBranch ? 'Näytä kokoelmat' : 'Piilota kokoelmat'}}
-                  (koti)</b-button>
-              <b-button type="button" :pressed.sync="hideOkmAcquisitions" @click="toggleOkmFields" :variant="[hideOkmAcquisitions ? 'dark' : 'primary']">{{hideOkmAcquisitions ? 'Näytä hankinnat' : 'Piilota hankinnat'}}</b-button>
-              <b-button type="button" :pressed.sync="hideOkmAcquisitionsExpenditures" @click="toggleOkmFields" :variant="[hideOkmAcquisitionsExpenditures ? 'dark' : 'primary']">{{hideOkmAcquisitionsExpenditures ? 'Näytä hankintakulut' : 'Piilota hankintakulut'}}</b-button>
-              <b-button type="button" :pressed.sync="hideOkmIssues" @click="toggleOkmFields" :variant="[hideOkmIssues ? 'dark' : 'primary']">{{hideOkmIssues ? 'Näytä lainaus' : 'Piilota lainaus'}}</b-button>
-              <b-button type="button" :pressed.sync="hideOkmDeleted" @click="toggleOkmFields" :variant="[hideOkmDeleted ? 'dark' : 'primary']">{{hideOkmDeleted ? 'Näytä poistot' : 'Piilota poistot'}}</b-button>
-              <b-button type="button" :pressed.sync="hideOkmActiveBorrowers" @click="toggleOkmFields" :variant="[hideOkmActiveBorrowers ? 'dark' : 'primary']">{{hideOkmActiveBorrowers ? 'Näytä akt.asiakkaat' : 'Piilota akt.asiakkaat'}}</b-button>
-              <b-button type="button" :pressed.sync="hideOkmCeliaBorrowers" @click="toggleOkmFields" :variant="[hideOkmCeliaBorrowers ? 'dark' : 'primary']">{{hideOkmCeliaBorrowers ? 'Näytä Celia-lainaajat' : 'Piilota Celia-lainaajat'}}</b-button>
+    <b-card>
+    <div>
+      <b-input-group lg="2">
+        <b-button type="button" :pressed.sync="hideOkmCollectionHoldingBranch" @click="toggleOkmFields" :variant="[hideOkmCollectionHoldingBranch ? 'dark' : 'primary']">{{hideOkmCollectionHoldingBranch ? 'Näytä kokoelmat' : 'Piilota kokoelmat'}}
+          (sijaintikirj.)</b-button>
+        <b-button type="button" :pressed.sync="hideOkmCollectionHomeBranch" @click="toggleOkmFields" :variant="[hideOkmCollectionHomeBranch ? 'dark' : 'primary']">{{hideOkmCollectionHomeBranch ? 'Näytä kokoelmat' : 'Piilota kokoelmat'}}
+            (koti)</b-button>
+        <b-button type="button" :pressed.sync="hideOkmAcquisitions" @click="toggleOkmFields" :variant="[hideOkmAcquisitions ? 'dark' : 'primary']">{{hideOkmAcquisitions ? 'Näytä hankinnat' : 'Piilota hankinnat'}}</b-button>
+        <b-button type="button" :pressed.sync="hideOkmAcquisitionsExpenditures" @click="toggleOkmFields" :variant="[hideOkmAcquisitionsExpenditures ? 'dark' : 'primary']">{{hideOkmAcquisitionsExpenditures ? 'Näytä hankintakulut' : 'Piilota hankintakulut'}}</b-button>
+        <b-button type="button" :pressed.sync="hideOkmIssues" @click="toggleOkmFields" :variant="[hideOkmIssues ? 'dark' : 'primary']">{{hideOkmIssues ? 'Näytä lainaus' : 'Piilota lainaus'}}</b-button>
+        <b-button type="button" :pressed.sync="hideOkmDeleted" @click="toggleOkmFields" :variant="[hideOkmDeleted ? 'dark' : 'primary']">{{hideOkmDeleted ? 'Näytä poistot' : 'Piilota poistot'}}</b-button>
+        <b-button type="button" :pressed.sync="hideOkmActiveBorrowers" @click="toggleOkmFields" :variant="[hideOkmActiveBorrowers ? 'dark' : 'primary']">{{hideOkmActiveBorrowers ? 'Näytä akt.asiakkaat' : 'Piilota akt.asiakkaat'}}</b-button>
+        <b-button type="button" :pressed.sync="hideOkmCeliaBorrowers" @click="toggleOkmFields" :variant="[hideOkmCeliaBorrowers ? 'dark' : 'primary']">{{hideOkmCeliaBorrowers ? 'Näytä Celia-lainaajat' : 'Piilota Celia-lainaajat'}}</b-button>
+      </b-input-group>
+
+      <!-- <b-row>
+        <p>Pressed State: <strong>{{ hideOkmCollectionHoldingBranch }}</strong> Pressed State: <strong>{{
+            hideOkmCollectionHomeBranch }}</strong>Pressed State: <strong>{{ hideOkmAcquisitions }}</strong>
+          Pressed State: <strong>{{ hideOkmIssues }}</strong></
+      </b-row> -->
+
+        <b-col lg="6" class="my-1">
+            <b-input-group size="sm">
+              <div>
+              </div
+
+              <b-input-group-append>
+                <!--<b-button :disabled="!filter" @click="filter = ''">Clear</b-button> -->
+              </b-input-group-append>
             </b-input-group>
+          </b-form-group>
+        </b-col>
+      </div>
 
-            <!-- <b-row>
-              <p>Pressed State: <strong>{{ hideOkmCollectionHoldingBranch }}</strong> Pressed State: <strong>{{
-                  hideOkmCollectionHomeBranch }}</strong>Pressed State: <strong>{{ hideOkmAcquisitions }}</strong>
-                Pressed State: <strong>{{ hideOkmIssues }}</strong></p>
-
-            </b-row> -->
-
-            <b-col lg="6" class="my-1">
-                <b-input-group size="sm">
-                  <div>
-                  </div>
-
-                  <b-input-group-append>
-                    <!--<b-button :disabled="!filter" @click="filter = ''">Clear</b-button> -->
-                  </b-input-group-append>
-                </b-input-group>
-              </b-form-group>
-            </b-col>
-          </div>
-
+      <b-row>
+        <b-col lg="8" class="my-1">
           <b-row>
-            <b-col lg="8" class="my-1">
-              <b-row>
-                <div>
-                  <b-input-group>
-                  <div class="w-25">
-                    <b-form-input id="filter-input" v-model="filter" v-b-popover.hover.bottom="'Käytä pilkkua erottimena jos haluat suodattaa useammalla merkkijonolla esim. joe,val. Kirjainkoolla ei ole merkitystä. Yksittäisen rivin voi poistaa kirjastotunnuksen edessä olevalla napilla. Lataa raportti uudelleen palauttaaksesi poistetut rivit.'"
-                    type="search" placeholder="Suodata"></b-form-input>
-                  </div>
-                    <b-button :disabled="!filter" @click="filter = null" lg="4">Tyhjennä suodatin</b-button>
-                    <b-button @click="sortBy = null" lg="4">Tyhjennä järjestys</b-button>
-                    <b-button id="button1" v-b-popover.hover.top="
-                                'Nähtävissä oleva data päätyy leikepöydälle. Käytä suodatusta tarvittaessa.'"
-                      onclick="CopyToClipboard('datatable')">Kopioi leikepöydälle</b-button>
-                    <b-button type="button" class="btn btn-success" id="table-export" @click="exportXls" v-b-popover.hover.top="
-                                'Nähtävissä oleva data päätyy tiedostoon. Käytä suodatusta tarvittaessa.'" variant="primary">Vie XLS
-                    </b-button>
-                  </b-input-group>
-                </div>
-              </b-row>
-              <b-row align-v="end">
-                <div>
-                  Lajiteltu: <b>{{ sortBy }}</b>, Sort Direction:
-                  <b>{{ sortDesc ? "Descending" : "Ascending" }}</b>
-                  <div class="mt-2">Suodatettu: {{ filter }}</div>
-                </div>
-              </b-row>
-              </b-card>
-            </b-col>
+            <div>
+              <b-input-group>
+              <div class="w-25">
+                <b-form-input id="filter-input" v-model="filter" v-b-popover.hover.bottom="'Käytä pilkkua erottimena jos haluat suodattaa useammalla merkkijonolla esim. joe,val. Kirjainkoolla ei ole merkitystä. Yksittäisen rivin voi poistaa kirjastotunnuksen edessä olevalla napilla. Lataa raportti uudelleen palauttaaksesi poistetut rivit.'"
+                type="search" placeholder="Suodata"></b-form-input>
+              </div>
+                <b-button :disabled="!filter" @click="filter = null" lg="4">Tyhjennä suodatin</b-button>
+                <b-button @click="sortBy = null" lg="4">Tyhjennä järjestys</b-button>
+                <b-button id="button1" v-b-popover.hover.top="
+                            'Nähtävissä oleva data päätyy leikepöydälle. Käytä suodatusta tarvittaessa.'"
+                  onclick="CopyToClipboard('datatable')">Kopioi leikepöydälle</b-button>
+                <b-button type="button" class="btn btn-success" id="table-export" @click="exportXls" v-b-popover.hover.top="
+                            'Nähtävissä oleva data päätyy tiedostoon. Käytä suodatusta tarvittaessa.'" variant="primary">Vie XLS
+                </b-button>
+              </b-input-group>
+            </div>
           </b-row>
-
           <b-row align-v="end">
+            <div>
+              Lajiteltu: <b>{{ sortBy }}</b>, Sort Direction:
+              <b>{{ sortDesc ? "Descending" : "Ascending" }}</b>
+              <div class="mt-2">Suodatettu: {{ filter }}</div>
+            </div>
           </b-row>
+          </b-card>
+        </b-col>
+      </b-row>
 
-        </b-tab>
-
-      </b-tabs>
-    </b-card>
+    <b-row align-v="end">
+    </b-row>
   </div>
 
 <!-- BS-VUE DATATABLE -->
@@ -410,10 +400,6 @@
         //  modded = modded.concat(toadd);
         //  return modded;
         //},
-        showHankinnat() {
-          this.fields = null;
-          this.myJson.data = null;
-        },
         clearTable() {
           this.fields = null;
           this.myJson.data = null;
@@ -434,31 +420,6 @@
                 preserveColors: true
               });
             }
-        },
-        async showLainat() {
-          this.myJson.data = null;
-          this.fields = null;
-
-          this.isBusy = true;
-          try {
-            const response = await axios.get(
-              `/api/v1/contrib/kohasuomi/okmstats/issues/`, { params: { branch: this.selectedBranch, lowdate: this.lowDate, maxdate: this.maxDate } }
-            );
-
-            this.fields = lainatfields;
-            this.myJson.data = response.data;
-
-            this.isBusy = false;
-
-          } catch (e) {
-            //console.log(e);
-            this.isBusy = false;
-          }
-
-        },
-        showAsiakkaat() {
-          this.myJson.data = null;
-          this.fields = null;
         },
         async getIssuesByZip() {
           this.myJson.data = null;
@@ -512,83 +473,6 @@
             this.getIssuesByZipButtonDisabled = false;
             this.getIssuesByZipButtonText = 'Hae';
           }
-        },
-        async showBorrowersByAgegroups() {
-          this.myJson.data = null;
-          this.fields = borrower_agegroup_fields;
-          this.isBusy = true;
-          try {
-            const response = await axios.get(
-              `/api/v1/contrib/kohasuomi/reportstool/borrowers/agegroups/`
-              );
-            // `/api/v1/contrib/kohasuomi/reportstool/borrowers/agegroups/`, { params: { branch: this.selectedBranch, lowdate: this.lowDate, maxdate: this.maxDate } }
-            this.fields = borrower_agegroup_fields;
-            this.myJson.data = response.data;
-
-            this.isBusy = false;
-
-          } catch (e) {
-            console.log(e);
-            this.isBusy = false;
-          }
-        },
-        async showUusinnat() {
-          this.myJson.data = null;
-          this.fields = null;
-
-          this.isBusy = true;
-          try {
-            const response = await axios.get(
-              `/api/v1/contrib/kohasuomi/reportstool/okmstats/issues/`, { params: { branch: this.selectedBranch, lowdate: this.lowDate, maxdate: this.maxDate } }
-            );
-
-            this.fields = lainatfields;
-            this.myJson.data = response.data;
-
-            this.isBusy = false;
-
-          } catch (e) {
-            //console.log(e);
-            this.isBusy = false;
-          }
-
-        },
-        showAsiakkaat() {
-          this.myJson.data = null;
-          this.fields = null;
-
-        },
-        showIssues() {
-          this.myJson.data = null;
-          this.fields = null;
-          this.itemtypefields = null;
-          this.isBusy = !this.isBusy;
-
-          this.fields = "";
-
-          this.myJson.data = "";
-          this.filter = "";
-          this.isBusy = false;
-        },
-        showIssues2() {
-          this.myJson.data = null;
-          this.fields = null;
-          this.itemtypefields = null;
-          this.isBusy = !this.isBusy;
-
-          this.fields = null;
-
-          this.myJson.data = null;
-          this.filter = "";
-          this.isBusy = false;
-        },
-        async showOkmAllModded() {
-          //console.log(okmstatsmoddedjson);
-          //do not clear busy state to prevent spam action
-          this.myJson.data = null;
-          this.fields = null;
-          this.fields = okmfields;
-          this.myJson.data = null;
         },
         async getOKMlisting(){
           try {
