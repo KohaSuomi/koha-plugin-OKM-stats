@@ -95,6 +95,7 @@ sub createStatistics {
     my $notforloan = $self->{conf}->{notForLoanStatuses};
     my $patronCategories = $self->{conf}->{patronCategories};
     my $excluded_itemtypes = $self->{conf}->{excludedItemtypes};
+    my $interlibrary_cat = $self->{conf}->{interlibraryCategory};
 
     foreach my $groupcode (sort keys %$libraryGroups) {
         my $libraryGroup = $libraryGroups->{$groupcode};
@@ -151,6 +152,23 @@ sub createStatistics {
         }
 
         $self->_processBorrowers( $stats, \@borrowernumbers );
+
+        if ($interlibrary_cat){
+            my $interlibrary_loans = $self->fetchInterlibraryLoans($interlibrary_cat, @branches);
+            foreach my $itemnumber (sort {$a <=> $b} keys %$interlibrary_loans) {
+                #Find rest of items info
+                my $item = $self->_findItem( $itemnumber );
+                foreach my $datetime (keys %{$interlibrary_loans->{$itemnumber}} ){
+                    # Add item info to hash
+                    if($items){
+                        foreach my $item_key (keys %$item){
+                            $interlibrary_loans->{$itemnumber}->{$datetime}{$item_key} = %$item{$item_key};
+                        }
+                    }
+                    $self->_processItemsDataRow( $stats->{interlibrary_loans}, $interlibrary_loans->{$itemnumber}->{$datetime});
+                }
+            }
+        }
     }
 }
 
@@ -265,6 +283,33 @@ sub fetchIssues {
 
     my $issues = $sth->fetchall_hashref([ qw( itemnumber datetime ) ]);
     return $issues;
+}
+
+sub fetchInterlibraryLoans {
+    my ($self, $interlibrary_cat, @branches) = @_;
+    my @cc = caller(0);
+    print '    #'.DateTime->now()->iso8601()."# Starting ".$cc[3]." #\n" if $self->{verbose};
+    my $dbh = C4::Context->dbh();
+    my $query = "SELECT transaction_branchcode, branchcode, holdingbranch, homebranch, categorycode,
+        location, itemnumber, datetime, transaction_type, hashed_borrowernumber as borrowernumber
+        FROM pseudonymized_transactions
+        WHERE transaction_type = 'issue'
+        AND categorycode in (" . join(",", map {"'$_'"} @{$interlibrary_cat}).")
+        AND transaction_branchcode in (" . join(',', map {"'$_'"} @branches).")
+        AND datetime >= ?
+        AND datetime <= ?";
+    if ($self->{limit}) {
+        $query .= ' LIMIT '.$self->{limit};
+    }
+    my $sth = $dbh->prepare($query);
+    $sth->execute($self->{startDate}, $self->{endDate});
+    if ($sth->err) {
+        my @cc = caller(0);
+        die $cc[3]."():> ".$sth->errstr;
+    }
+
+    my $interlibrary_loans = $sth->fetchall_hashref([ qw( itemnumber datetime )]);
+    return $interlibrary_loans;
 }
 
 sub _findItem {

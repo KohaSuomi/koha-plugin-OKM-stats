@@ -64,6 +64,8 @@ sub new {
     $self->{issues} = { %data_hash };
     $self->{issues}->{itemtypes} = { %itemtypes };
     $self->{issues}->{renews} = 0;
+    $self->{interlibrary_loans} = {%data_hash};
+    $self->{interlibrary_loans}->{itemtypes} = {%itemtypes};
     $self->{deleted} = { %data_hash };
     $self->{deleted}->{itemtypes} = { %itemtypes };
     $self->{acquisitions} = { %data_hash };

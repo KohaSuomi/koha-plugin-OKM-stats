@@ -84,6 +84,7 @@
         <b-button type="button" :pressed.sync="hideOkmAcquisitions" @click="toggleOkmFields" :variant="[hideOkmAcquisitions ? 'dark' : 'primary']">{{hideOkmAcquisitions ? 'Näytä hankinnat' : 'Piilota hankinnat'}}</b-button>
         <b-button type="button" :pressed.sync="hideOkmAcquisitionsExpenditures" @click="toggleOkmFields" :variant="[hideOkmAcquisitionsExpenditures ? 'dark' : 'primary']">{{hideOkmAcquisitionsExpenditures ? 'Näytä hankintakulut' : 'Piilota hankintakulut'}}</b-button>
         <b-button type="button" :pressed.sync="hideOkmIssues" @click="toggleOkmFields" :variant="[hideOkmIssues ? 'dark' : 'primary']">{{hideOkmIssues ? 'Näytä lainaus' : 'Piilota lainaus'}}</b-button>
+        <b-button type="button" :pressed.sync="hideOkmInterlibraryLoans" @click="toggleOkmFields" :variant="[hideOkmInterlibraryLoans ? 'dark' : 'primary']">{{hideOkmInterlibraryLoans ? 'Näytä kaukolainaus' : 'Piilota kaukolainaus'}}</b-button>
         <b-button type="button" :pressed.sync="hideOkmDeleted" @click="toggleOkmFields" :variant="[hideOkmDeleted ? 'dark' : 'primary']">{{hideOkmDeleted ? 'Näytä poistot' : 'Piilota poistot'}}</b-button>
         <b-button type="button" :pressed.sync="hideOkmActiveBorrowers" @click="toggleOkmFields" :variant="[hideOkmActiveBorrowers ? 'dark' : 'primary']">{{hideOkmActiveBorrowers ? 'Näytä akt.asiakkaat' : 'Piilota akt.asiakkaat'}}</b-button>
         <b-button type="button" :pressed.sync="hideOkmCeliaBorrowers" @click="toggleOkmFields" :variant="[hideOkmCeliaBorrowers ? 'dark' : 'primary']">{{hideOkmCeliaBorrowers ? 'Näytä Celia-lainaajat' : 'Piilota Celia-lainaajat'}}</b-button>
@@ -214,6 +215,7 @@
         hideOkmAcquisitions: false,
         hideOkmAcquisitionsExpenditures: false,
         hideOkmIssues: false,
+        hideOkmInterlibraryLoans: false,
         hideOkmDeleted: false,
         hideOkmActiveBorrowers: false,
         hideOkmCeliaBorrowers: false,
@@ -375,14 +377,19 @@
               delete okmfieldsfiltered[i];
             }
           }
+          if (this.hideOkmInterlibraryLoans === true) {
+            for (let i = 68; i < 85; i++) {
+              delete okmfieldsfiltered[i];
+            }
+          }
           if (this.hideOkmDeleted === true) {
-              delete okmfieldsfiltered[68];
+              delete okmfieldsfiltered[85];
           }
           if (this.hideOkmActiveBorrowers === true) {
-              delete okmfieldsfiltered[69];
+              delete okmfieldsfiltered[86];
           }
           if (this.hideOkmCeliaBorrowers === true) {
-              delete okmfieldsfiltered[70];
+              delete okmfieldsfiltered[87];
           }
 
           this.fields = okmfieldsfiltered;
@@ -535,19 +542,30 @@
             for (let i = 33; i < 49; i++) {
               delete okmfieldsfiltered[i];
             }
-            delete okmfieldsfiltered[67];
-            delete okmfieldsfiltered[68];
+          }
+          if (this.hideOkmAcquisitionsExpenditures === true) {
+            for (let i = 49; i < 51; i++) {
+              delete okmfieldsfiltered[i];
+            }
           }
           if (this.hideOkmIssues === true) {
-            for (let i = 49; i < 65; i++) {
+            for (let i = 51; i < 68; i++) {
+              delete okmfieldsfiltered[i];
+            }
+          }
+          if (this.hideOkmInterlibraryLoans === true) {
+            for (let i = 68; i < 85; i++) {
               delete okmfieldsfiltered[i];
             }
           }
           if (this.hideOkmDeleted === true) {
-              delete okmfieldsfiltered[65];
+              delete okmfieldsfiltered[85];
           }
           if (this.hideOkmActiveBorrowers === true) {
-              delete okmfieldsfiltered[66];
+              delete okmfieldsfiltered[86];
+          }
+          if (this.hideOkmCeliaBorrowers === true) {
+              delete okmfieldsfiltered[87];
           }
 
           this.fields = okmfieldsfiltered;
