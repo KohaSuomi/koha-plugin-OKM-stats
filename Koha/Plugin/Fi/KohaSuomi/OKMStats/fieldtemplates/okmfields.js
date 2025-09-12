@@ -97,7 +97,6 @@ let okmfields = [
         { label: "Kaukolainaus: Muut äänitteet", key: "interlibrary_loans.other_recordings" , sortable: true,},
         { label: "Kaukolainaus: Videotallenteet", key: "interlibrary_loans.videos" , sortable: true,},
         { label: "Kaukolainaus: Muut aineistot", key: "interlibrary_loans.other" , sortable: true,},
-        { label: "Kaukolainaus: Uusinnat", key: "interlibrary_loans.renews", sortable: true},
 
         //{ label: "Sanomalehdet", key: "serials.newspaper" , sortable: true, variant: 'info'},
         //{ label: "Aikakauslehdet", key: "serials.serials" , sortable: true,},
