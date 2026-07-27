@@ -347,50 +347,37 @@
           }
         },
         toggleOkmFields() {
-          //console.log("Toggled okmfields");
-          // If we want to copy a primitive value, we can use assignment operator (=), but for objects we cannot use the assignment operator.  
-          var okmfieldsfiltered = [...okmfields];
-
-          if (this.hideOkmCollectionHoldingBranch === true) {
-            for (let i = 1; i < 17; i++) {
-              delete okmfieldsfiltered[i];
-
+          // Filter table by matching hiding with fields key values
+          let okmfieldsfiltered = okmfields.filter(field => {
+            if (this.hideOkmCollectionHoldingBranch && field.key.match(/^collection_by_holdingbranch/)) {
+              return false;
             }
-          }
-          if (this.hideOkmCollectionHomeBranch === true) {
-            for (let i = 17; i < 33; i++) {
-              delete okmfieldsfiltered[i];
+            if (this.hideOkmCollectionHomeBranch && field.key.match(/^collection_by_homebranch/)) {
+              return false;
             }
-          }
-          if (this.hideOkmAcquisitions === true) {
-            for (let i = 33; i < 49; i++) {
-              delete okmfieldsfiltered[i];
+            if (this.hideOkmAcquisitions && field.key.match(/^acquisitions/)) {
+              return false;
             }
-          }
-          if (this.hideOkmAcquisitionsExpenditures === true) {
-            for (let i = 49; i < 51; i++) {
-              delete okmfieldsfiltered[i];
+            if (this.hideOkmAcquisitionsExpenditures && field.key.match(/^expenditures_acquisitions/)) {
+              return false;
             }
-          }
-          if (this.hideOkmIssues === true) {
-            for (let i = 51; i < 68; i++) {
-              delete okmfieldsfiltered[i];
+            if (this.hideOkmIssues && field.key.match(/^issues/)) {
+              return false;
             }
-          }
-          if (this.hideOkmInterlibraryLoans === true) {
-            for (let i = 68; i < 85; i++) {
-              delete okmfieldsfiltered[i];
+            if (this.hideOkmInterlibraryLoans && field.key.match(/^interlibrary_loans/)) {
+              return false;
             }
-          }
-          if (this.hideOkmDeleted === true) {
-              delete okmfieldsfiltered[85];
-          }
-          if (this.hideOkmActiveBorrowers === true) {
-              delete okmfieldsfiltered[86];
-          }
-          if (this.hideOkmCeliaBorrowers === true) {
-              delete okmfieldsfiltered[87];
-          }
+            if (this.hideOkmDeleted && field.key.match(/^deleted/)) {
+              return false;
+            }
+            if (this.hideOkmActiveBorrowers && field.key.match(/^active_borrowers/)) {
+              return false;
+            }
+            if (this.hideOkmCeliaBorrowers && field.key.match(/^celia_borrowers/)) {
+              return false;
+            }
+            return true;
+          });
 
           this.fields = okmfieldsfiltered;
         },
