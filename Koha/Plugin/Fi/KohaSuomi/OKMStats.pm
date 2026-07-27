@@ -9,6 +9,7 @@ use base qw(Koha::Plugins::Base);
 ## We will also need to include any Koha libraries we want to access
 use C4::Context;
 use C4::Installer;
+use C4::Languages;
 use CGI qw ( -utf8 );
 
 use Koha::Plugins;
@@ -21,15 +22,31 @@ our $VERSION = "3.0.3";
 
 ## Here is our metadata, some keys are required, some are optional
 our $metadata = {
-    name            => 'OKM-raportointityökalu',
     author          => 'Emmi Takkinen, Lari Strand',
     date_authored   => '2021-09-01',
     date_updated    => "2024-12-27",
     minimum_version => '21.05.02.003',
     maximum_version => undef,
     version         => $VERSION,
-    description     => 'OKM-tilastojen luomiseen ja tarkasteluun tarkoitettu työkalu. (Paikalliskannat)',
 };
+
+sub get_localized_metadata {
+    my ($self) = @_;
+    my $lang = C4::Languages::getlanguage() || 'en';
+    my ($name, $description);
+
+    if ( $lang eq 'sv-SE' ) {
+        $name = "OKM-statistikverktyg";
+        $description = "Ett verktyg för att skapa och visa OKM-statistik. (Lokala databaser)";
+    } elsif ( $lang eq 'fi-FI' ) {
+        $name = "OKM-raportointityökalu";
+        $description = "OKM-tilastojen luomiseen ja tarkasteluun tarkoitettu työkalu. (Paikalliskannat)";
+    } else {
+        $name = "OKM Statistics Tool";
+        $description = "Tool for creating and dipslaying OKM statistics. (Local databases)";
+    }
+    return ($name, $description);
+}
 
 ## This is the minimum code required for a plugin's 'new' method
 ## More can be added, but none should be removed
@@ -44,6 +61,10 @@ sub new {
     ## This runs some additional magic and checking
     ## and returns our actual $self
     my $self = $class->SUPER::new($args);
+
+    my ($name, $description) = $self->get_localized_metadata();
+    $self->{'metadata'}->{'name'} = $name;
+    $self->{'metadata'}->{'description'} = $description;
 
     return $self;
 }

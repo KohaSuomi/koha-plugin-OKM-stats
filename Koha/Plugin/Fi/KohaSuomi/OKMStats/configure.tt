@@ -1,17 +1,22 @@
+[% TRY %]
+    [% PROCESS "$PLUGIN_DIR/i18n/${LANG}.inc" %]
+[% CATCH %]
+    [% PROCESS "$PLUGIN_DIR/i18n/default.inc" %]
+[% END %]
 [% USE KohaDates %]
 [% INCLUDE 'doc-head-open.inc' %]
- <title>Koha: OKM Statistics Plugin: Configuration</title>
+ <title>[% T.configure_1 %]</title>
 [% INCLUDE 'doc-head-close.inc' %]
 </head>
 <body>
 [% INCLUDE 'header.inc' %]
 [% INCLUDE 'cat-search.inc' %]
 
-<div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; OKM Statistics &rsaquo; Configuration</div>
+<div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">[% T.configure_2 %]</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">[% T.configure_4 %]</a> &rsaquo; [% T.configure_5 %]</div>
 
 <div class="main container-fluid" id="page">
 
-    <h3>Koha: OKM Statistics Plugin: Configuration</h3>
+    <h3>[% T.configure_1 %]</h3>
 
     <!-- Notice our form here has no 'action', this is good, it means that our forms will always get passed back to 'plugins/run.pl'. You could hard code it instead if you prefer -->
     <form method="get">
@@ -20,27 +25,27 @@
         <input type="hidden" name="method" value="[% METHOD %]"/>
         <div class="row">
             <div class="col-sm-5">
-                <p>OKM statistics configuration and statistical type mappings</p>
-                <b>Available statistical types:</b>
+                <p>[% T.configure_6 %]</p>
+                <b>[% T.configure_7 %]</b>
                 <ul>
                     <li>Books</li>
                     <li>SheetMusicAndScores</li>
-                    <li>Recordings (further divided to MusicalRecordings and OtherRecordings based on the MARC)</li>
+                    <li>Recordings [% T.configure_10 %]</li>
                     <li>Videos</li>
                     <li>Other</li>
                     <li>Celia</li>
                     <li>Electronic</li>
                     <li>Online</li>
                 </ul>
-                <p>Biblio-level itemtypes listed in 'excludedItemtypes' will not be included to following statistics:</p>
+                <p>[% T.configure_16 %]</p>
                 <ul>
-                    <li>Collections</li>
+                    <li>[% T.configure_17 %]</li>
                 </ul>
-                <p>Item-level itemtypes listed in 'excludedFromAllStatistics' will not be included to any statistics.</p>
-                <p>Material is considered Juvenile material if it is in one of the shelving locations defined by the 'juvenileShelvingLocations'-parameter.</p>
-                <p>Execution of the OKM report generator can be blocked by the 'blockStatisticsGeneration'-flag, by setting it to 1. This is mainly useful to prevent people from running the statistics module before first configuring it.</p>
+                <p>[% T.configure_42 %]</p>
+                <p>[% T.configure_18 %]</p>
+                <p>[% T.configure_19 %]</p>
                 <div>
-                    <b>Example YAML config:</b>
+                    <b>[% T.configure_20 %]</b>
                     <pre>---</pre>
                     <pre>blockStatisticsGeneration: 0</pre>
                     <pre>itemTypeToStatisticalCategory:</pre>
@@ -64,12 +69,12 @@
             </div>
             <div class="col-sm-5 form-group">
                 <div class="row">
-                    <label for="okm_syspref">OKM systempreference</label>
+                    <label for="okm_syspref">[% T.configure_37 %]</label>
                     <textarea class="form-control" id="okm_syspref" rows="35" name="okm_syspref">[% okm_syspref %]</textarea>
                 </div>
                 <div class="row">
                     <input type="hidden" name="save" value="1" />
-                    <input type="submit" value="Save configuration" />
+                    <input type="submit" value="[% T.configure_38 %]" />
                 </div>
             </div>
         </div>
@@ -78,11 +83,11 @@
     <hr/>
 
     <p>
-        <h5>Upgrade status</h5>
+        <h5>[% T.configure_39 %]</h5>
         [% IF last_upgraded %]
-            Plugin was last upgraded on this system on [% last_upgraded | $KohaDates with_hours => 1 %]
+            [% T.configure_40 %] [% last_upgraded | $KohaDates with_hours => 1 %]
         [% ELSE %]
-            Plugin has never been upgraded.
+            [% T.configure_41 %]
         [% END %]
     </p>
 
