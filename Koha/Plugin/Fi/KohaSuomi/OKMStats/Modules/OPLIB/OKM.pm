@@ -95,6 +95,7 @@ sub createStatistics {
     my $notforloan = $self->{conf}->{notForLoanStatuses};
     my $patronCategories = $self->{conf}->{patronCategories};
     my $excluded_itemtypes = $self->{conf}->{excludedItemtypes};
+    my $excludedFromAllStatistics = $self->{conf}->{excludedFromAllStatistics};
     my $interlibrary_cat = $self->{conf}->{interlibraryCategory};
 
     foreach my $groupcode (sort keys %$libraryGroups) {
@@ -104,7 +105,7 @@ sub createStatistics {
         print '    #'.DateTime->now()->iso8601()."# Starting $groupcode #\n" if $self->{verbose};
         my $stats = $libraryGroup->getStatistics();
 
-        my $items = $self->fetchItems($notforloan, $excluded_itemtypes, @branches);
+        my $items = $self->fetchItems($notforloan, $excluded_itemtypes, $excludedFromAllStatistics, @branches);
         foreach my $itemnumber (sort {$a <=> $b} keys %$items) {
             if( grep $_ eq $items->{$itemnumber}->{homebranch}, @branches ){
                 $self->_processItemsDataRow( $stats->{collection_by_homebranch}, $items->{$itemnumber});
@@ -114,17 +115,17 @@ sub createStatistics {
             }
         }
 
-        my $deletedItems = $self->fetchDeletedItems($notforloan, $excluded_itemtypes, @branches);
+        my $deletedItems = $self->fetchDeletedItems($notforloan, $excluded_itemtypes, $excludedFromAllStatistics, @branches);
         foreach my $itemnumber (sort {$a <=> $b} keys %$deletedItems) {
             $self->_processItemsDataRow( $stats->{deleted}, $deletedItems->{$itemnumber} );
         }
 
-        my $acquiredItems = $self->fetchAcquisitions($notforloan, $excluded_itemtypes, @branches);
+        my $acquiredItems = $self->fetchAcquisitions($notforloan, $excluded_itemtypes, $excludedFromAllStatistics, @branches);
         foreach my $itemnumber (sort {$a <=> $b} keys %$acquiredItems) {
             $self->_processItemsDataRow( $stats->{acquisitions}, $acquiredItems->{$itemnumber});
         }
 
-        my $issues = $self->fetchIssues($patronCategories, @branches);
+        my $issues = $self->fetchIssues($patronCategories, $excludedFromAllStatistics, @branches);
         my @borrowernumbers;
         my @celia_borrowers;
         foreach my $itemnumber (sort {$a <=> $b} keys %$issues) {
@@ -173,7 +174,7 @@ sub createStatistics {
 }
 
 sub fetchItems {
-    my ($self, $notforloan, $excluded_itemtypes, @branches) = @_;
+    my ($self, $notforloan, $excluded_itemtypes,  $excludedFromAllStatistics, @branches) = @_;
     my @cc = caller(0);
     print '    #'.DateTime->now()->iso8601()."# Starting ".$cc[3]." #\n" if $self->{verbose};
     my $dbh = C4::Context->dbh();
@@ -185,6 +186,7 @@ sub fetchItems {
         OR i.holdingbranch IN (" . join(',', map {"'$_'"} @branches)."))
         AND i.notforloan NOT IN (" . join(',', map {"'$_'"} @$notforloan).")
         AND bde.itemtype NOT IN (" . join(',', map {"'$_'"} @$excluded_itemtypes).")
+        AND i.itype NOT IN (" . join(',', map {"'$_'"} @$excludedFromAllStatistics).")
         AND i.dateaccessioned < ?
         GROUP BY itemnumber";
     if ($self->{limit}) {
@@ -202,7 +204,7 @@ sub fetchItems {
 }
 
 sub fetchDeletedItems {
-    my ($self, $notforloan, $excluded_itemtypes, @branches) = @_;
+    my ($self, $notforloan, $excluded_itemtypes,  $excludedFromAllStatistics, @branches) = @_;
     my @cc = caller(0);
     print '    #'.DateTime->now()->iso8601()."# Starting ".$cc[3]." #\n" if $self->{verbose};
     my $dbh = C4::Context->dbh();
@@ -213,6 +215,7 @@ sub fetchDeletedItems {
         WHERE (( di.deleted_on IS NOT NULL AND di.deleted_on > ? AND di.deleted_on < ?)
         OR (di.timestamp > ? AND di.timestamp < ?))
         AND bde.itemtype NOT IN (" . join(',', map {"'$_'"} @$excluded_itemtypes).")
+        AND di.itype NOT IN (" . join(',', map {"'$_'"} @$excludedFromAllStatistics).")
         AND di.notforloan not in (" . join(',', map {"'$_'"} @$notforloan).")
         AND di.homebranch in (" . join(',', map {"'$_'"} @branches).")
         GROUP BY itemnumber";
@@ -231,7 +234,7 @@ sub fetchDeletedItems {
 }
 
 sub fetchAcquisitions {
-    my ($self, $notforloan, $excluded_itemtypes, @branches) = @_;
+    my ($self, $notforloan, $excluded_itemtypes, $excludedFromAllStatistics, @branches) = @_;
     my @cc = caller(0);
     print '    #'.DateTime->now()->iso8601()."# Starting ".$cc[3]." #\n" if $self->{verbose};
     my $dbh = C4::Context->dbh();
@@ -241,6 +244,7 @@ sub fetchAcquisitions {
         LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(i.biblionumber = bde.biblionumber)
         WHERE dateaccessioned >= ? AND dateaccessioned <= ?
         AND bde.itemtype NOT IN (" . join(',', map {"'$_'"} @$excluded_itemtypes).")
+        AND i.itype NOT IN (" . join(',', map {"'$_'"} @$excludedFromAllStatistics).")
         AND i.notforloan not in (" . join(',', map {"'$_'"} @$notforloan).")
         AND i.homebranch in (" . join(',', map {"'$_'"} @branches).")
         GROUP BY itemnumber";
@@ -259,7 +263,7 @@ sub fetchAcquisitions {
 }
 
 sub fetchIssues {
-    my ($self, $patronCategories, @branches) = @_;
+    my ($self, $patronCategories, $excludedFromAllStatistics, @branches) = @_;
     my @cc = caller(0);
     print '    #'.DateTime->now()->iso8601()."# Starting ".$cc[3]." #\n" if $self->{verbose};
     my $dbh = C4::Context->dbh();
@@ -269,6 +273,7 @@ sub fetchIssues {
         WHERE ( transaction_type = 'issue' OR transaction_type = 'renew' )
         AND categorycode in (" . join(",", map {"'$_'"} @{$patronCategories}).")
         AND transaction_branchcode in (" . join(',', map {"'$_'"} @branches).")
+        AND itemtype NOT IN (" . join(',', map {"'$_'"} @$excludedFromAllStatistics).")
         AND datetime >= ?
         AND datetime <= ?";
     if ($self->{limit}) {
