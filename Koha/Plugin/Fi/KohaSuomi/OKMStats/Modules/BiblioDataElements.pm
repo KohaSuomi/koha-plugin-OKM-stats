@@ -145,7 +145,7 @@ sub UpdateBiblioDataElement {
     $bde->set_deleted($deleted)                if $update_all || $column eq "deleted";
     $bde->set_deleted_on($biblio->{timestamp}) if ($update_all || $column eq "deleted_on") && $deleted;
     $bde->setItemtype($record)                 if $update_all || $column eq "itemtype";
-    $bde->isComponentPart($record)             if $update_all || $column eq "host_record";
+    $bde->isComponentPart($record, $verbose)   if $update_all || $column eq "host_record";
     $bde->set_primary_language($record)        if $update_all || $column eq "primary_language";
     $bde->set_languages($record)               if $update_all || $column eq "languages";
     $bde->setCnClass($record)                  if $update_all || $column eq "cn_class";
