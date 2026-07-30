@@ -63,11 +63,15 @@ sub isCelia {
 }
 
 sub isComponentPart {
-    my ($self, $record) = @_;
+    my ($self, $record, $verbose) = @_;
     my $col = 'host_record';
 
     my $host_record = $record ? get_host_record($record) : undef;
     my $val = $host_record ? $host_record->subfield('999', 'c') : undef;
+
+    if($verbose && ($self->{$col} // 0) != ($val // 0)){
+        print "Biblionumber ".$self->{biblionumber}.": Host record was ".($self->{$col} // "undef")." -> updated to ".($val // "undef").".\n";
+    }
 
     ($self->{dbi}) ? $self->{$col} = $val : $self->set({$col => $val});
 }
