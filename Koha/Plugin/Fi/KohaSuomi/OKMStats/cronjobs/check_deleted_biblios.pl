@@ -53,6 +53,11 @@ This script has the following parameters:
 
 ENDUSAGE
 
+if ($help) {
+    print $usage;
+    exit;
+}
+
 my $dbh = C4::Context->dbh;
 
 print "Collecting all biblios not marked as deleted but found from deletedbiblio table.\n";
@@ -94,7 +99,7 @@ foreach my $missed_deleted_biblio (@missed_deleted_biblios){
 print "Fixed $fixed_count biblios.\n" if $fixed_count;
 
 print "------\n";
-print "Collecting all biblios marked as deleted but no found from biblio table.\n";
+print "Collecting all biblios marked as deleted but found from biblio table.\n";
 
 my $missed_active = "SELECT biblionumber
 FROM koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements
