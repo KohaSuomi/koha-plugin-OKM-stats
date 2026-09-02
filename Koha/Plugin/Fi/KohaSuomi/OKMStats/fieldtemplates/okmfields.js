@@ -60,8 +60,8 @@ let okmfields = [
         { label: "Hankinnat: Videotallenteet", key: "acquisitions.videos" , sortable: true,},
         { label: "Hankinnat: Muut aineistot", key: "acquisitions.other" , sortable: true,},
 
-        { label: "Hankintakulut: Yhteensä", key: "expenditures_acquisitions.total" , sortable: true, variant: 'success'},
-        { label: "Hankintakulut: Kirjat", key: "expenditures_acquisitions.books" , sortable: true, variant: 'success'},
+        { label: "Hankintakulut: Yhteensä", key: "acquisitions.expenditures" , sortable: true, variant: 'success'},
+        { label: "Hankintakulut: Kirjat", key: "acquisitions.expenditures_books" , sortable: true, variant: 'success'},
 
         { label: "Lainaus: Yhteensä", key: "issues.total" , sortable: true, variant: 'success'},
         { label: "Lainaus: Kirjat Yhteensä", key: "issues.books_total" , sortable: true,},
@@ -103,8 +103,8 @@ let okmfields = [
 
         { label: "Poistot", key: "deleted.total" , sortable: true, variant: 'success'},
 
-        { label: "Aktiiviset asiakkaat", key: "active_borrowers.total" , sortable: true, variant: 'success'},
-        { label: "Celia-lainaajat", key: "celia_borrowers.total", sortable: true, variant: 'success'},
+        { label: "Aktiiviset asiakkaat", key: "active_borrowers" , sortable: true, variant: 'success'},
+        { label: "Celia-lainaajat", key: "celia_borrowers", sortable: true, variant: 'success'},
   ];
 
   //uusokmtest.json
