@@ -355,10 +355,10 @@
             if (this.hideOkmCollectionHomeBranch && field.key.match(/^collection_by_homebranch/)) {
               return false;
             }
-            if (this.hideOkmAcquisitions && field.key.match(/^acquisitions/)) {
+            if (this.hideOkmAcquisitions && field.key.match(/^acquisitions\.(?!expenditures)/)) {
               return false;
             }
-            if (this.hideOkmAcquisitionsExpenditures && field.key.match(/^expenditures_acquisitions/)) {
+            if (this.hideOkmAcquisitionsExpenditures && field.key.match(/^acquisitions.expenditures/)) {
               return false;
             }
             if (this.hideOkmIssues && field.key.match(/^issues/)) {
