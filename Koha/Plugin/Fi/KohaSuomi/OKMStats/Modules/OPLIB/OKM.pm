@@ -681,25 +681,6 @@ sub asOds {
     return join('', @content);
 }
 
-=head FindMarcField
-
-Static method
-
-    my $subfieldContent = FindMarcField('041', 'a', $marcxml);
-
-Finds a single subfield effectively.
-=cut
-
-sub FindMarcField {
-    my ($tagid, $subfieldid, $marcxml) = @_;
-    if ($marcxml =~ /<(data|control)field tag="$tagid".*?>(.*?)<\/(data|control)field>/s) {
-        my $fieldStr = $2;
-        if ($fieldStr =~ /<subfield code="$subfieldid">(.*?)<\/subfield>/s) {
-            return $1;
-        }
-    }
-}
-
 =head isItemChildrens
 
     $row->{location} = 'LAP';

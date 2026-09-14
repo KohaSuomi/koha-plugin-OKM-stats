@@ -185,29 +185,20 @@
         sortBy: "library",
         sortDesc: false,
         selected: null,
-        lowDateFormatted: '',
-        selected2: null,
-        maxDateFormatted: '',
         context: null,
-        selectedMonth: null,
         selectedBranch: null,
         zipCode: '',
         filtered: null,
-        selectedMonth: null,
         lowDate: "",
         maxDate: "",
         filter: "",
         okmListFilter: "",
         filterOn: [],
         isBusy: false,
-        getIssuesByZipButtonDisabled: false,
-        getIssuesByZipButtonText: 'Hae tiedot',
         fields: null,
         myJson: [], //oletusdata
-        lainpalselected: null,
         okmlisting: null,
         okmreportlistfields: null,
-        okmViewCollectionHomebranch: true,
         okmSelectMode: 'single',
         hideOkmCollectionHoldingBranch: false,
         hideOkmCollectionHomeBranch: false,
@@ -218,36 +209,8 @@
         hideOkmDeleted: false,
         hideOkmActiveBorrowers: false,
         hideOkmCeliaBorrowers: false,
-
-        options: [
-          { value: null, text: 'Please select an option' },
-          { value: 'Lainaus', text: 'Lainaus' },
-          { value: 'Palautus', text: 'Palautus' },
-          { value: { C: '3PO' }, text: 'This is an option with object value' },
-          { value: 'd', text: 'This one is disabled', disabled: true }
-        ],
-        monthOptions: [
-          { value: null, text: 'Valitse' },
-          { value: '01', text: 'Tammikuu' },
-          { value: '02', text: 'Helmikuu' },
-          { value: '03', text: 'Maaliskuu' },
-          { value: '04', text: 'Huhtikuu' },
-          { value: '05', text: 'Toukokuu' },
-          { value: '06', text: 'Kesäkuu' },
-          { value: '07', text: 'Heinäkuu' },
-          { value: '08', text: 'Elokuu' },
-          { value: '09', text: 'Syyskuu' },
-          { value: '10', text: 'Lokakuu' },
-          { value: '11', text: 'Marraskuu' },
-          { value: '12', text: 'Joulukuu' },
-        ]
-
       },
       computed: {
-        zipState() {
-          var testzip = this.zipCode;
-          return this.zipCode.length == 5 ? true : false
-        },
         sortOptions() {
           // Create an options list from our fields
           return this.fields
@@ -263,48 +226,23 @@
       mounted: function () {
         // `this` points to the vm instance
         let branchcodes = ([% To.json(branches) %]);
-        //let branchcodes = [];
-
-        //console.log("branches is: ");
-        //console.log(branchcodes);
 
         this.branchcodelist = branchcodes;
       },
       // define methods under the `methods` object
       methods: {
-        //https://gist.github.com/TheDiligentDev/a2a2a256dee23818ef2bd7ffa9a896b1
         deleteItem(library) {
-          //console.log("deleteItem:");
-          //console.log(library);
-          //console.log(this.myJson.data);
-
           var arr = [...this.myJson.data];
           var toDelete = library;
-          //console.log("todelete:");
-          //console.log(toDelete);
-          //var index = arr.indexOf(toDelete);
-          //var index = arr.findIndex( s => s.value == 'SII_VU' );
-          //var index = arr.findIndex(o=>o.value === library);
-
           var index = findIndexByProperty(arr,"library",library);
-
-          //console.log("index: ");
-          //console.log(index);
 
           if (index > -1) {
             arr.splice(index, 1);
           }
 
-          //console.log("after");
-          //console.log(arr);
-
           this.myJson.data = arr;
           this.sortBy = "collection_by_holdingbranch.total";
           this.sortBy = "library";
-          //console.log(index);
-          //if (index !== -1) {
-          //  this.myJson.data.splice(index, 1);
-          //}
         },
         //for comma separated filtering
         normalizeString(s) {
@@ -386,20 +324,12 @@
           // The following will be an empty string until a valid date is entered
           this.selected = ctx.selectedYMD
         },
-        // modify data on the fly, first element of data array
-        //linkify(value, key, item) {
-        //  let toadd = "cat";
-        //  let modded = item[0];
-        //  modded = modded.concat(toadd);
-        //  return modded;
-        //},
         clearTable() {
           this.fields = null;
           this.myJson.data = null;
         },
         //table2excel export bootstrap table
         exportXls() {
-          //console.log("export");
             var table = $("#bsvue-datatable");
             if (table && table.length) {
               $(table).table2excel({
@@ -414,59 +344,6 @@
               });
             }
         },
-        async getIssuesByZip() {
-          this.myJson.data = null;
-          this.fields = null;
-
-          this.isBusy = true;
-          try {
-            //prevent spamming heavy queries, maybe use a global 'Hae' button?
-            this.getIssuesByZipButtonDisabled = true;
-            this.getIssuesByZipButtonText = 'Hakee...';
-            const response = await axios.get(
-              `/api/v1/contrib/kohasuomi/reportstool/issues/issuesbyzip/`, { params: { lowdate: this.lowDate, maxdate: this.maxDate } }
-            );
-            this.getIssuesByZipButtonDisabled = false;
-            this.getIssuesByZipButtonText = 'Hae tiedot';
-
-            this.fields = borrower_issuesbyzip_fields;
-            this.myJson.data = response.data;
-
-            this.isBusy = false;
-
-          } catch (e) {
-            //console.log(e);
-            this.isBusy = false;
-            this.getIssuesByZipButtonDisabled = false;
-            this.getIssuesByZipButtonText = 'Hae tiedot';
-          }
-        },
-        async getIssuesByPatronZip() {
-          this.myJson.data = null;
-          this.fields = null;
-          this.isBusy = true;
-          try {
-            //prevent spamming heavy queries, maybe use a global 'Hae' button?
-            this.getIssuesByZipButtonDisabled = true;
-            this.getIssuesByZipButtonText = 'Hakee...';
-            const response = await axios.get(
-              `/api/v1/contrib/kohasuomi/reportstool/issues/issuesbypatronzip/`, { params: { zipcode: this.zipCode, lowdate: this.lowDate, maxdate: this.maxDate } }
-            );
-            this.getIssuesByZipButtonDisabled = false;
-            this.getIssuesByZipButtonText = 'Hae';
-
-            this.fields = borrower_issuesbypatronzip_fields;
-            this.myJson.data = response.data;
-
-            this.isBusy = false;
-
-          } catch (e) {
-            //console.log(e);
-            this.isBusy = false;
-            this.getIssuesByZipButtonDisabled = false;
-            this.getIssuesByZipButtonText = 'Hae';
-          }
-        },
         async getOKMlisting(){
           try {
             const response = await axios.get(
@@ -475,35 +352,12 @@
 
             this.okmlisting = response.data;
             this.okmreportlistfields = okmreportlistfields;
-            //console.log(response.data);
 
           } catch (e) {
-            //console.log(e);
-            this.isBusy = false;
-          }
-        },
-        async getRemoveToolData() {
-          this.myJson.data = null;
-          this.fields = null;
-          this.isBusy = true;
-
-          try {
-            const response = await axios.get(
-              `/api/v1/contrib/kohasuomi/reportstool/removetool/` , { params: { branch: this.selectedBranch } }
-            );
-
-            this.fields = removetoolfields;
-            this.myJson.data = response.data;
-            this.isBusy = !this.isBusy;
-            this.sortBy = null;
-
-          } catch (e) {
-            //console.log(e);
             this.isBusy = false;
           }
         },
         async fetchOkm(item) {
-          //console.log("fetchOkm started");
           let reportid = item[0];
 
           this.myJson.data = null;
@@ -561,25 +415,19 @@
               `/api/v1/contrib/kohasuomi/reportstool/okmstats/reportsstats/`, { params: { okm_id: reportid } }
             );
 
-            //console.log("Fetched okm report data:");
-            //console.log(response.data);
             let stringified = JSON.stringify(response.data);
             stringified = stringified.replace(/\\/g, '');
             stringified = stringified.substring(3);
             stringified = stringified.slice(0, -3);
-            //console.log("okm stringified:");
-            //console.log(stringified);
 
             let jsonified = JSON.parse(stringified);
 
             this.myJson.data = jsonified;
           } catch (e) {
-            //console.log(e);
             this.isBusy = false;
           }
 
           this.isBusy = false;
-          //this.$nextTick(() => this.$refs.scrollhere.scrollIntoView({block: "end"}));
           this.$nextTick(() => this.$refs.scrollhere.scrollIntoView());
         }
       }
@@ -589,18 +437,10 @@
   </script>
   </body>
 
-  <script src="[% PLUGIN_PATH %]/json/okmstatsmoddedjson.js"></script>
   <script src="[% PLUGIN_PATH %]/fieldtemplates/okmfields.js"></script>
   <script src="[% PLUGIN_PATH %]/fieldtemplates/okmreportlistfields.js"></script>
-  <script src="[% PLUGIN_PATH %]/fieldtemplates/removetoolfields.js"></script>
-  <script src="[% PLUGIN_PATH %]/fieldtemplates/lainatfields.js"></script>
-  <script src="[% PLUGIN_PATH %]/fieldtemplates/borrowersfields.js"></script>
 
   <script>
-    fetch("[% PLUGIN_PATH %]/json/okmstatsmoddedjson.json")
-      .then(response => response.json());
-    // .then(jsonObject => console.log(jsonObject));
-
     function CopyToClipboard(containerid) {
       document.getElementById(containerid).click();
       if (document.selection) {

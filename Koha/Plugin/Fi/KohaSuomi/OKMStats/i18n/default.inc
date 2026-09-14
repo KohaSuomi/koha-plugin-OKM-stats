@@ -57,6 +57,5 @@
         index_40                                   = "Descending",
         index_41                                   = "Ascending",
         index_42                                   = "Table copied to clipboard.",
-        fields_1                                   = "TESTI"
     }
 %]

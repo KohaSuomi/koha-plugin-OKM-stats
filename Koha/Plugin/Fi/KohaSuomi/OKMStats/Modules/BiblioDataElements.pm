@@ -259,47 +259,6 @@ sub get_single_biblio {
     return $biblio;
 }
 
-=head verifyFeatureIsInUse
-
-    my $ok = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElements::verifyFeatureIsInUse($verbose);
-
-@PARAM1 Integer, see --verbose in update_biblio_data_elements.pl
-@RETURNS Flag, 1 if this feature is properly configured
-@THROWS error and dies if this feature is not in use.
-=cut
-
-sub verifyFeatureIsInUse {
-    my ($verbose) = @_;
-    $verbose = 0 unless $verbose;
-
-    my $now = DateTime->now(time_zone => C4::Context->tz());
-    my $lastUpdateTime = Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElements::GetLatestDataElementUpdateTime($verbose) || DateTime::Format::HTTP->parse_datetime('1900-01-01 01:01:01');
-    my $difference = $now->subtract_datetime( $lastUpdateTime );
-    if (($difference->in_units( 'days' ) > 2) && $verbose) {
-        my @cc = caller(0);
-        die $cc[3]."():> koha.biblio_data_elements-table is stale. You must configure cronjob 'update_biblio_data_elements.pl' to run daily.";
-    }
-    elsif ($difference->in_units( 'days' ) > 2) {
-        return 0;
-    }
-    else {
-        return 1;
-    }
-}
-
-=head markForReindex
-
-    Koha::Plugin::Fi::KohaSuomi::OKMStats::Modules::BiblioDataElements::markForReindex();
-
-Marks all BiblioDataElements to be updated during the next indexing.
-
-=cut
-
-sub markForReindex {
-    my $dbh = C4::Context->dbh();
-    $dbh->do("UPDATE koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements SET last_mod_time = '1900-01-01 01:01:01'");
-}
-
 =head _getDeletedXmlBiblio
 
 An ugly copypaste of GetXmlBiblio since GetDeletedXmlBiblio doesn't exists on community version.
