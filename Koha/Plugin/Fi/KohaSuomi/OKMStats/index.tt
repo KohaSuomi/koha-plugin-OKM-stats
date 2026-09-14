@@ -614,7 +614,7 @@
         window.getSelection().addRange(range);
         document.execCommand("copy");
         window.getSelection().removeAllRanges();// to deselect
-        alert("Taulukko kopioitu leikepöydälle.")
+        alert("[% T.index_42 %]")
       }
     }
 

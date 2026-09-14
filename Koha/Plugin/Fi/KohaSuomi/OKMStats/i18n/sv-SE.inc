@@ -56,5 +56,6 @@
         index_39                                   = "Sorterad",
         index_40                                   = "Fallande",
         index_41                                   = "Stigande",
+        index_42                                   = "Tabell kopierad till urklipp.",
     }
 %]

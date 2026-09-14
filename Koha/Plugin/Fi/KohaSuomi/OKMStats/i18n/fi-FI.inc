@@ -56,5 +56,6 @@
         index_39                                   = "Lajiteltu",
         index_40                                   = "Laskeva",
         index_41                                   = "Nouseva",
+        index_42                                   = "Taulukko kopioitu leikepöydälle.",
     }
 %]
