@@ -42,69 +42,6 @@ sub new {
     return $self;
 }
 
-
-=head getBranchcodesWhereClause
-
-    my ($where, $bind) = $groupStatistics->getBranchcodesWhereClause('homebranch', 'items');
-    $where eq "items.homebranch = ? OR items.homebranch = ? OR ...";
-
-    my ($where, $bind) = $groupStatistics->getBranchcodesWhereClause('homebranch');
-    $where eq "homebranch = ? OR homebranch = ? OR ...";
-
-    $sth = $dbh->prepare("SELECT * FROM items WHERE $where");
-    $sth->execute(@$bind);
-
-Gets the SQL to limit the results to this groups material.
-
-@PARAM1, DB column
-@PARAM2, DB table
-@RETURNS, String, meant to be appended after a WHERE-clause and the @bind-variables for the prepared statement
-=cut
-
-sub getBranchcodesWhereClause {
-    my ($self, $column, $table) = @_;
-
-    my $target;
-    croak '$column must be defined!' unless $column;
-    if ($table) {
-        $target = $table.'.'.$column;
-    }
-    else {
-        $target = $column;
-    }
-
-    my @sb;
-    my @bind;
-    foreach my $branchcode (sort keys %{$self->{branches}}) {
-        push @sb, "$target = ?";
-        push @bind, $branchcode;
-    }
-    return (join(' OR ', @sb), \@bind);
-}
-
-=head getBranchcodesWhereClause
-
-    my $in_sql = $groupStatistics->getBranchcodesINClause();
-    $in_sql eq "IN ('JOE_JOE', 'JOE_LIP', 'JOE_KON')";
-
-    $sth = $dbh->prepare("SELECT * FROM items WHERE homebranch $in_sql");
-    $sth->execute(@$bind);
-
-Gets the SQL to limit the results to this groups material.
-
-@RETURNS, String, meant to be appended after a WHERE-clause.
-=cut
-
-sub getBranchcodesINClause {
-    my ($self) = @_;
-
-    my @sb;
-    foreach my $branchcode (sort keys %{$self->{branches}}) {
-        push @sb, "'".$branchcode."'";
-    }
-    return ' IN ('.join(', ', @sb).')';
-}
-
 sub addBranch {
     my ($self, $branchcode) = @_;
 

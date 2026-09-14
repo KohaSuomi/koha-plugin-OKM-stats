@@ -98,64 +98,8 @@ let okmfields = [
         { label: "Kaukolainaus: Videotallenteet", key: "interlibrary_loans.videos" , sortable: true,},
         { label: "Kaukolainaus: Muut aineistot", key: "interlibrary_loans.other" , sortable: true,},
 
-        //{ label: "Sanomalehdet", key: "serials.newspaper" , sortable: true, variant: 'info'},
-        //{ label: "Aikakauslehdet", key: "serials.serials" , sortable: true,},
-
         { label: "Poistot", key: "deleted.total" , sortable: true, variant: 'success'},
 
         { label: "Aktiiviset asiakkaat", key: "active_borrowers" , sortable: true, variant: 'success'},
         { label: "Celia-lainaajat", key: "celia_borrowers", sortable: true, variant: 'success'},
   ];
-
-  //uusokmtest.json
-
-  //näitä ei käytetä
-
-//   "acquisitions": {
-//     "expenditure_acquisitions_books": 2004.81,
-
-//     "books_finnish": 0,
-
-//     "itemtypes": {
-//         "": 6,
-//         "KONSOLIP": 9,
-//         "CD": 11,
-//         "NUOTTI": 2,
-//         "DVD": 12,
-//         "KIRJA": 116
-//     },
-//     "expenditure_acquisitions": 3509.23,
-
-// },
-
-//   "collection_by_holdingbranch": {
-//     "": 2339,
-//     "itemtypes": {
-//         "NUOTTI": 156,
-//         "DVD": 45,
-//         "PUHECD": 238,
-//         "KARTTA": 3,
-//         "DIA": 2,
-//         "ESINE": 1,
-//         "KONSOLIP": 19,
-//         "ATLAS": 4,
-//         "KIRJA": 22528,
-//         "CD": 192,
-//         "MONIVIES": 84
-//     },
-   // "books_finnish": 0,
-//},
-
-// "issues": {
-
-// },
-
-// "serials": {
-//   "serials": 0,
-//   "total": 0,
-//   "journals": 0,
-//   "newspaper": 0
-// },
-
-
-//
