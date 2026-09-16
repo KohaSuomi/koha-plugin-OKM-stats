@@ -186,9 +186,9 @@ sub fetchItems {
         OR i.holdingbranch IN (" . join(',', map {"'$_'"} @branches)."))
         AND i.notforloan NOT IN (" . join(',', map {"'$_'"} @$notforloan).")
         AND bde.itemtype NOT IN (" . join(',', map {"'$_'"} @$excluded_itemtypes).")
-        AND i.itype NOT IN (" . join(',', map {"'$_'"} @$excludedFromAllStatistics).")
-        AND i.dateaccessioned < ?
-        GROUP BY itemnumber";
+        AND i.dateaccessioned < ?";
+        $query .= "AND i.itype NOT IN (" . join(',', map {"'$_'"} @$excludedFromAllStatistics).")" unless !$excludedFromAllStatistics;
+        $query .= "GROUP BY itemnumber";
     if ($self->{limit}) {
         $query .= ' LIMIT '.$self->{limit};
     }
@@ -215,10 +215,10 @@ sub fetchDeletedItems {
         WHERE (( di.deleted_on IS NOT NULL AND di.deleted_on > ? AND di.deleted_on < ?)
         OR (di.timestamp > ? AND di.timestamp < ?))
         AND bde.itemtype NOT IN (" . join(',', map {"'$_'"} @$excluded_itemtypes).")
-        AND di.itype NOT IN (" . join(',', map {"'$_'"} @$excludedFromAllStatistics).")
         AND di.notforloan not in (" . join(',', map {"'$_'"} @$notforloan).")
-        AND di.homebranch in (" . join(',', map {"'$_'"} @branches).")
-        GROUP BY itemnumber";
+        AND di.homebranch in (" . join(',', map {"'$_'"} @branches).")";
+        $query .= "AND di.itype NOT IN (" . join(',', map {"'$_'"} @$excludedFromAllStatistics).")" unless !$excludedFromAllStatistics;
+        $query .= "GROUP BY itemnumber";
     if ($self->{limit}) {
         $query .= ' LIMIT '.$self->{limit};
     }
@@ -244,10 +244,10 @@ sub fetchAcquisitions {
         LEFT JOIN koha_plugin_fi_kohasuomi_okmstats_biblio_data_elements bde ON(i.biblionumber = bde.biblionumber)
         WHERE dateaccessioned >= ? AND dateaccessioned <= ?
         AND bde.itemtype NOT IN (" . join(',', map {"'$_'"} @$excluded_itemtypes).")
-        AND i.itype NOT IN (" . join(',', map {"'$_'"} @$excludedFromAllStatistics).")
         AND i.notforloan not in (" . join(',', map {"'$_'"} @$notforloan).")
-        AND i.homebranch in (" . join(',', map {"'$_'"} @branches).")
-        GROUP BY itemnumber";
+        AND i.homebranch in (" . join(',', map {"'$_'"} @branches).")";
+        $query .= "AND i.itype NOT IN (" . join(',', map {"'$_'"} @$excludedFromAllStatistics).")" unless !$excludedFromAllStatistics;
+        $query .= "GROUP BY itemnumber";
     if ($self->{limit}) {
         $query .= ' LIMIT '.$self->{limit};
     }
@@ -273,9 +273,9 @@ sub fetchIssues {
         WHERE ( transaction_type = 'issue' OR transaction_type = 'renew' )
         AND categorycode in (" . join(",", map {"'$_'"} @{$patronCategories}).")
         AND transaction_branchcode in (" . join(',', map {"'$_'"} @branches).")
-        AND itemtype NOT IN (" . join(',', map {"'$_'"} @$excludedFromAllStatistics).")
         AND datetime >= ?
         AND datetime <= ?";
+        $query .= "AND itemtype NOT IN (" . join(',', map {"'$_'"} @$excludedFromAllStatistics).")" unless !$excludedFromAllStatistics;
     if ($self->{limit}) {
         $query .= ' LIMIT '.$self->{limit};
     }
