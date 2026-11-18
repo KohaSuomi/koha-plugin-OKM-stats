@@ -37,7 +37,7 @@
         index_20                                   = "Filtrera",
         index_21                                   = "Visa samlingar",
         index_22                                   = "Dölj samlingar",
-        index_23                                   = "aktuellt bibliotek",
+        index_23                                   = "nuvarande plats",
         index_24                                   = "hembibliotek",
         index_25                                   = "Visa inköp",
         index_26                                   = "Dölj inköp",
