@@ -22,7 +22,7 @@
         index_3                                    = "Main page",
         index_4                                    = "Plugins",
         index_5                                    = "OKM Statistics Tool",
-        index_6                                    = "Show/Hide reports",
+        index_6                                    = "Show/hide reports",
         index_7                                    = "Select a report to show.",
         index_8                                    = "Filtered:",
         index_9                                    = "Loading...",
